@@ -1,9 +1,12 @@
 # Pull requests testing grounds for TF2
 a Collection of changes that could end up in LIVE-TF2
 currently has:
+## Player
 - Penetration kill sound toggle cvar
 - Voice spamm and delay
 - Custom Responses
+- GiveItem input and console command
+## Items
 - "Addon" items_game loader (BetaM)
 ## Robot Destruction
 - Edit Blu/Red score via Input
