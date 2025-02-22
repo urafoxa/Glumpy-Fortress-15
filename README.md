@@ -1,6 +1,8 @@
 # Pull requests testing grounds for TF2
-a Collection of changes that could end up in LIVE-TF2
-currently has:
+a Collection of changes that could end up in LIVE-TF2, the goal is to try making as much stuff as possible less hardcoded, to give mappers and vscripters more customization freedom
+for example, Custom map titles, killicons, and so on.
+
+currently features:
 ## Player
 - Penetration kill sound toggle cvar
 - Voice spamm and delay
