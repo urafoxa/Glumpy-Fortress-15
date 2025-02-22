@@ -10,6 +10,9 @@ currently features:
 - GiveItem input and console command
 ## Items
 - "Addon" items_game loader (BetaM)
+## Custom Items - W weapon , C cosmetic
+- [W] 32000 The Holy Marlin (Altranade)
+- [W] 31999 Super Maul (TEST ITEM)
 ## Robot Destruction
 - Edit Blu/Red score via Input
 - Removed the 0 cap limit on flags to allow scoring negative points
