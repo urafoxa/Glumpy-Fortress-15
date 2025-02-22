@@ -650,6 +650,7 @@ extern ConVar mp_idlemaxtime;
 extern ConVar tf_mm_strict;
 extern ConVar mp_autoteambalance;
 
+
 // STAGING_SPY
 ConVar tf_feign_death_activate_damage_scale( "tf_feign_death_activate_damage_scale", "0.25", FCVAR_CHEAT | FCVAR_DEVELOPMENTONLY );
 ConVar tf_feign_death_damage_scale( "tf_feign_death_damage_scale", "0.35", FCVAR_CHEAT | FCVAR_DEVELOPMENTONLY );

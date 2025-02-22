@@ -1385,8 +1385,6 @@ CON_COMMAND_F( bot_teleport, "Teleport the specified bot to the specified positi
 //------------------------------------------------------------------------------
 void BotGenerateAndWearItem( CTFPlayer *pBot, const char *itemName )
 {
-	if ( !pBot )
-		return;
 
 	CItemSelectionCriteria criteria;
 	criteria.SetItemLevel( AE_USE_SCRIPT_VALUE );

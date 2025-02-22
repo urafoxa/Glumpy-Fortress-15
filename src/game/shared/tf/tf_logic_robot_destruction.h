@@ -230,6 +230,8 @@ protected:
 #ifdef GAME_DLL
 	virtual void OnRedScoreChanged() {}
 	virtual void OnBlueScoreChanged() {}
+	void	InputScoreRedPoints(inputdata_t& inputdata);
+	void	InputScoreBluePoints(inputdata_t& inputdata);
 	void	ApproachTargetScoresThink();
 	int		ApproachTeamTargetScore( int nTeam, int nApproachScore, int nCurrentScore );
 	void	PlaySoundInPlayersEars( CTFPlayer* pPlayer, const EmitSound_t& params ) const;

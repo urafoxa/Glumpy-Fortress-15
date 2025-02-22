@@ -1046,6 +1046,11 @@ public:
 	bool			IsInAnyTeam( void ) const;			// Returns true if this entity is in any team
 	const char		*TeamID( void ) const;				// Returns the name of the team this entity is on.
 
+	//TF Kill related
+	string_t	m_iszKillerPrintName;
+	string_t	m_iszVictimPrintName;
+	string_t	m_iszKilliconPrint;
+
 	// Entity events... these are events targetted to a particular entity
 	// Each event defines its own well-defined event data structure
 	virtual void OnEntityEvent( EntityEvent_t event, void *pEventData );

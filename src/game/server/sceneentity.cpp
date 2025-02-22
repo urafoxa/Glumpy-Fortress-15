@@ -3412,45 +3412,45 @@ bool CSceneEntity::ShouldNetwork() const
 	return false;
 }
 
-CChoreoScene *CSceneEntity::LoadScene( const char *filename, IChoreoEventCallback *pCallback )
+CChoreoScene* CSceneEntity::LoadScene(const char* filename, IChoreoEventCallback* pCallback)
 {
-	DevMsg( 2, "Blocking load of scene from '%s'\n", filename );
+	DevMsg(2, "Blocking load of scene from '%s'\n", filename);
 
 	char loadfile[MAX_PATH];
-	Q_strncpy( loadfile, filename, sizeof( loadfile ) );
-	Q_SetExtension( loadfile, ".vcd", sizeof( loadfile ) );
-	Q_FixSlashes( loadfile );
+	Q_strncpy(loadfile, filename, sizeof(loadfile));
+	Q_SetExtension(loadfile, ".vcd", sizeof(loadfile));
+	Q_FixSlashes(loadfile);
 
 	// binary compiled vcd
-	void *pBuffer;
+	void* pBuffer;
 	int fileSize;
-	if ( !CopySceneFileIntoMemory( loadfile, &pBuffer, &fileSize ) )
+	if (!CopySceneFileIntoMemory(loadfile, &pBuffer, &fileSize))
 	{
-		MissingSceneWarning( loadfile );
+		MissingSceneWarning(loadfile);
 		return NULL;
 	}
 
-	CChoreoScene *pScene = new CChoreoScene( NULL );
-	CUtlBuffer buf( pBuffer, fileSize, CUtlBuffer::READ_ONLY );
-	if ( !pScene->RestoreFromBinaryBuffer( buf, loadfile, &g_ChoreoStringPool ) )
+	CChoreoScene* pScene = new CChoreoScene(NULL);
+	CUtlBuffer buf(pBuffer, fileSize, CUtlBuffer::READ_ONLY);
+	if (!pScene->RestoreFromBinaryBuffer(buf, loadfile, &g_ChoreoStringPool))
 	{
-		Warning( "CSceneEntity::LoadScene: Unable to load binary scene '%s'\n", loadfile );
+		Warning("CSceneEntity::LoadScene: Unable to load binary scene '%s'\n", loadfile);
 		delete pScene;
 		pScene = NULL;
 	}
 	else
 	{
-		pScene->SetPrintFunc( LocalScene_Printf );
-		pScene->SetEventCallbackInterface( pCallback );
+		pScene->SetPrintFunc(LocalScene_Printf);
+		pScene->SetEventCallbackInterface(pCallback);
 	}
 
-	FreeSceneFileMemory( pBuffer );
+	FreeSceneFileMemory(pBuffer);
 	return pScene;
 }
 
-CChoreoScene *BlockingLoadScene( const char *filename )
+CChoreoScene* BlockingLoadScene(const char* filename)
 {
-	return CSceneEntity::LoadScene( filename, NULL );
+	return CSceneEntity::LoadScene(filename, NULL);
 }
 
 //-----------------------------------------------------------------------------
@@ -4776,43 +4776,44 @@ int GetSceneSpeechCount( char const *pszScene )
 //-----------------------------------------------------------------------------
 // Purpose: Used for precaching instanced scenes
 // Input  : *pszScene - 
+// LOOSE SUPPORT TEST FROM MAPBASE
 //-----------------------------------------------------------------------------
-void PrecacheInstancedScene( char const *pszScene )
+void PrecacheInstancedScene(char const* pszScene)
 {
 	static int nMakingReslists = -1;
-	
-	if ( nMakingReslists == -1 )
+
+	if (nMakingReslists == -1)
 	{
-		nMakingReslists = CommandLine()->FindParm( "-makereslists" ) > 0 ? 1 : 0;
+		nMakingReslists = CommandLine()->FindParm("-makereslists") > 0 ? 1 : 0;
 	}
 
-	if ( nMakingReslists == 1 )
+	if (nMakingReslists == 1)
 	{
 		// Just stat the file to add to reslist
-		g_pFullFileSystem->Size( pszScene );
+		g_pFullFileSystem->Size(pszScene);
 	}
 
 	// verify existence, cache is pre-populated, should be there
 	SceneCachedData_t sceneData;
-	if ( !scenefilecache->GetSceneCachedData( pszScene, &sceneData ) )
+	if (!scenefilecache->GetSceneCachedData(pszScene, &sceneData))
 	{
 		// Scenes are sloppy and don't always exist.
 		// A scene that is not in the pre-built cache image, but on disk, is a true error.
-		if ( developer.GetInt() && ( IsX360() && ( g_pFullFileSystem->GetDVDMode() != DVDMODE_STRICT ) && g_pFullFileSystem->FileExists( pszScene, "GAME" ) ) )
+		if (developer.GetInt() && (IsX360() && (g_pFullFileSystem->GetDVDMode() != DVDMODE_STRICT) && g_pFullFileSystem->FileExists(pszScene, "GAME")))
 		{
-			Warning( "PrecacheInstancedScene: Missing scene '%s' from scene image cache.\nRebuild scene image cache!\n", pszScene );
+			Warning("PrecacheInstancedScene: Missing scene '%s' from scene image cache.\nRebuild scene image cache!\n", pszScene);
 		}
 	}
 	else
 	{
-		for ( int i = 0; i < sceneData.numSounds; ++i )
+		for (int i = 0; i < sceneData.numSounds; ++i)
 		{
-			short stringId = scenefilecache->GetSceneCachedSound( sceneData.sceneId, i );
-			CBaseEntity::PrecacheScriptSound( scenefilecache->GetSceneString( stringId ) );
+			short stringId = scenefilecache->GetSceneCachedSound(sceneData.sceneId, i);
+			CBaseEntity::PrecacheScriptSound(scenefilecache->GetSceneString(stringId));
 		}
 	}
 
-	g_pStringTableClientSideChoreoScenes->AddString( CBaseEntity::IsServer(), pszScene );
+	g_pStringTableClientSideChoreoScenes->AddString(CBaseEntity::IsServer(), pszScene);
 }
 
 HSCRIPT ScriptCreateSceneEntity( const char* pszScene )

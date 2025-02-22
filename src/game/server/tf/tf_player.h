@@ -229,7 +229,8 @@ public:
 	// Team.
 	void				ForceChangeTeam( int iTeamNum, bool bFullTeamSwitch = false );
 	virtual void		ChangeTeam( int iTeamNum, bool bAutoTeam, bool bSilent, bool bAutoBalance = false ) OVERRIDE;
-	virtual void		ChangeTeam( int iTeamNum ) OVERRIDE { BaseClass::ChangeTeam( iTeamNum ); }
+	virtual void		ChangeTeam( int iTeamNum ) OVERRIDE { BaseClass::ChangeTeam( iTeamNum );
+	}
 
 	// mp_fadetoblack
 	void				HandleFadeToBlack( void );
@@ -536,6 +537,7 @@ public:
 	void BleedPlayer( float flBleedingTime );
 	void BleedPlayerEx( float flBleedingTime, int nBleedDmg, bool bPermenantBleeding, int nDmgType );
 	void RollRareSpell();
+	void GiveItem(int inputdata);
 	void ClearSpells();
 
 	void InputIgnitePlayer( inputdata_t &inputdata );
@@ -552,6 +554,7 @@ public:
 	void InputTriggerLootIslandAchievement( inputdata_t &inputdata );
 	void InputTriggerLootIslandAchievement2( inputdata_t &inputdata );
 	void InputRollRareSpell( inputdata_t &inputdata );
+	void InputGiveItem(inputdata_t &inputdata);
 	void InputRoundSpawn( inputdata_t &inputdata );
 
 	bool InAirDueToExplosion( void ) { return (!(GetFlags() & FL_ONGROUND) && (GetWaterLevel() == WL_NotInWater) && ( (m_iBlastJumpState != 0) ) || m_Shared.InCond( TF_COND_ROCKETPACK ) ); }

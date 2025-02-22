@@ -1,0 +1,5 @@
+"UnlitGeneric"
+{
+	"$baseTexture" "HUD/cg/obj_moneybag_outline"
+	$translucent 1
+}

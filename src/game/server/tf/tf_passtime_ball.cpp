@@ -378,15 +378,14 @@ void CPasstimeBall::Spawn()
 	ResetTrail();
 	ChangeTeam( TEAM_UNASSIGNED );
 	
-	if ( TFGameRules()->IsPasstimeMode() )
-	{
-		// TODO the ball used to be functional in non-wasabi maps, but I haven't maintained it
-		SetThink( &CPasstimeBall::DefaultThink );
-		SetNextThink( gpGlobals->curtime );
-		SetTransmitState( FL_EDICT_ALWAYS );
-		m_playerSeek.SetIsEnabled( true );
-	}
 
+	// TODO the ball used to be functional in non-wasabi maps, but I haven't maintained it
+	SetThink( &CPasstimeBall::DefaultThink );
+	SetNextThink( gpGlobals->curtime );
+	SetTransmitState( FL_EDICT_ALWAYS );
+	m_playerSeek.SetIsEnabled( true );
+
+	
 	m_flLastCollisionTime = gpGlobals->curtime;
 	m_flAirtimeDistance = 0;
 	m_eState = STATE_OUT_OF_PLAY;
@@ -1239,7 +1238,7 @@ void CPasstimeBall::OnTouch( CBaseEntity *pOther )
 	// the ball will get a touch callback for both regardless of what happens
 	// in response to the first call (i.e. it's just iterating a contact list).
 	// This catches the case where the ball was already picked up this frame.
-	if ( !TFGameRules()->IsPasstimeMode() || (m_eState != STATE_FREE) )
+	if ( (m_eState != STATE_FREE) )
 	{
 		return;
 	}

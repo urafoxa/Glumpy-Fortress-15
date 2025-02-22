@@ -200,7 +200,8 @@ ConVar tf_damage_multiplier_blue( "tf_damage_multiplier_blue", "1.0", FCVAR_CHEA
 ConVar tf_damage_multiplier_red( "tf_damage_multiplier_red", "1.0", FCVAR_CHEAT, "All incoming damage to a red player is multiplied by this value" );
 
 
-ConVar tf_max_voice_speak_delay( "tf_max_voice_speak_delay", "1.5", FCVAR_DEVELOPMENTONLY, "Max time after a voice command until player can do another one", true, 0.1f, false, 0.f );
+ConVar tf_max_voice_speak_delay( "tf_max_voice_speak_delay", "1.5", FCVAR_NOTIFY, "Max time after a voice command until player can do another one");
+ConVar tf_voicespam("tf_voicespam", "0", FCVAR_NOTIFY, "Allow voice commands to be spammed");
 
 ConVar tf_allow_player_use( "tf_allow_player_use", "0", FCVAR_NOTIFY, "Allow players to execute +use while playing." );
 
@@ -539,6 +540,7 @@ BEGIN_DATADESC( CTFPlayer )
 	DEFINE_INPUTFUNC( FIELD_VOID, "TriggerLootIslandAchievement2", InputTriggerLootIslandAchievement2 ),
 	DEFINE_INPUTFUNC( FIELD_STRING,	"SpeakResponseConcept",	InputSpeakResponseConcept ),
 	DEFINE_INPUTFUNC( FIELD_VOID, "RollRareSpell", InputRollRareSpell ),
+	DEFINE_INPUTFUNC(FIELD_INTEGER, "GiveItem", InputGiveItem),
 	DEFINE_INPUTFUNC( FIELD_VOID, "RoundSpawn", InputRoundSpawn ),
 END_DATADESC()
 
@@ -684,6 +686,7 @@ BEGIN_ENT_SCRIPTDESC( CTFPlayer, CBaseMultiplayerPlayer , "Team Fortress 2 Playe
 	DEFINE_SCRIPTFUNC_WRAPPED( IsFakeClient, "" )
 	DEFINE_SCRIPTFUNC_WRAPPED( GetBotType, "" )
 	DEFINE_SCRIPTFUNC_WRAPPED( IsBotOfType, "" )
+	
 
 	DEFINE_SCRIPTFUNC( AddHudHideFlags, "Hides a hud element based on Constants.FHideHUD." )
 	DEFINE_SCRIPTFUNC( RemoveHudHideFlags, "Unhides a hud element based on Constants.FHideHUD." )
@@ -855,6 +858,95 @@ void cc_CreatePredictionError_f()
 ConCommand cc_CreatePredictionError( "CreatePredictionError", cc_CreatePredictionError_f, "Create a prediction error", FCVAR_CHEAT | FCVAR_DEVELOPMENTONLY );
 
 // -------------------------------------------------------------------------------- //
+
+CON_COMMAND_F(give_econ, "Give ECON item with specified ID from item schema.\nFormat: <id> <classname> <attribute1> <value1> <attribute2> <value2> ... <attributeN> <valueN>", FCVAR_CHEAT)
+{
+	if (args.ArgC() < 2)
+		return;
+
+	CTFPlayer* pPlayer = ToTFPlayer(UTIL_GetCommandClient());
+	if (!pPlayer)
+		return;
+
+	int iItemID = atoi(args[1]);
+	CEconItemDefinition* pItemDef = GetItemSchema()->GetItemDefinition(iItemID);
+	if (!pItemDef)
+		return;
+
+	//KeyValues* pKVInitValues = pItemDef->GetRawDefinition();
+
+	TFPlayerClassData_t* pData = pPlayer->GetPlayerClass()->GetData();
+	CEconItemView econItem;
+
+	econItem.Init(iItemID, AE_UNIQUE, AE_USE_SCRIPT_VALUE, true);
+
+	//bool bAddedAttributes = false;
+
+	// Additonal params are attributes.
+	/*for (int i = 3; i + 1 < args.ArgC(); i += 2)
+	{
+		int iAttribIndex = atoi(args[i]);
+		float flValue = V_atof(args[i + 1]);
+
+		CEconItemAttribute econAttribute(iAttribIndex, flValue);
+		bAddedAttributes = econItem.AddAttribute(&econAttribute);
+	}
+
+	econItem.SkipBaseAttributes(bAddedAttributes);*/
+
+
+
+	// Nuke whatever we have in this slot.
+	//int iClass = pPlayer->GetPlayerClass()->GetClassIndex();
+	const char* pszLoadoutSlot = econItem.GetDefinitionString("item_slot", "class");
+	int iSlot = StringFieldToInt(pszLoadoutSlot, GetItemSchema()->GetLoadoutStrings(EQUIP_TYPE_CLASS), true);
+	CBaseEntity* pEntity = pPlayer->GetEntityForLoadoutSlot(iSlot);
+
+	if (pEntity)
+	{
+		CBaseCombatWeapon* pWeapon = pEntity->MyCombatWeaponPointer();
+		if (pWeapon)
+		{
+			if (pWeapon == pPlayer->GetActiveWeapon())
+				pWeapon->Holster();
+
+			pPlayer->Weapon_Detach(pWeapon);
+			UTIL_Remove(pWeapon);
+		}
+		else if (pEntity->IsWearable())
+		{
+			CEconWearable* pWearable = static_cast<CEconWearable*>(pEntity);
+			pPlayer->RemoveWearable(pWearable);
+		}
+		else
+		{
+			Assert(false);
+			UTIL_Remove(pEntity);
+		}
+	}
+
+	const char* pszClassname = args.ArgC() > 2 ? args[2] : pItemDef->GetItemClass();
+	CEconEntity* pEconEnt = dynamic_cast<CEconEntity*>(pPlayer->GiveNamedItem(pszClassname, 0, &econItem));
+
+	if (pEconEnt)
+	{
+		pEconEnt->GiveTo(pPlayer);
+
+		CBaseCombatWeapon* pWeapon = pEconEnt->MyCombatWeaponPointer();
+		if (pWeapon)
+		{
+			int iAmmo = pWeapon->GetPrimaryAmmoType();
+			if (iAmmo > -1)
+				pPlayer->SetAmmoCount(pPlayer->GetMaxAmmo(iAmmo), iAmmo);
+		}
+
+		CTFWeaponBuilder* pBuilder = dynamic_cast<CTFWeaponBuilder*>(pEconEnt);
+		if (pBuilder)
+		{
+			pBuilder->SetSubType(pData->m_aBuildable[0]);
+		}
+	}
+}
 
 enum eCoachCommand
 {
@@ -3112,7 +3204,7 @@ void CTFPlayer::PrecacheTFPlayer()
 	PrecacheScriptSound( "cleats_dirt.StepRight" );
 
 	PrecacheScriptSound( "xmas.jingle" );
-	PrecacheScriptSound( "xmas.jingle_higher" );
+	PrecacheScriptSound( "xmas.jingle_higher" ); 
 
 	PrecacheScriptSound( "PegLeg.StepRight" );
 
@@ -20034,28 +20126,34 @@ bool CTFPlayer::CanSpeakVoiceCommand( void )
 //-----------------------------------------------------------------------------
 // Purpose: Note the time we're allowed to next speak a voice command
 //-----------------------------------------------------------------------------
-void CTFPlayer::NoteSpokeVoiceCommand( const char *pszScenePlayed )
+void CTFPlayer::NoteSpokeVoiceCommand(const char* pszScenePlayed)
 {
-	Assert( pszScenePlayed );
+	Assert(pszScenePlayed);
 
 	float flTimeSinceAllowedVoice = gpGlobals->curtime - m_flNextVoiceCommandTime;
 
 	// if its longer than 5 seconds, reset the counter
-	if ( flTimeSinceAllowedVoice > 5.0f )
+	if (flTimeSinceAllowedVoice > 5.0f)
 	{
 		m_iVoiceSpamCounter = 0;
 	}
 	// if its less than a second past the allowed time, player is spamming
-	else if ( flTimeSinceAllowedVoice < 1.0f )
+	else if (flTimeSinceAllowedVoice < 1.0f)
 	{
 		m_iVoiceSpamCounter++;
 	}
-
-	m_flNextVoiceCommandTime = gpGlobals->curtime + MIN( GetSceneDuration( pszScenePlayed ), tf_max_voice_speak_delay.GetFloat() );
-
-	if ( m_iVoiceSpamCounter > 0 )
+	if (tf_voicespam.GetBool())
 	{
-		m_flNextVoiceCommandTime += m_iVoiceSpamCounter * 0.5f;
+		m_flNextVoiceCommandTime = gpGlobals->curtime + tf_max_voice_speak_delay.GetFloat();
+	}
+	else
+	{
+		m_flNextVoiceCommandTime = gpGlobals->curtime + MIN(GetSceneDuration(pszScenePlayed), tf_max_voice_speak_delay.GetFloat());
+
+		if (m_iVoiceSpamCounter > 0)
+		{
+			m_flNextVoiceCommandTime += m_iVoiceSpamCounter * 0.5f;
+		}
 	}
 }
 
@@ -20734,6 +20832,87 @@ void CTFPlayer::InputSetCustomModelWithClassAnimations( inputdata_t &inputdata )
 //-----------------------------------------------------------------------------
 // Purpose: 
 //-----------------------------------------------------------------------------
+
+void CTFPlayer::GiveItem(int inputdata)
+{
+
+	if (!IsAlive())
+		return;
+
+	CTFPlayer* pPlayer = this;
+
+	
+	CEconItemDefinition* pItemDef = GetItemSchema()->GetItemDefinition(inputdata);
+	if (!pItemDef)
+		return;
+
+	TFPlayerClassData_t* pData = pPlayer->GetPlayerClass()->GetData();
+	CEconItemView econItem;
+
+	econItem.Init(inputdata, AE_UNIQUE, AE_USE_SCRIPT_VALUE, true);
+
+	// Nuke whatever we have in this slot.
+	const char* pszLoadoutSlot = econItem.GetDefinitionString("item_slot", "class");
+	int iSlot = StringFieldToInt(pszLoadoutSlot, GetItemSchema()->GetLoadoutStrings(EQUIP_TYPE_CLASS), true);
+	CBaseEntity* pEntity = pPlayer->GetEntityForLoadoutSlot(iSlot);
+
+	if (pEntity)
+	{
+		CBaseCombatWeapon* pWeapon = pEntity->MyCombatWeaponPointer();
+		if (pWeapon)
+		{
+			if (pWeapon == pPlayer->GetActiveWeapon())
+				pWeapon->Holster();
+
+			pPlayer->Weapon_Detach(pWeapon);
+			UTIL_Remove(pWeapon);
+		}
+		else if (pEntity->IsWearable())
+		{
+			CEconWearable* pWearable = static_cast<CEconWearable*>(pEntity);
+			pPlayer->RemoveWearable(pWearable);
+		}
+		else
+		{
+			Assert(false);
+			UTIL_Remove(pEntity);
+		}
+	}
+
+	const char* pszClassname = pItemDef->GetItemClass();
+	CEconEntity* pEconEnt = dynamic_cast<CEconEntity*>(pPlayer->GiveNamedItem(pszClassname, 0, &econItem));
+
+	if (pEconEnt)
+	{
+		pEconEnt->GiveTo(pPlayer);
+
+		CBaseCombatWeapon* pWeapon = pEconEnt->MyCombatWeaponPointer();
+		if (pWeapon)
+		{
+			int iAmmo = pWeapon->GetPrimaryAmmoType();
+			if (iAmmo > -1)
+				pPlayer->SetAmmoCount(pPlayer->GetMaxAmmo(iAmmo), iAmmo);
+		}
+
+		CTFWeaponBuilder* pBuilder = dynamic_cast<CTFWeaponBuilder*>(pEconEnt);
+		if (pBuilder)
+		{
+			pBuilder->SetSubType(pData->m_aBuildable[0]);
+		}
+	}
+}
+
+
+void CTFPlayer::InputGiveItem(inputdata_t& input)
+{
+	int iItem = input.value.Int();
+	GiveItem(iItem);
+}
+
+
+//-----------------------------------------------------------------------------
+// Purpose: 
+//-----------------------------------------------------------------------------
 void CTFPlayer::SetCustomModelOffset( const Vector &offset )
 {
 	m_PlayerClass.SetCustomModelOffset( offset );
@@ -20907,6 +21086,7 @@ void CTFPlayer::InputRollRareSpell( inputdata_t &inputdata )
 {
 	RollRareSpell();
 }
+
 
 //-----------------------------------------------------------------------------
 // Purpose: 

@@ -69,6 +69,7 @@ void CHudBaseDeathNotice::Init( void )
 	ListenForGameEvent( "rd_robot_killed" );
 	ListenForGameEvent( "special_score" );
 	ListenForGameEvent( "team_leader_killed" );
+	ListenForGameEvent( "printname_death" );
 }
 
 //-----------------------------------------------------------------------------

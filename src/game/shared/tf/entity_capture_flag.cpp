@@ -843,19 +843,16 @@ void CCaptureFlag::Reset( void )
 
 	if ( m_nType == TF_FLAGTYPE_ROBOT_DESTRUCTION && !IsDisabled() )
 	{
-		if ( m_nPointValue > 0 )
+		// Score points!
+		if ( CTFRobotDestructionLogic::GetRobotDestructionLogic() )
 		{
-			// Score points!
-			if ( CTFRobotDestructionLogic::GetRobotDestructionLogic() )
-			{
-				CTFRobotDestructionLogic::GetRobotDestructionLogic()->ScorePoints( GetTeamNumber()
-																				 , m_nPointValue.Get()
-																				 , SCORE_REACTOR_RETURNED
-																				 , NULL );
+			CTFRobotDestructionLogic::GetRobotDestructionLogic()->ScorePoints( GetTeamNumber()
+																				, m_nPointValue.Get()
+																				, SCORE_REACTOR_RETURNED
+																				, NULL );
 
-				CTFRobotDestructionLogic::GetRobotDestructionLogic()->FlagDestroyed( GetTeamNumber() );
-				m_nPointValue = 0;
-			}
+			CTFRobotDestructionLogic::GetRobotDestructionLogic()->FlagDestroyed( GetTeamNumber() );
+			m_nPointValue = 0;
 		}
 
 		// Disable ourselves if our team currently has no points

@@ -2097,6 +2097,13 @@ BEGIN_DATADESC_NO_BASE( CBaseEntity )
 	DEFINE_INPUT( m_iInitialTeamNum, FIELD_INTEGER, "TeamNum" ),
 	DEFINE_KEYFIELD( m_iTeamNum, FIELD_INTEGER, "teamnumber" ),
 
+// PROTO: Global Killername 
+// Assign a custom Killer & Victim name for the entity, so later Death notice's can use this if it's not null
+
+	DEFINE_KEYFIELD( m_iszKillerPrintName, FIELD_STRING, "print_killername"),
+	DEFINE_KEYFIELD( m_iszVictimPrintName, FIELD_STRING, "print_victimname"),
+	DEFINE_KEYFIELD( m_iszKilliconPrint, FIELD_STRING, "print_killicon"),
+
 //	DEFINE_FIELD( m_bSentLastFrame, FIELD_INTEGER ),
 
 	DEFINE_FIELD( m_hGroundEntity, FIELD_EHANDLE ),
@@ -6025,12 +6032,15 @@ public:
 				if ( pPlayer->IsAutoKickDisabled() == false )
 					return;
 			}
-			else if ( gpGlobals->maxClients > 1 )
+			else if (gpGlobals->maxClients > 1)
 			{
 				// On listen servers with more than 1 player, only allow the host to issue ent_fires.
-				CBasePlayer *pHostPlayer = UTIL_GetListenServerHost();
-				if ( pPlayer != pHostPlayer )
-					return;
+				CBasePlayer* pHostPlayer = UTIL_GetListenServerHost();
+				if (pPlayer->IsAutoKickDisabled() == false)
+				{
+					if (pPlayer != pHostPlayer)
+						return;
+				}
 			}
 
 			if ( command.ArgC() >= 3 )

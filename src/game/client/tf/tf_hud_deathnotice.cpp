@@ -53,6 +53,8 @@ const char *szLocalizedObjectNames[OBJ_LAST] =
 ConVar cl_hud_killstreak_display_time( "cl_hud_killstreak_display_time", "3", FCVAR_ARCHIVE, "How long a killstreak notice stays on the screen (in seconds).  Range is from 0 to 100."  );
 ConVar cl_hud_killstreak_display_fontsize( "cl_hud_killstreak_display_fontsize", "0", FCVAR_ARCHIVE, "Adjusts font size of killstreak notices.  Range is from 0 to 2 (default is 1)." );
 ConVar cl_hud_killstreak_display_alpha( "cl_hud_killstreak_display_alpha", "120", FCVAR_ARCHIVE, "Adjusts font alpha value of killstreak notices.  Range is from 0 to 255 (default is 200)." );
+ConVar tf_snd_penetrationkill("tf_snd_penetrationkill", "1", FCVAR_NOTIFY, "OHHHHHHH PENETRATED!");
+
 
 const int STREAK_MIN = 5;
 const int STREAK_MIN_MVM = 20;
@@ -886,15 +888,22 @@ void CTFHudDeathNotice::OnGameEvent( IGameEvent *event, int iDeathNoticeMsg )
 		bool bPenetrateSound = iPlayerPenetrationCount > 0;
 
 		// This happens too frequently in Coop/TD
-		if ( TFGameRules() && TFGameRules()->IsMannVsMachineMode() )
+		// Unless you really wanna be annoying :)
+		
+		if (TFGameRules() && TFGameRules()->IsMannVsMachineMode())
 		{
 			bPenetrateSound = false;
 		}
 
 		if ( bPenetrateSound )
 		{
-			CLocalPlayerFilter filter;
-			C_BaseEntity::EmitSound( filter, SOUND_FROM_LOCAL_PLAYER, "Game.PenetrationKill" );
+			if (tf_snd_penetrationkill.GetBool())
+			{
+				CLocalPlayerFilter filter;
+				C_BaseEntity::EmitSound(filter, SOUND_FROM_LOCAL_PLAYER, "Game.PenetrationKill");
+			}
+			else
+				return;
 		}
 
 

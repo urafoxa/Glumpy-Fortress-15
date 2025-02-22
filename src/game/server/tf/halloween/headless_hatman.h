@@ -77,6 +77,7 @@ class CHeadlessHatman : public CHalloweenBaseBoss
 public:
 	DECLARE_CLASS( CHeadlessHatman, CHalloweenBaseBoss );
 	DECLARE_SERVERCLASS();
+	
 
 	CHeadlessHatman();
 	virtual ~CHeadlessHatman();
@@ -92,6 +93,10 @@ public:
 	virtual CHeadlessHatmanLocomotion	*GetLocomotionInterface( void ) const	{ return m_locomotor; }
 	virtual CHeadlessHatmanBody *GetBodyInterface( void ) const					{ return m_body; }
 
+	DECLARE_DATADESC();
+	bool m_bMallet;
+
+
 	virtual void Update( void );
 
 	const Vector &GetHomePosition( void ) const;
@@ -99,7 +104,7 @@ public:
 	CBaseAnimating *GetAxe( void ) const;
 
 	virtual HalloweenBossType GetBossType() const { return HALLOWEEN_BOSS_HHH; }
-
+	
 private:
 	const char *GetWeaponModel() const;
 

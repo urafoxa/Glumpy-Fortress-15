@@ -1,0 +1,6 @@
+// Hint files help the Visual Studio IDE interpret Visual C++ identifiers
+// such as names of functions and macros.
+// For more information see https://go.microsoft.com/fwlink/?linkid=865984
+#define DEFINE_KEYFIELD(name, fieldtype, mapname) _FIELD(name, fieldtype, 1, FTYPEDESC_KEY | FTYPEDESC_SAVE, mapname, 0 )
+#define DEFINE_FIELD(name, fieldtype) _FIELD(name, fieldtype, 1, FTYPEDESC_SAVE, NULL, 0 )
+#define DEFINE_SCRIPTFUNC_WRAPPED(func, description) DEFINE_SCRIPTFUNC_NAMED( SCRIPTFUNC_CONCAT( Script, func ), #func, description )

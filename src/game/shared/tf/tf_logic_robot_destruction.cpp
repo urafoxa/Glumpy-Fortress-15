@@ -24,7 +24,6 @@ void cc_tf_rd_max_points_override( IConVar *pConVar, const char *pOldString, flo
 }
 ConVar tf_rd_max_points_override( "tf_rd_max_points_override", "0", FCVAR_GAMEDLL, "When changed, overrides the current max points", cc_tf_rd_max_points_override );
 
-#if defined( STAGING_ONLY ) || defined( DEBUG )
 void cc_tf_rd_score_blue_points( const CCommand &args )
 {
 	int nPoints = args.ArgC() > 1 ? atoi(args[1]) : 0;
@@ -47,7 +46,6 @@ void cc_tf_rd_score_red_points( const CCommand &args )
 																		 , NULL );
 }
 ConCommand tf_rd_score_red_points( "tf_rd_score_red_points", cc_tf_rd_score_red_points, "Give red points.", FCVAR_CHEAT );
-#endif // STAGING_ONLY
 #endif
 
 ConVar tf_rd_robot_attack_notification_cooldown( "tf_rd_robot_attack_notification_cooldown", "10", FCVAR_REPLICATED | FCVAR_DEVELOPMENTONLY );
@@ -717,6 +715,8 @@ void CTFRobotDestructionLogic::ApproachTargetScoresThink()
 		OnBlueScoreChanged();
 	}
 
+
+
 	// Re-think if something is still off
 	if ( m_nBlueTargetPoints != m_nBlueScore.Get() || m_nRedTargetPoints != m_nRedScore.Get() )
 	{
@@ -945,6 +945,15 @@ void CTFRobotDestructionLogic::InputRoundActivate( inputdata_t &/*inputdata*/ )
 		m_vecSpawnGroups[ i ]->RespawnRobots();
 	}
 }
+void CTFRobotDestructionLogic::InputScoreRedPoints(inputdata_t& inputdata)
+{
+	ScorePoints(TF_TEAM_RED, inputdata.value.Int(), SCORE_CORES_COLLECTED, NULL);
+}
+
+void CTFRobotDestructionLogic::InputScoreBluePoints(inputdata_t& inputdata)
+{
+	ScorePoints( TF_TEAM_BLUE, inputdata.value.Int(), SCORE_CORES_COLLECTED, NULL);
+}
 #endif
 
 //-----------------------------------------------------------------------------
@@ -1101,7 +1110,7 @@ void CTFRobotDestructionLogic::FireGameEvent( IGameEvent * event )
 
 					float soundlen = 0;
 					EmitSound_t params;
-					params.m_flSoundTime = 0;
+					params.m_flSoundTime = 0;				
 					params.m_pSoundName = "Announcer.HowToPlayRD";
 					params.m_pflSoundDuration = &soundlen;
 					PlaySoundInPlayersEars( pPlayer, params );
@@ -1406,6 +1415,9 @@ BEGIN_DATADESC( CTFRobotDestructionLogic )
 	DEFINE_OUTPUT( m_OnBlueHitZeroPoints,	"OnBlueHitZeroPoints" ),
 	DEFINE_OUTPUT( m_OnBlueHasPoints,		"OnBlueHasPoints" ),
 	DEFINE_OUTPUT( m_OnBlueFinalePeriodEnd, "OnBlueFinalePeriodEnd" ),
+
+	DEFINE_INPUTFUNC(FIELD_INTEGER, "ScoreRedPoints", InputScoreRedPoints),
+	DEFINE_INPUTFUNC(FIELD_INTEGER, "ScoreBluePoints", InputScoreBluePoints),
 
 	DEFINE_OUTPUT( m_OnRedFirstFlagStolen,	"OnRedFirstFlagStolen" ),
 	DEFINE_OUTPUT( m_OnRedFlagStolen,		"OnRedFlagStolen" ),
