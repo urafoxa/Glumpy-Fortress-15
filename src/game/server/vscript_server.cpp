@@ -19,6 +19,7 @@
 #include "sceneentity.h"		// for exposing scene precache function
 #include "isaverestore.h"
 #include "gamerules.h"
+#include "te_effect_dispatch.h"
 #include "particle_parse.h"
 #include "usermessages.h"
 #include "engine/IEngineSound.h"
@@ -2177,6 +2178,37 @@ static void ScriptDispatchParticleEffect( const char *pszParticleName, const Vec
 	VectorAngles( vAngle, qAngle );
 	DispatchParticleEffect( pszParticleName, vOrigin, qAngle );
 }
+static void ScriptDispatchEffect(const char* pszEffectName, HSCRIPT params)
+{
+	if (!params)
+		return;
+
+	CEffectData data;
+
+	IScriptVM* pVM = g_pScriptVM;
+	pVM->IfHas<Vector>(params, "m_vOrigin", [&](Vector value) { data.m_vOrigin = value; });
+	pVM->IfHas<Vector>(params, "m_vStart", [&](Vector value) { data.m_vStart = value; });
+	pVM->IfHas<Vector>(params, "m_vNormal", [&](Vector value) { data.m_vNormal = value; });
+	pVM->IfHas<QAngle>(params, "m_vAngles", [&](QAngle value) { data.m_vAngles = value; });
+	pVM->IfHas<int>(params, "m_fFlags", [&](int value) { data.m_fFlags = value; });
+	pVM->IfHas<int>(params, "m_nEntIndex", [&](int value) { data.m_nEntIndex = value; });
+	pVM->IfHas<float>(params, "m_flScale", [&](float value) { data.m_flScale = value; });
+	pVM->IfHas<float>(params, "m_flMagnitude", [&](float value) { data.m_flMagnitude = value; });
+	pVM->IfHas<float>(params, "m_flRadius", [&](float value) { data.m_flRadius = value; });
+	pVM->IfHas<int>(params, "m_nAttachmentIndex", [&](int value) { data.m_nAttachmentIndex = value; });
+	pVM->IfHas<int>(params, "m_nSurfaceProp", [&](int value) { data.m_nSurfaceProp = value; });
+	pVM->IfHas<int>(params, "m_nMaterial", [&](int value) { data.m_nMaterial = value; });
+	pVM->IfHas<int>(params, "m_nDamageType", [&](int value) { data.m_nDamageType = value; });
+	pVM->IfHas<int>(params, "m_nHitBox", [&](int value) { data.m_nHitBox = value; });
+	pVM->IfHas<int>(params, "m_nColor", [&](int value) { data.m_nColor = value; });
+	pVM->IfHas<bool>(params, "m_bCustomColors", [&](bool value) { data.m_bCustomColors = value; });
+	pVM->IfHas<Vector>(params, "m_CustomColors.m_vecColor1", [&](Vector value) { data.m_CustomColors.m_vecColor1 = value; });
+	pVM->IfHas<Vector>(params, "m_CustomColors.m_vecColor2", [&](Vector value) { data.m_CustomColors.m_vecColor2 = value; });
+	pVM->IfHas<bool>(params, "m_bControlPoint1", [&](bool value) { data.m_bControlPoint1 = value; });
+	pVM->IfHas<int>(params, "m_ControlPoint1.m_eParticleAttachment", [&](int value) { data.m_ControlPoint1.m_eParticleAttachment = ParticleAttachment_t(value); });
+	pVM->IfHas<Vector>(params, "m_ControlPoint1.m_vecOffset", [&](Vector value) { data.m_ControlPoint1.m_vecOffset = value; });
+	DispatchEffect(pszEffectName, data);
+}
 
 static void ScriptSetSkyboxTexture( const char* pszSkyboxName )
 {
@@ -2598,6 +2630,7 @@ bool VScriptServerInit()
 				//ScriptRegisterFunctionNamed( g_pScriptVM, DoRecordAchievementEvent, "RecordAchievementEvent", "Records achievement event or progress" );
 				ScriptRegisterFunction( g_pScriptVM, GetDeveloperLevel, "Gets the level of 'developer'" );
 				ScriptRegisterFunctionNamed( g_pScriptVM, ScriptDispatchParticleEffect, "DispatchParticleEffect", "Dispatches a one-off particle system" );
+				ScriptRegisterFunctionNamed( g_pScriptVM, ScriptDispatchEffect, "DispatchEffect", "Dispatches a client effect");
 				ScriptRegisterFunctionNamed( g_pScriptVM, ScriptSetSkyboxTexture, "SetSkyboxTexture", "Sets the current skybox texture" );
 
 #if defined ( PORTAL2 )
