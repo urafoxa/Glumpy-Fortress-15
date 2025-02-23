@@ -1781,6 +1781,7 @@ ConVarRef suitcharger( "sk_suitcharger" );
 					Assert( usermessages->LookupUserMessage( "VoiceSubtitle" ) != -1 );
 
 					// Send a subtitle to anyone in the PAS
+					#ifdef TF_DLL
 					if (tf_voicespam.GetInt() != 2)
 					{
 						UserMessageBegin(filter, "VoiceSubtitle");
@@ -1789,6 +1790,13 @@ ConVarRef suitcharger( "sk_suitcharger" );
 						WRITE_BYTE(iItem);
 						MessageEnd();
 					}
+					#else
+					UserMessageBegin(filter, "VoiceSubtitle");
+					WRITE_BYTE(pPlayer->entindex());
+					WRITE_BYTE(iMenu);
+					WRITE_BYTE(iItem);
+					MessageEnd();
+					#endif
 				}
 
 				pPlayer->NoteSpokeVoiceCommand( szResponse );
