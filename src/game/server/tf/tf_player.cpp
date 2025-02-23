@@ -201,7 +201,7 @@ ConVar tf_damage_multiplier_red( "tf_damage_multiplier_red", "1.0", FCVAR_CHEAT,
 
 
 ConVar tf_max_voice_speak_delay( "tf_max_voice_speak_delay", "1.5", FCVAR_NOTIFY, "Max time after a voice command until player can do another one");
-ConVar tf_voicespam("tf_voicespam", "0", FCVAR_NOTIFY, "Allow voice commands to be spammed");
+extern ConVar tf_voicespam;
 
 ConVar tf_allow_player_use( "tf_allow_player_use", "0", FCVAR_NOTIFY, "Allow players to execute +use while playing." );
 
@@ -713,6 +713,8 @@ BEGIN_ENT_SCRIPTDESC( CTFPlayer, CBaseMultiplayerPlayer , "Team Fortress 2 Playe
 	DEFINE_SCRIPTFUNC_NAMED( ScriptGetCustomAttribute, "GetCustomAttribute", "Get a custom attribute float from the player" )
 
 	DEFINE_SCRIPTFUNC_WRAPPED( StunPlayer, "" )
+	DEFINE_SCRIPTFUNC_WRAPPED( PlayGesture, "Plays a gesture" )
+	DEFINE_SCRIPTFUNC_WRAPPED( PlaySpecificSequence, "Plays a Sequence" )
 END_SCRIPTDESC();
 
 
@@ -23288,4 +23290,14 @@ void CTFPlayer::ScriptEquipWearableViewModel( HSCRIPT hWearableViewModel )
 void CTFPlayer::ScriptStunPlayer( float flTime, float flReductionAmount, int iStunFlags /* = TF_STUN_MOVEMENT */, HSCRIPT hAttacker /* = NULL */ )
 {
 	m_Shared.StunPlayer( flTime, flReductionAmount, iStunFlags, ScriptToEntClass< CTFPlayer >( hAttacker ) );
+}
+
+bool CTFPlayer::ScriptPlayGesture(const char* pGestureName)
+{
+	return this->PlayGesture(pGestureName);
+}
+
+bool CTFPlayer::ScriptPlaySpecificSequence(const char* pAnimationName)
+{
+	return this->PlaySpecificSequence(pAnimationName);
 }
