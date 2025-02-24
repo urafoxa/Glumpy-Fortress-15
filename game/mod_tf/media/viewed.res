@@ -18,7 +18,7 @@
 	}
 	"pl_upward"
 	{
-		"viewed"		"14"
+		"viewed"		"17"
 	}
 	"pass_timbertown"
 	{

@@ -43,6 +43,22 @@
 				"sound_burst"		"Weapon_Sword.SwingCrit"
 				"sound_special1"	"Sword.Hit"
 				"sound_special2"	"Sword.Idle"
+				"styles"
+				{
+					"0"
+					{
+						"skin_red" "0"
+						"skin_blu" "1"
+						"selectable"	"0"
+					}
+					"1"
+					{
+						"skin_red"	"2"
+						"skin_blu"	"3"
+						"selectable"	"0"
+						"image_inventory"	"backpack/weapons/custommade/c_swordfish_gold"
+					}
+				}
 
 			}
 			"attributes"
@@ -92,6 +108,15 @@
 			"description_format"	"value_is_additive"
 			"hidden"	"1"
 			"effect_type"	"positive"
+			"stored_as_integer"	"0"
+		}
+		"4001"
+		{
+			"name"	"sniperrifle has laser pointer"
+			"attribute_class"	"sniper_has_laserdot"
+			"description_format"	"value_is_additive"
+			"hidden"	"1"
+			"effect_type"	"negative"
 			"stored_as_integer"	"0"
 		}
 	}

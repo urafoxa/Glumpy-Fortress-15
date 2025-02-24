@@ -7,7 +7,6 @@
 //	"$normalmapalphaenvmapmask" "1"
 
 	"$phong" "1"
-	"$basemapalphaphongmask" 1
 	"$phongexponenttexture" "models\workshop\weapons\c_models\c_swordfish\c_swordfish_exponent"
 	"$phongboost" "15"	
 	"$lightwarptexture" "models\lightwarps\weapon_lightwarp"
