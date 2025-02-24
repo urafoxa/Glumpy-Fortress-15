@@ -790,6 +790,7 @@ IMPLEMENT_SERVERCLASS_ST( CTFPlayer, DT_TFPlayer )
 
 	SendPropBool(SENDINFO(m_bSaveMeParity)),
 	SendPropBool(SENDINFO(m_bIsMiniBoss)),
+	SendPropBool(SENDINFO(m_bUsesGiantSounds)),
 	SendPropBool(SENDINFO(m_bIsABot)),
 	SendPropInt( SENDINFO(m_nBotSkill), 3, SPROP_UNSIGNED ),
 
