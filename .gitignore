@@ -511,3 +511,13 @@ game/mod_tf/media/viewed.res
 game/mod_tf/cfg/user.scr
 game/mod_tf/cfg/settings.scr
 game/mod_tf/cfg/local_loadout.txt
+game/mod_tf/scenes/srcfiles/zstd.dll
+game/mod_tf/scenes/srcfiles/Vsif2vcd.exe
+game/mod_tf/scenes/srcfiles/scenes.image
+game/mod_tf/scenes/srcfiles/hllib.dll
+game/mod_tf/scenes/srcfiles/fmt.dll
+game/mod_tf/scenes/srcfiles/boost_system-vc143-mt-x64-1_86.dll
+game/mod_tf/scenes/srcfiles/boost_regex-vc143-mt-x64-1_86.dll
+game/mod_tf/scenes/srcfiles/boost_random-vc143-mt-x64-1_86.dll
+game/mod_tf/scenes/srcfiles/boost_iostreams-vc143-mt-x64-1_86.dll
+game/mod_tf/scenes/a31/jokes/aftermath/ss_eli_vegetable.vcd

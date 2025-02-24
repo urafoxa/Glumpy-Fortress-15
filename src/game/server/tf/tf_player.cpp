@@ -13039,6 +13039,7 @@ void CTFPlayer::Event_Killed( const CTakeDamageInfo &info )
 
 	// make sure to remove custom attributes
 	RemoveAllCustomAttributes();
+	MVM_StopIdleSound();
 }
 
 struct SkillRatingAttackRecord_t
@@ -20635,6 +20636,68 @@ void CTFPlayer::SaveLastWeaponSlot( void )
 		{
 			m_iLastWeaponSlot = 1;
 		}
+	}
+}
+//-----------------------------------------------------------------------------
+// MVM Port
+// ----------------------------------------------------------------------------
+void CTFPlayer::MVM_StartIdleSound(void)
+{
+	MVM_StopIdleSound();
+
+
+	// SHIELD YOUR EYES MIKEB!!!
+	if (IsMiniBoss())
+	{
+		const char* pszSoundName = NULL;
+
+		int iClass = GetPlayerClass()->GetClassIndex();
+		switch (iClass)
+		{
+		case TF_CLASS_HEAVYWEAPONS:
+		{
+			pszSoundName = "MVM.GiantHeavyLoop";
+			break;
+		}
+		case TF_CLASS_SOLDIER:
+		{
+			pszSoundName = "MVM.GiantSoldierLoop";
+			break;
+		}
+		case TF_CLASS_DEMOMAN:
+		{
+			pszSoundName = "MVM.GiantDemomanLoop";
+			break;
+		}
+		case TF_CLASS_SCOUT:
+		{
+			pszSoundName = "MVM.GiantScoutLoop";
+			break;
+		}
+		case TF_CLASS_PYRO:
+		{
+			pszSoundName = "MVM.GiantPyroLoop";
+			break;
+		}
+		}
+
+		if (pszSoundName)
+		{
+			CReliableBroadcastRecipientFilter filter;
+			CSoundEnvelopeController& controller = CSoundEnvelopeController::GetController();
+			m_pGiantIdleSound = controller.SoundCreate(filter, entindex(), pszSoundName);
+			controller.Play(m_pGiantIdleSound, 1.0, 100);
+		}
+	}
+}
+
+//-----------------------------------------------------------------------------------------
+void CTFPlayer::MVM_StopIdleSound(void)
+{
+	if (m_pGiantIdleSound)
+	{
+		CSoundEnvelopeController::GetController().SoundDestroy(m_pGiantIdleSound);
+		m_pGiantIdleSound = NULL;
 	}
 }
 
