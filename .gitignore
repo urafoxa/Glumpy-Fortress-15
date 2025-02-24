@@ -505,3 +505,9 @@ FodyWeavers.xsd
 
 # Custom
 game/mod_tf/custom/
+game/mod_tf/tf2_playerstats.dmx
+game/mod_tf/ServerConfig.vdf
+game/mod_tf/media/viewed.res
+game/mod_tf/cfg/user.scr
+game/mod_tf/cfg/settings.scr
+game/mod_tf/cfg/local_loadout.txt

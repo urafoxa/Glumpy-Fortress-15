@@ -18,7 +18,7 @@
 	}
 	"pl_upward"
 	{
-		"viewed"		"5"
+		"viewed"		"6"
 	}
 	"pass_timbertown"
 	{
@@ -43,5 +43,9 @@
 	"koth_sharkbay"
 	{
 		"viewed"		"5"
+	}
+	"ctf_2fort"
+	{
+		"viewed"		"1"
 	}
 }
