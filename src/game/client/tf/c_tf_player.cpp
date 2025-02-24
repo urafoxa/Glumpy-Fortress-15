@@ -3701,6 +3701,7 @@ IMPLEMENT_CLIENTCLASS_DT( C_TFPlayer, DT_TFPlayer, CTFPlayer )
 
 	RecvPropBool(RECVINFO(m_bSaveMeParity)),
 	RecvPropBool(RECVINFO(m_bIsMiniBoss)),
+	RecvPropBool(RECVINFO(m_bUsesGiantSounds)),
 	RecvPropBool(RECVINFO(m_bIsABot)),
 	RecvPropInt(RECVINFO(m_nBotSkill)),
 

@@ -83,6 +83,18 @@
 			"xifier_class_remap"	"eyelander"
 		}	
 	}
+	"attributes"
+	{
+		"4000"
+		{
+			"name"	"override voice sound set"
+			"attribute_class"	"override_voice_sound_set"
+			"description_format"	"value_is_additive"
+			"hidden"	"1"
+			"effect_type"	"positive"
+			"stored_as_integer"	"0"
+		}
+	}
 	"items"
 	{
 		"850"

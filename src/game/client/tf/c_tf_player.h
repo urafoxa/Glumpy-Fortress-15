@@ -663,6 +663,7 @@ public:
 	bool			m_bArenaSpectator;
 
 	bool			m_bIsMiniBoss;
+	bool			m_bUsesGiantSounds;
 	bool			m_bIsABot;
 	int				m_nBotSkill;
 	int				m_nOldBotSkill;

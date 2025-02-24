@@ -18,7 +18,7 @@
 	}
 	"pl_upward"
 	{
-		"viewed"		"13"
+		"viewed"		"14"
 	}
 	"pass_timbertown"
 	{
@@ -45,6 +45,10 @@
 		"viewed"		"5"
 	}
 	"ctf_2fort"
+	{
+		"viewed"		"2"
+	}
+	"mvm_decoy"
 	{
 		"viewed"		"1"
 	}

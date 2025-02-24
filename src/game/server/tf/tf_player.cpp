@@ -15438,16 +15438,41 @@ void CTFPlayer::DeathSound( const CTakeDamageInfo &info )
 //-----------------------------------------------------------------------------
 const char* CTFPlayer::GetSceneSoundToken( void )
 {
-	if ( TFGameRules() && TFGameRules()->IsMannVsMachineMode() && GetTeamNumber() == TF_TEAM_PVE_INVADERS )
+	enum
 	{
-		if ( IsMiniBoss() )
+		kVoiceSoundSet_Default = 0,
+		kVoiceSoundSet_Robot = 1,
+		kVoiceSoundSet_RobotMighty = 2,
+	};
+
+	int iOverrideVoiceSoundSet = kVoiceSoundSet_Default;
+	CALL_ATTRIB_HOOK_INT(iOverrideVoiceSoundSet, override_voice_sound_set);
+
+	if (iOverrideVoiceSoundSet == kVoiceSoundSet_Default)
+	{
+		if (TFGameRules() && TFGameRules()->IsMannVsMachineMode() && GetTeamNumber() == TF_TEAM_PVE_INVADERS)
 		{
-			return "M_MVM_";
+			if (IsMiniBoss())
+			{
+				return "M_MVM_";
+			}
+			else
+			{
+				return "MVM_";
+			}
 		}
 		else
 		{
-			return "MVM_";
+			return "";
 		}
+	}
+	else if (iOverrideVoiceSoundSet == kVoiceSoundSet_Robot)
+	{
+		return "MVM_";
+	}
+	else if (iOverrideVoiceSoundSet == kVoiceSoundSet_Robot)
+	{
+		return "M_MVM_";
 	}
 	else
 	{
