@@ -1662,10 +1662,12 @@ bool CSniperDot::ShouldDraw( void )
 
 void CSniperDot::ClientThink( void )
 {
+	C_TFPlayer* pPlayer = ToTFPlayer(GetOwnerEntity());
+	int bHasMvmLaser = 0;
+	CALL_ATTRIB_HOOK_INT_ON_OTHER(pPlayer, bHasMvmLaser, sniper_has_laserdot);
 	// snipers have laser sights in PvE mode
-	if ( TFGameRules()->IsPVEModeActive() && GetTeamNumber() == TF_TEAM_PVE_INVADERS )
+	if ( TFGameRules()->IsPVEModeActive() && GetTeamNumber() == TF_TEAM_PVE_INVADERS || bHasMvmLaser)
 	{
-		C_TFPlayer *pPlayer = ToTFPlayer( GetOwnerEntity() );
 		if ( pPlayer )
 		{
 			if ( !m_laserBeamEffect )

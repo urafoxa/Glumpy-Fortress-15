@@ -32,7 +32,7 @@
 
 
 // Half-Life User Info Configuration Layout Script (stores last settings chosen, too)
-// File generated:  Sun Feb 23 18:49:13 AM
+// File generated:  Mon Feb 24 22:26:58 AM
 //
 //
 // Cvar	-	Setting
@@ -464,7 +464,7 @@ DESCRIPTION INFO_OPTIONS
 		"#TF_RomeVisionOptIn"
 		"#Tooltip_RomeVisionOptIn"
 		{ BOOL }
-		{ "0" }
+		{ "1" }
 	}
 
 	"tf_hud_target_id_disable_floating_health"
@@ -672,7 +672,7 @@ DESCRIPTION INFO_OPTIONS
 		"#TF_use_min_viewmodels_option"
 		"#Tooltip_use_min_viewmodels_option"
 		{ BOOL }
-		{ "0" }
+		{ "1" }
 	}
 
 	"cl_spraydisable"

@@ -114,6 +114,8 @@ public:
 	virtual float GetProjectileDamage( void );
 	virtual int	GetDamageType() const;
 	int		GetRifleType( void ) const { int iMode = 0; CALL_ATTRIB_HOOK_INT( iMode, set_weapon_mode ); return iMode; };
+	bool		HasMVMLaser(void) const { int iLaserMVM = 0; CALL_ATTRIB_HOOK_INT(iLaserMVM, sniper_has_laserdot); return (iLaserMVM == 1); };
+
 
 	virtual void WeaponReset( void );
 
