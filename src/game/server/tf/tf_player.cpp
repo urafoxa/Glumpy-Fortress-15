@@ -15470,7 +15470,7 @@ const char* CTFPlayer::GetSceneSoundToken( void )
 	{
 		return "MVM_";
 	}
-	else if (iOverrideVoiceSoundSet == kVoiceSoundSet_Robot)
+	else if (iOverrideVoiceSoundSet == kVoiceSoundSet_RobotMighty)
 	{
 		return "M_MVM_";
 	}
