@@ -4,12 +4,16 @@ for example, Custom map titles, killicons, and so on.
 
 currently features:
 ## Player
+- GiveItem (I/O and Command)
 - Penetration kill sound toggle cvar
 - Voice spamm and delay
 - Custom Responses
 - GiveItem input and console command
 ## Items
 - "Addon" items_game loader (BetaM)
+## Attributes
+- [4000] | override voice sound set | 0 off, 1 robot, 2 giant robot
+- [4001] | sniperrifle has laser pointer | MVM bot lasers now usable with the atribute too!
 ## Custom Items - W weapon , C cosmetic
 - [W] 32000 The Holy Marlin (Altranade)
 - [W] 31999 Super Maul (TEST ITEM)
