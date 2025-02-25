@@ -10,16 +10,18 @@ currently features:
 - Custom Responses
 - GiveItem input and console command
 ## NPC's
-- HHH has now an hammer keyvalue (from halloween 2014) | ```hasmallet```
+### Horseless Headless Horsemann
+- Now features an hammer keyvalue (from halloween 2014) | ```hasmallet```
 ## Items
 - "Addon" items_game loader (BetaM)
-## Attributes
+### Attributes
 - [4000] | override voice sound set | 0 off, 1 robot, 2 giant robot
 - [4001] | sniperrifle has laser pointer | MVM bot lasers now usable with the atribute too!
-## Custom Items - W weapon , C cosmetic
+### Custom Items - W weapon , C cosmetic
 - [W] 32000 The Holy Marlin (Altranade)
 - [W] 31999 Super Maul (TEST ITEM)
-## Robot Destruction
+## Gamemodes
+### Robot Destruction
 - Edit Blu/Red score via Input
 - Removed the 0 cap limit on flags to allow scoring negative points
 
