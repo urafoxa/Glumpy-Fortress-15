@@ -64,4 +64,8 @@
 	{
 		"viewed"		"1"
 	}
+	"sd_doomsday_event"
+	{
+		"viewed"		"1"
+	}
 }
