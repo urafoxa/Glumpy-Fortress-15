@@ -54,7 +54,7 @@ CHeadlessHatman::CHeadlessHatman()
 	m_intention = new CHeadlessHatmanIntention( this );
 	m_locomotor = new CHeadlessHatmanLocomotion( this );
 	m_body = new CHeadlessHatmanBody( this );
-	m_bMallet = false;
+	m_bMallet = TFGameRules()->IsHalloweenScenario(CTFGameRules::HALLOWEEN_SCENARIO_DOOMSDAY);
 }
 
 
