@@ -12267,6 +12267,10 @@ const char *CTFGameRules::GetKillingWeaponName( const CTakeDamageInfo &info, CTF
 	{
 		killer_weapon_name = "headtaker";
 	}
+	else if (info.GetDamageCustom() == TF_DMG_CUSTOM_DECAPITATION_BOSS_HAMMER)
+	{
+		killer_weapon_name = "necro_smasher";
+	}
 	else if ( info.GetDamageCustom() == TF_DMG_CUSTOM_EYEBALL_ROCKET )
 	{
 		killer_weapon_name = "eyeball_rocket";

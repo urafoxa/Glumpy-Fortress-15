@@ -18,7 +18,7 @@
 	}
 	"pl_upward"
 	{
-		"viewed"		"22"
+		"viewed"		"25"
 	}
 	"pass_timbertown"
 	{
@@ -49,6 +49,18 @@
 		"viewed"		"2"
 	}
 	"mvm_decoy"
+	{
+		"viewed"		"1"
+	}
+	"pl_goldrush"
+	{
+		"viewed"		"2"
+	}
+	"cp_dustbowl"
+	{
+		"viewed"		"1"
+	}
+	"cp_manor_event"
 	{
 		"viewed"		"1"
 	}
