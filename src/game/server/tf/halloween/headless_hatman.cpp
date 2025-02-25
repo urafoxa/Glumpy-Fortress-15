@@ -39,7 +39,7 @@ LINK_ENTITY_TO_CLASS( headless_hatman, CHeadlessHatman );
 
 BEGIN_DATADESC(CHeadlessHatman)
 
-	DEFINE_KEYFIELD( m_bMallet, FIELD_BOOLEAN, "hasmallet"),
+	DEFINE_KEYFIELD( m_bMallet, FIELD_BOOLEAN, "mallet"),
 
 END_DATADESC();
 

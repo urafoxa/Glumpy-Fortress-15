@@ -169,12 +169,11 @@ CON_COMMAND_F ( tf_test_bomb, "Test halloween bomb", 0 )
 
 	pPlayer->CreateBombonomiconHint();
 }
-#endif
 ConVar test_vision_off( "test_vision_off", "0", FCVAR_NONE, "Force vision modes off!", VisionMode_ChangeCallback );
 ConVar test_pyrovision( "test_pyrovision", "0", FCVAR_NONE, "Force Pyrovision on!", VisionMode_ChangeCallback );
 ConVar test_romevision( "test_romevision", "0", FCVAR_NONE, "Force Romevision on!", VisionMode_ChangeCallback );
 ConVar test_halloweenvision( "test_halloweenvision", "0", FCVAR_NONE, "Force halloween vision on!", VisionMode_ChangeCallback );
-
+#endif
 
 // These are all permanently STAGING_ONLY
 
