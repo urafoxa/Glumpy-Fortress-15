@@ -9,6 +9,8 @@ currently features:
 - Voice spamm and delay
 - Custom Responses
 - GiveItem input and console command
+## NPC's
+- HHH has now an hammer keyvalue (from halloween 2014) | ```hasmallet```
 ## Items
 - "Addon" items_game loader (BetaM)
 ## Attributes
