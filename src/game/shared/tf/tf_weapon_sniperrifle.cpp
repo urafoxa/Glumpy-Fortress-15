@@ -1672,13 +1672,20 @@ void CSniperDot::ClientThink( void )
 		{
 			if ( !m_laserBeamEffect )
 			{
-				m_laserBeamEffect = ParticleProp()->Create( "laser_sight_beam", PATTACH_ABSORIGIN_FOLLOW );
+				m_laserBeamEffect = ParticleProp()->Create("laser_sight_beam", PATTACH_ABSORIGIN_FOLLOW);
 			}
 
 			if ( m_laserBeamEffect )
 			{
 				m_laserBeamEffect->SetSortOrigin( m_laserBeamEffect->GetRenderOrigin() );
-				m_laserBeamEffect->SetControlPoint( 2, Vector( 0, 0, 255 ) );
+				if (GetTeamNumber() == TF_TEAM_BLUE)
+				{
+					m_laserBeamEffect->SetControlPoint(2, Vector(0, 0, 255));
+				}
+				else
+				{
+					m_laserBeamEffect->SetControlPoint(2, Vector(255, 0, 0));
+				}
 
 				Vector vecAttachment;
 				Vector vecEndPos;
