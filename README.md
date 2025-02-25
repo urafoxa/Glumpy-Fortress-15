@@ -11,7 +11,7 @@ currently features:
 - GiveItem input and console command
 ## NPC's
 ### Horseless Headless Horsemann
-- Now features an hammer keyvalue (from halloween 2014) | ```hasmallet```
+- Now features an hammer keyvalue (from halloween 2014) | ```mallet```
 ## Items
 - "Addon" items_game loader (BetaM)
 ### Attributes
