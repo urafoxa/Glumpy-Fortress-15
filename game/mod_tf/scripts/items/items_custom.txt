@@ -122,25 +122,6 @@
 	}
 	"items"
 	{
-		"850"
-		{
-			"name"			"Deflector"
-			"prefab"		"weapon_minigun"
-			"craft_class"	""
-			"baseitem"		"0"
-			"show_in_armory"	"0"
-			"item_name"		"#TF_Minigun_Deflector"
-			"item_quality"	"unique"
-			"visuals"
-			{
-				"tracer_effect"	"bullet_tracer02"
-				"sound_double_shot"	"MVM.GiantHeavyGunFire"
-				"sound_burst"		"MVM.GiantHeavyGunFire"
-				"sound_special1"	"MVM.GiantHeavyGunWindUp"
-				"sound_special2"	"MVM.GiantHeavyGunWindDown"
-				"sound_special3"	"MVM.GiantHeavyGunSpin"
-			}
-		}
 		//SWORDFISH
 		"32000"
 		{

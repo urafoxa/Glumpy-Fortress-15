@@ -547,3 +547,10 @@ game/mod_tf/materials/logo/Logo2.png
 game/mod_tf/cfg/server_blacklist.txt
 game/mod_tf/cfg/server_blacklist.txt
 game/mod_tf/cfg/server_blacklist.txt
+game/mod_tf/maps/graphs/rd_asteroidbv4.ain
+game/mod_tf/maps/graphs/rd_asteroidbv2.ain
+game/mod_tf/maps/graphs/pl_hoodoo_final.ain
+game/mod_tf/downloadlists/rd_asteroidbv4.lst
+game/mod_tf/downloadlists/rd_asteroidbv2.lst
+game/mod_tf/downloadlists/pl_hoodoo_final.lst
+game/mod_tf/ServerConfig.vdf

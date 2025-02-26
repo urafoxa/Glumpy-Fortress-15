@@ -18,7 +18,7 @@
 	}
 	"pl_upward"
 	{
-		"viewed"		"25"
+		"viewed"		"29"
 	}
 	"pass_timbertown"
 	{
@@ -54,7 +54,7 @@
 	}
 	"pl_goldrush"
 	{
-		"viewed"		"2"
+		"viewed"		"4"
 	}
 	"cp_dustbowl"
 	{
@@ -67,5 +67,17 @@
 	"sd_doomsday_event"
 	{
 		"viewed"		"1"
+	}
+	"pl_hoodoo_final"
+	{
+		"viewed"		"1"
+	}
+	"rd_asteroidbv4"
+	{
+		"viewed"		"1"
+	}
+	"rd_asteroidbv2"
+	{
+		"viewed"		"2"
 	}
 }
