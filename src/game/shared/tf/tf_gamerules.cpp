@@ -17413,11 +17413,13 @@ bool CTFGameRules::AllowWeatherParticles( void )
 
 bool CTFGameRules::AllowMapVisionFilterShaders( void )
 {
-	const char* pMapName = engine->GetLevelName();
+	if (m_bSupportsPyroland)
+		return true;
+	
 	if (!m_pkvVisionFilterShadersMapWhitelist && !m_bSupportsPyroland)
 		return false;
 	
-		
+	const char* pMapName = engine->GetLevelName();
 	while (pMapName && pMapName[0] != '\\' && pMapName[0] != '/')
 	{
 		pMapName++;
@@ -17427,8 +17429,7 @@ bool CTFGameRules::AllowMapVisionFilterShaders( void )
 		return false;
 
 	pMapName++;
-	if (m_bSupportsPyroland)
-		return true;
+
 
 	return  m_pkvVisionFilterShadersMapWhitelist->GetInt(pMapName, 0) != 0;
 
