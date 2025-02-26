@@ -11,6 +11,7 @@
 		"test_hardware"		1
 	}
 	nodegraph 				0
+	icon					"resource/icon"
 	GameData				"tf.fgd"
 	AdditionalLocalization	"tf"
 	InstancePath			"maps/instances/"
