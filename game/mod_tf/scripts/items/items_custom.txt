@@ -119,6 +119,15 @@
 			"effect_type"	"negative"
 			"stored_as_integer"	"0"
 		}
+		"4002"
+		{
+			"name"	"drops reviver machine"
+			"attribute_class"	"drops_reviver_machine"
+			"description_format"	"value_is_additive"
+			"hidden"	"1"
+			"effect_type"	"negative"
+			"stored_as_integer"	"0"
+		}
 	}
 	"items"
 	{

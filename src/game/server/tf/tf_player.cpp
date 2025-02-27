@@ -12296,6 +12296,13 @@ void CTFPlayer::Event_Killed( const CTakeDamageInfo &info )
 	}
 #endif // TF_RAID_MODE
 
+	// Reviver Attribute
+	bool iDropsReviver = 0;
+	CALL_ATTRIB_HOOK_INT(iDropsReviver, drops_reviver_machine);
+	if ( !m_hReviveMarker && iDropsReviver)
+	{
+		m_hReviveMarker = CTFReviveMarker::Create(this);
+	}
 	// PvE mode credits/currency
 	if ( TFGameRules()->IsMannVsMachineMode() )
 	{
@@ -12452,6 +12459,7 @@ void CTFPlayer::Event_Killed( const CTakeDamageInfo &info )
 				event->SetInt( "eventtype", TF_FLAGEVENT_DEFEND );
 				event->SetInt( "carrier", entindex() );
 				event->SetInt( "priority", 8 );
+				event->SetString("msg_defend", STRING( pCaptureFlag->m_iszDefendName ) );
 				event->SetInt( "team", pCaptureFlag->GetTeamNumber() );
 				gameeventmanager->FireEvent( event );
 			}

@@ -693,18 +693,18 @@ void CHudBaseDeathNotice::FireGameEvent( IGameEvent *event )
 				pszMsgKey = pszPickupText;
 			break;
 		case TF_FLAGEVENT_CAPTURE:
-			if (Q_strlen(pszPickupText) <= 0)
+			if (Q_strlen(pszCapturedText) <= 0)
 			{
 				if (bIsHalloween2014)
 					pszMsgKey = "#Msg_CapturedFlagHalloween2014";
 				else
 					pszMsgKey = "#Msg_CapturedFlag";
-				break;
 			}
 			else
 				pszMsgKey = pszCapturedText;
+			break;
 		case TF_FLAGEVENT_DEFEND:
-			if (Q_strlen(pszPickupText) <= 0)
+			if (Q_strlen(pszDefendText) <= 0)
 			{
 				if (bIsMvM)
 				{

@@ -46,7 +46,7 @@
 	}
 	"ctf_2fort"
 	{
-		"viewed"		"8"
+		"viewed"		"16"
 	}
 	"mvm_decoy"
 	{
@@ -89,6 +89,14 @@
 		"viewed"		"1"
 	}
 	"cp_vanguard"
+	{
+		"viewed"		"1"
+	}
+	"arena_watchtower"
+	{
+		"viewed"		"1"
+	}
+	"ctf_well"
 	{
 		"viewed"		"1"
 	}

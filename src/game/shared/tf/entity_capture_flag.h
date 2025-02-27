@@ -333,6 +333,10 @@ public:
 	const char		*GetPaperEffect( void );
 	void			GetTrailEffect( int nTeam, char *pchName, int nBuffSize );
 
+	string_t m_iszCaptureName;
+	string_t m_iszPickupName;
+	string_t m_iszDefendName;
+
 	int				GetPointValue() const { return m_nPointValue.Get(); }
 private:
 
@@ -370,11 +374,6 @@ private:
 	string_t m_iszHudIcon;
 	string_t m_iszPaperEffect;
 	string_t m_iszTrailEffect;
-
-
-	string_t m_iszCaptureName;
-	string_t m_iszPickupName;
-	string_t m_iszDefendName;
 
 	string_t m_iszTags;
 	CUtlStringList m_tags;

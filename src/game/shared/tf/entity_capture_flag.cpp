@@ -188,7 +188,7 @@ BEGIN_DATADESC( CCaptureFlag )
 	DEFINE_KEYFIELD( m_iszTags, FIELD_STRING, "tags" ),
 
 	// Killfeed custom text.
-	DEFINE_KEYFIELD( m_iszCaptureName, FIELD_STRING, "text_dropped" ),
+	DEFINE_KEYFIELD( m_iszCaptureName, FIELD_STRING, "text_captured" ),
 	DEFINE_KEYFIELD( m_iszPickupName, FIELD_STRING, "text_pickup" ),
 	DEFINE_KEYFIELD( m_iszDefendName, FIELD_STRING, "text_defend" ),
 

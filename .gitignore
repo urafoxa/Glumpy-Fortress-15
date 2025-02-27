@@ -685,3 +685,7 @@ game/mod_tf/materials/models/weapons/w_tranq/w_tranq.vtf
 game/mod_tf/materials/models/weapons/w_tranq/w_tranq_exponent.vtf
 game/mod_tf/materials/models/weapons/w_tranq/w_tranq_lightwarp.vtf
 game/mod_tf/materials/models/weapons/w_tranq/w_tranq_normal.vtf
+game/mod_tf/maps/graphs/ctf_well.ain
+game/mod_tf/maps/graphs/arena_watchtower.ain
+game/mod_tf/downloadlists/ctf_well.lst
+game/mod_tf/downloadlists/arena_watchtower.lst
