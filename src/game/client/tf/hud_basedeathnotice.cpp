@@ -661,6 +661,9 @@ void CHudBaseDeathNotice::FireGameEvent( IGameEvent *event )
 
 		const char *pszMsgKey = NULL;
 		int iEventType = event->GetInt( "eventtype" );
+		const char *pszPickupText = event->GetString( "msg_pickup", "");
+		const char *pszDefendText = event->GetString( "msg_defend", "");
+		const char *pszCapturedText = event->GetString( "msg_capture", "");
 
 		bool bIsMvM = TFGameRules() && TFGameRules()->IsMannVsMachineMode();
 		if ( bIsMvM )
@@ -679,10 +682,21 @@ void CHudBaseDeathNotice::FireGameEvent( IGameEvent *event )
 		switch ( iEventType )
 		{
 		case TF_FLAGEVENT_PICKUP: 
-			pszMsgKey = bIsHalloween2014 ? "#Msg_PickedUpFlagHalloween2014" : "#Msg_PickedUpFlag"; 
+			if ( strlen ( STRING (pszPickupText) ) <= 0)
+			{
+				if (bIsHalloween2014)
+					pszMsgKey = "#Msg_PickedUpFlagHalloween2014";
+				else
+					pszMsgKey = "#Msg_PickedUpFlag";
+			}
+			else
+				pszMsgKey = pszPickupText;
 			break;
 		case TF_FLAGEVENT_CAPTURE: 
-			pszMsgKey = bIsHalloween2014 ? "#Msg_CapturedFlagHalloween2014" : "#Msg_CapturedFlag"; 
+			if ( bIsHalloween2014 )
+				pszMsgKey = "#Msg_CapturedFlagHalloween2014";
+			else
+				pszMsgKey = "#Msg_CapturedFlag"; 
 			break;
 		case TF_FLAGEVENT_DEFEND: 
 			if ( bIsMvM )

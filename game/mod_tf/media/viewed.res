@@ -46,7 +46,7 @@
 	}
 	"ctf_2fort"
 	{
-		"viewed"		"2"
+		"viewed"		"8"
 	}
 	"mvm_decoy"
 	{
@@ -79,5 +79,17 @@
 	"rd_asteroidbv2"
 	{
 		"viewed"		"2"
+	}
+	"cp_yukon_final"
+	{
+		"viewed"		"1"
+	}
+	"cp_granary"
+	{
+		"viewed"		"1"
+	}
+	"cp_vanguard"
+	{
+		"viewed"		"1"
 	}
 }

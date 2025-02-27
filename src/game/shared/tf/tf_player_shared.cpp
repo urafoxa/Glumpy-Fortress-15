@@ -11891,6 +11891,7 @@ const char *CTFPlayer::GetOverrideStepSound( const char *pszBaseStepSoundName )
 		kFootstepSoundSet_SentryBuster = 7,
 		kFootstepSoundSet_TreasureChest = 8,
 		kFootstepSoundSet_Octopus = 9,
+		kFootstepSoundSet_MvmRobot = 10,
 	};
 
 	int iOverrideFootstepSoundSet = kFootstepSoundSet_Default;
@@ -11935,6 +11936,9 @@ const char *CTFPlayer::GetOverrideStepSound( const char *pszBaseStepSoundName )
 
 			//
 			{ kFootstepSoundSet_TreasureChest,	"",		"Chest.Step" },
+
+			// MVM standard robots
+			{ kFootstepSoundSet_MvmRobot,	"",		"MVM.BotStep" },
 		};
 
 		for ( int i = 0; i < ARRAYSIZE( s_ReplacementSounds ); i++ )
