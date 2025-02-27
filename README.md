@@ -16,7 +16,8 @@ currently features:
 - Now features an hammer keyvalue (from halloween 2014) | ```mallet```
 ## Items
 - "Addon" items_game loader (BetaM)
-### Attributes
+### Attributes | 🔧 Edited original one
+-🔧[330] | Added Robot Footsteps
 - [4000] | override voice sound set | 0 off, 1 robot, 2 giant robot
 - [4001] | sniperrifle has laser pointer | MVM bot lasers now usable with the atribute too!
 ### Custom Items - W weapon , C cosmetic
