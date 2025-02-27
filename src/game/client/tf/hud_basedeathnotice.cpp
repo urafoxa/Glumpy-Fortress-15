@@ -682,7 +682,7 @@ void CHudBaseDeathNotice::FireGameEvent( IGameEvent *event )
 		switch ( iEventType )
 		{
 		case TF_FLAGEVENT_PICKUP: 
-			if ( strlen ( STRING (pszPickupText) ) <= 0)
+			if (Q_strlen(pszPickupText) <= 0)
 			{
 				if (bIsHalloween2014)
 					pszMsgKey = "#Msg_PickedUpFlagHalloween2014";
@@ -692,23 +692,31 @@ void CHudBaseDeathNotice::FireGameEvent( IGameEvent *event )
 			else
 				pszMsgKey = pszPickupText;
 			break;
-		case TF_FLAGEVENT_CAPTURE: 
-			if ( bIsHalloween2014 )
-				pszMsgKey = "#Msg_CapturedFlagHalloween2014";
-			else
-				pszMsgKey = "#Msg_CapturedFlag"; 
-			break;
-		case TF_FLAGEVENT_DEFEND: 
-			if ( bIsMvM )
+		case TF_FLAGEVENT_CAPTURE:
+			if (Q_strlen(pszPickupText) <= 0)
 			{
-				pszMsgKey = "#Msg_DefendedBomb";
+				if (bIsHalloween2014)
+					pszMsgKey = "#Msg_CapturedFlagHalloween2014";
+				else
+					pszMsgKey = "#Msg_CapturedFlag";
+				break;
 			}
 			else
+				pszMsgKey = pszCapturedText;
+		case TF_FLAGEVENT_DEFEND:
+			if (Q_strlen(pszPickupText) <= 0)
 			{
-				pszMsgKey = bIsHalloween2014 ? "#Msg_DefendedFlagHalloween2014" : "#Msg_DefendedFlag";
+				if (bIsMvM)
+				{
+					pszMsgKey = "#Msg_DefendedBomb";
+				}
+				else
+				{
+					pszMsgKey = bIsHalloween2014 ? "#Msg_DefendedFlagHalloween2014" : "#Msg_DefendedFlag";
+				}
 			}
-
-
+			else
+				pszMsgKey = pszDefendText;
 			break;
 
 		// Add this when we can get localization for it
@@ -723,6 +731,7 @@ void CHudBaseDeathNotice::FireGameEvent( IGameEvent *event )
 		}
 
 		wchar_t *pwzEventText = g_pVGuiLocalize->Find( pszMsgKey );
+		wchar_t pszMsgKey2[256] = L"";
 		Assert( pwzEventText );
 		if ( pwzEventText )
 		{
@@ -730,7 +739,8 @@ void CHudBaseDeathNotice::FireGameEvent( IGameEvent *event )
 		}
 		else
 		{
-			V_memset( m_DeathNotices[iMsg].wzInfoText, 0, sizeof( m_DeathNotices[iMsg].wzInfoText ) );
+			g_pVGuiLocalize->ConvertANSIToUnicode( pszMsgKey, pszMsgKey2, sizeof(pszMsgKey2) );
+			V_wcsncpy( m_DeathNotices[iMsg].wzInfoText, pszMsgKey2, sizeof( m_DeathNotices[iMsg].wzInfoText ) );
 		}
 
 		int iPlayerIndex = event->GetInt( "player" );
