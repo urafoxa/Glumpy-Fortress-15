@@ -17,9 +17,9 @@ currently features:
 ## Items
 - "Addon" items_game loader (BetaM)
 ### Attributes | 🔧 Edited original one
--🔧[330] | Added Robot Footsteps
+- [330]🔧| Added Robot Footsteps
 - [4000] | override voice sound set | 0 off, 1 robot, 2 giant robot
-- [4001] | sniperrifle has laser pointer | MVM bot lasers now usable with the atribute too!
+- [4001] | sniperrifle has laser pointer | MVM bot lasers as an attribute
 ### Custom Items - W weapon , C cosmetic
 - [W] 32000 The Holy Marlin (Altranade)
 - [W] 31999 Super Maul (TEST ITEM)
