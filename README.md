@@ -24,6 +24,7 @@
 - [4000] | override voice sound set | 0 off, 1 robot, 2 giant robot
 - [4001] | sniperrifle has laser pointer | MVM bot lasers as an attribute
 - [4002] | drops reviver machine | Player drops the reviver from MVM
+- [4003] | medigun heals buildings | Restored leaked MVM attribute
 ### Custom Items - W weapon , C cosmetic
 - [W] 32000 The Holy Marlin (Altranade)
 - [W] 32001 The Underpressurer
