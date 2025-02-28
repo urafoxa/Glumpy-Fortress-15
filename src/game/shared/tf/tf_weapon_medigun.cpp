@@ -967,22 +967,20 @@ void CWeaponMedigun::HealTargetThink( void )
 
 	if ( !pTarget->IsPlayer() )
 	{
-		if ( TFGameRules() && TFGameRules()->GameModeUsesUpgrades() )
+		if ( IsAttachedToBuilding() )
 		{
-			if ( IsAttachedToBuilding() )
+			// Heal building
+			if ( m_hHealingTarget->GetHealth() < m_hHealingTarget->GetMaxHealth() )
 			{
-				// Heal building
-				if ( m_hHealingTarget->GetHealth() < m_hHealingTarget->GetMaxHealth() )
+				CBaseEntity *pEntity = m_hHealingTarget;
+				CBaseObject *pObject = dynamic_cast<CBaseObject*>( pEntity );
+				if ( pObject )
 				{
-					CBaseEntity *pEntity = m_hHealingTarget;
-					CBaseObject *pObject = dynamic_cast<CBaseObject*>( pEntity );
-					if ( pObject )
-					{
-						pObject->SetHealth( m_hHealingTarget->GetHealth() + ( GetHealRate() / 10.f ) );
-					}
+					pObject->SetHealth( m_hHealingTarget->GetHealth() + ( GetHealRate() / 10.f ) );
 				}
 			}
 		}
+	
 
 		CTFReviveMarker *pReviveMarker = dynamic_cast< CTFReviveMarker* >( pTarget );
 		if ( pReviveMarker )

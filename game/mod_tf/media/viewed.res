@@ -46,7 +46,7 @@
 	}
 	"ctf_2fort"
 	{
-		"viewed"		"17"
+		"viewed"		"18"
 	}
 	"mvm_decoy"
 	{
@@ -66,7 +66,7 @@
 	}
 	"sd_doomsday_event"
 	{
-		"viewed"		"1"
+		"viewed"		"2"
 	}
 	"pl_hoodoo_final"
 	{
