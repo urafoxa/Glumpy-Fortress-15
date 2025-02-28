@@ -128,6 +128,15 @@
 			"effect_type"	"negative"
 			"stored_as_integer"	"0"
 		}
+		"4003"
+		{
+			"name"	"medigun heals buildings"
+			"attribute_class"	"medic_machinery_beam"
+			"description_format"	"value_is_additive"
+			"hidden"	"1"
+			"effect_type"	"negative"
+			"stored_as_integer"	"0"
+		}
 	}
 	"items"
 	{

@@ -372,7 +372,7 @@ void CWeaponMedigun::Precache()
 	PrecacheScriptSound( "WeaponMedigun.HealingHealer" );
 	PrecacheScriptSound( "WeaponMedigun.HealingTarget" );
 	PrecacheScriptSound( "WeaponMedigun.HealingWorld" );
-	// PrecacheParticleSystem( "medicgun_beam_machinery" );
+	PrecacheParticleSystem( "medicgun_beam_machinery" );
 
 	for( int i=0; i<ARRAYSIZE(g_MedigunEffects); ++i )
 	{
@@ -602,6 +602,9 @@ bool CWeaponMedigun::AllowedToHealTarget( CBaseEntity *pTarget )
 		if ( !pTarget->InSameTeam( pOwner ) )
 			return false;
 
+		// MVM - Heal buildings
+		if ( pTarget->IsBaseObject() && IsAllowedToTargetBuildings() )
+			return true;
 		if ( pTarget->IsBaseObject() )
 			return false;
 
@@ -903,7 +906,10 @@ medigun_resist_types_t CWeaponMedigun::GetResistType() const
 //-----------------------------------------------------------------------------
 bool CWeaponMedigun::IsAllowedToTargetBuildings( void )
 {
-	return false;
+	int iHealBuildings = 0;
+	CALL_ATTRIB_HOOK_INT( iHealBuildings, medic_machinery_beam );
+	return iHealBuildings ? true : false;
+
 }
 
 //-----------------------------------------------------------------------------
@@ -961,6 +967,22 @@ void CWeaponMedigun::HealTargetThink( void )
 
 	if ( !pTarget->IsPlayer() )
 	{
+		if ( TFGameRules() && TFGameRules()->GameModeUsesUpgrades() )
+		{
+			if ( IsAttachedToBuilding() )
+			{
+				// Heal building
+				if ( m_hHealingTarget->GetHealth() < m_hHealingTarget->GetMaxHealth() )
+				{
+					CBaseEntity *pEntity = m_hHealingTarget;
+					CBaseObject *pObject = dynamic_cast<CBaseObject*>( pEntity );
+					if ( pObject )
+					{
+						pObject->SetHealth( m_hHealingTarget->GetHealth() + ( GetHealRate() / 10.f ) );
+					}
+				}
+			}
+		}
 
 		CTFReviveMarker *pReviveMarker = dynamic_cast< CTFReviveMarker* >( pTarget );
 		if ( pReviveMarker )

@@ -46,7 +46,7 @@
 	}
 	"ctf_2fort"
 	{
-		"viewed"		"16"
+		"viewed"		"17"
 	}
 	"mvm_decoy"
 	{
