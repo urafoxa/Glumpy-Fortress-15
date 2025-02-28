@@ -1,10 +1,9 @@
-# Pull requests testing grounds for TF2
-a Collection of changes that could end up in LIVE-TF2, the goal is to try making as much stuff as possible less hardcoded, to give mappers and vscripters more customization freedom
-for example, Custom map titles, killicons, and so on.
-This also features some community fixes which i DO NOT CLAIM as mine, but credit (if i forgot please tell)
+> [!NOTE]
+>Collection of changes that could end up in LIVE-TF2, the goal is to try making as much stuff as possible less hardcoded, to give mappers and vscripters more customization freedom for example, Custom map titles, killicons, and so on.
+> This also features some community fixes which i DO NOT CLAIM as mine, but credit (if i forgot please tell, as i am very clumsy and stupid sometimes).
 
+![new_tf2_logo](https://github.com/user-attachments/assets/7e53da2e-abd5-4d16-bbb3-7e37997372a5)
 # FEATURES:
-## Global 
 - Pyrovision Support keyvalue/netprop for tf_gamerules 
 ## Player
 - GiveItem (I/O and Command)
@@ -25,10 +24,9 @@ This also features some community fixes which i DO NOT CLAIM as mine, but credit
 - [W] 32000 The Holy Marlin (Altranade)
 - [W] 32001 The Underpressurer
 - [W] 31999 Super Maul (TEST ITEM)
-# Gamemode Changes
-### Shared
-- Flags now have custom Pickup,Defend,Captured Text in the killfeed | ```text_captured, text_pickup, text_defend```
-### Robot Destruction
+# Gamemode Changes/Improvements
+- Flags can now have custom Pickup,Defend,Captured Text in the killfeed | ```text_captured, text_pickup, text_defend```
+## Robot Destruction
 - Edit Blu/Red score via Input
 - Removed the 0 cap limit on flags to allow scoring negative points
 
