@@ -85,6 +85,13 @@ BEGIN_DATADESC( CTFRobotDestruction_RobotSpawn )
 	DEFINE_KEYFIELD( m_spawnData.m_pszGroupName, FIELD_STRING, "spawngroup" ),
 	DEFINE_KEYFIELD( m_spawnData.m_nNumGibs, FIELD_INTEGER, "gibs" ),
 	DEFINE_KEYFIELD( m_spawnData.m_pszPathName, FIELD_STRING, "startpath" ),
+	DEFINE_KEYFIELD( m_spawnData.m_bDispenser, FIELD_BOOLEAN, "dispenser"),
+	DEFINE_KEYFIELD( m_spawnData.m_bPanicmode, FIELD_BOOLEAN, "panicmode"),
+	DEFINE_KEYFIELD( m_spawnData.m_iszDeathSound, FIELD_STRING, "sound_death"),
+	DEFINE_KEYFIELD( m_spawnData.m_iszHurtSound, FIELD_STRING, "sound_hurt"),
+	DEFINE_KEYFIELD( m_spawnData.m_iszCollideSound, FIELD_STRING, "sound_collide"),
+	DEFINE_KEYFIELD( m_spawnData.m_iszIdleSound, FIELD_STRING, "sound_idle"),
+	DEFINE_KEYFIELD( m_spawnData.m_iszBoomSound, FIELD_STRING, "sound_boom"),
 
 	DEFINE_OUTPUT( m_OnRobotKilled, "OnRobotKilled" ),
 #endif

@@ -122,6 +122,7 @@ class CTFRobotDestruction_Robot;
 
 #ifdef GAME_DLL
 
+
 struct RobotSpawnData_t
 {
 	RobotSpawnData_t()
@@ -131,6 +132,14 @@ struct RobotSpawnData_t
 		, m_nNumGibs( 0 )
 		, m_pszPathName( NULL )
 		, m_pszGroupName( NULL )
+		, m_bDispenser ( true )
+		, m_bPanicmode ( true )
+		, m_iszDeathSound ("Robot.Death")
+		, m_iszHurtSound ("Robot.Pain")
+		, m_iszCollideSound ("Robot.Collide")
+		, m_iszIdleSound ("Robot.Greeting")
+		, m_iszBoomSound ("RD.BotDeathExplosion")
+
 	{}
 
 	RobotSpawnData_t &operator=( const RobotSpawnData_t& rhs )
@@ -141,6 +150,13 @@ struct RobotSpawnData_t
 		m_nNumGibs = rhs.m_nNumGibs;
 		m_pszPathName = rhs.m_pszPathName;
 		m_pszGroupName = rhs.m_pszGroupName;
+		m_bDispenser = rhs.m_bDispenser;
+		m_bPanicmode = rhs.m_bPanicmode;
+		m_iszDeathSound = rhs.m_iszDeathSound;
+		m_iszHurtSound = rhs.m_iszHurtSound;
+		m_iszCollideSound = rhs.m_iszCollideSound;
+		m_iszIdleSound = rhs.m_iszIdleSound;
+		m_iszBoomSound = rhs.m_iszBoomSound;
 
 		return *this;
 	}
@@ -151,6 +167,14 @@ struct RobotSpawnData_t
 	int m_nNumGibs;
 	const char *m_pszPathName;
 	const char *m_pszGroupName;
+	bool m_bDispenser;
+	bool m_bPanicmode;
+	const char *m_iszDeathSound;
+	const char *m_iszHurtSound;
+	const char *m_iszCollideSound;
+	const char *m_iszIdleSound;
+	const char *m_iszBoomSound;
+
 };
 
 //----------------------------------------------------------------------------
@@ -201,6 +225,7 @@ public:
 	virtual EventDesiredResult< CTFRobotDestruction_Robot > OnInjured( CTFRobotDestruction_Robot *me, const CTakeDamageInfo &info );
 	EventDesiredResult< CTFRobotDestruction_Robot > OnContact( CTFRobotDestruction_Robot *me, CBaseEntity *pOther, CGameTrace *result = NULL );
 	virtual const char *GetName( void ) const	{ return "RobotBehavior"; }		// return name of this action
+
 
 private:
 	CountdownTimer m_SpeakTimer;
@@ -327,8 +352,20 @@ public:
 	void SetIsPanicked( bool bPanicked ) { m_bIsPanicked = bPanicked; }
 	bool GetIsPanicked( void ) const { return m_bIsPanicked; }
 
+	RobotSpawnData_t			m_spawnData;
+
 	//Inputs
 	void InputStopAndUseComputer( inputdata_t &inputdata );
+
+	const char* m_iszDeathSound;
+	const char* m_iszHurtSound;
+	const char* m_iszCollideSound;
+	const char* m_iszIdleSound;
+	const char* m_iszBoomSound;
+	
+	//Outputs
+	COutputEvent m_OnPanicStart;
+	COutputEvent m_OnPanicEnd;
 private:
 
 	void PlayDeathEffects( void );
@@ -351,7 +388,6 @@ private:
 	HPARTICLEFFECT	m_hDamagedParticleEffect;
 #else
 	CRobotDispenser				*m_pDispenser;
-	RobotSpawnData_t			m_spawnData;
 	CHandle< CPathTrack >		m_hNextPath;
 	int							m_nPointsSpewed;
 	IMPLEMENT_NETWORK_VAR_FOR_DERIVED( m_iHealth );
@@ -362,6 +398,7 @@ private:
 	CRobotLocomotion *m_locomotor;
 	CHeadlessHatmanBody *m_body;
 	bool m_bIsPanicked;
+
 #endif
 };
 

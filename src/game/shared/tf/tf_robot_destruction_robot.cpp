@@ -136,6 +136,9 @@ END_NETWORK_TABLE()
 BEGIN_DATADESC( CTFRobotDestruction_Robot )
 #ifdef GAME_DLL
 	DEFINE_INPUTFUNC( FIELD_VOID, "StopAndUseComputer", InputStopAndUseComputer ),
+
+	DEFINE_OUTPUT( m_OnPanicStart, "OnPanicStart" ),
+	DEFINE_OUTPUT( m_OnPanicEnd, "OnPanicEnd" ),
 #endif
 END_DATADESC()
 
@@ -227,12 +230,15 @@ void CTFRobotDestruction_Robot::Spawn()
 		CTFRobotDestructionLogic::GetRobotDestructionLogic()->RobotCreated( this );
 
 	// Create our dispenser	
-	m_pDispenser = dynamic_cast<CRobotDispenser*>( CreateEntityByName( "rd_robot_dispenser" ) );
-	Assert( m_pDispenser );
-	m_pDispenser->SetParent( this );
-	m_pDispenser->Spawn();
-	m_pDispenser->ChangeTeam( GetTeamNumber() );
-	m_pDispenser->OnGoActive();
+	if ( m_spawnData.m_bDispenser )
+	{
+		m_pDispenser = dynamic_cast<CRobotDispenser*>(CreateEntityByName("rd_robot_dispenser"));
+		Assert(m_pDispenser);
+		m_pDispenser->SetParent(this);
+		m_pDispenser->Spawn();
+		m_pDispenser->ChangeTeam(GetTeamNumber());
+		m_pDispenser->OnGoActive();
+	}
 #endif
 }
 
@@ -422,7 +428,7 @@ void CTFRobotDestruction_Robot::UpdateOnRemove( void )
 //-----------------------------------------------------------------------------
 void CTFRobotDestruction_Robot::PlayDeathEffects()
 {
-	EmitSound( g_RobotData[ GetRobotSpawnData().m_eType ]->GetStringData( RobotData_t::DEATH_SOUND_KEY ) ); 
+	EmitSound( m_iszDeathSound );
 	EmitSound( ROBOT_DEATH_EXPLOSION );
 	DispatchParticleEffect( DEATH_PARTICLE_EFFECT, GetAbsOrigin(), QAngle( 0,0,0 ) );
 }
@@ -982,6 +988,7 @@ class CRobotEnterPanic : public Action< CTFRobotDestruction_Robot >
 	{
 		if ( pMe->IsActivityFinished() )
 		{
+			pMe->m_OnPanicStart.FireOutput(pMe, pMe);
 			return ChangeTo( new CRobotPanic, "I've finished my enter panic sequence" );
 		}
 		
@@ -1008,6 +1015,7 @@ class CRobotLeavePanic : public Action< CTFRobotDestruction_Robot >
 	{
 		if ( pMe->IsActivityFinished() )
 		{
+			pMe->m_OnPanicEnd.FireOutput(pMe, pMe);
 			return Done( "I've finished my leave panic sequence" );
 		}
 		
@@ -1035,7 +1043,7 @@ ActionResult< CTFRobotDestruction_Robot > CRobotPanic::OnStart( CTFRobotDestruct
 
 	m_SpeakTimer.Start( 3.f );
 	const RobotSpawnData_t & data = pMe->GetRobotSpawnData();
-	pMe->EmitSound( g_RobotData[ data.m_eType ]->GetStringData( RobotData_t::HURT_SOUND_KEY ) );
+	pMe->EmitSound( pMe->m_spawnData.m_iszHurtSound );
 	
 	return Continue();
 }
@@ -1089,7 +1097,7 @@ EventDesiredResult< CTFRobotDestruction_Robot > CRobotPanic::OnInjured( CTFRobot
 	{
 		m_SpeakTimer.Start( RandomFloat( 1.5f, 2.f ) );
 		const RobotSpawnData_t & data = pMe->GetRobotSpawnData();
-		pMe->EmitSound( g_RobotData[ data.m_eType ]->GetStringData( RobotData_t::HURT_SOUND_KEY ) );
+		pMe->EmitSound( pMe->m_spawnData.m_iszHurtSound );
 	}
 
 	m_attackedTimer.Start( m_attackedTimer.GetCountdownDuration() );
@@ -1114,6 +1122,7 @@ ActionResult< CTFRobotDestruction_Robot > CRobotBehavior::OnStart( CTFRobotDestr
 	return Continue();
 }
 
+ConVar sv_rd_bots_STFU( "sv_rd_bots_STFU", "0", FCVAR_CHEAT );
 ActionResult< CTFRobotDestruction_Robot > CRobotBehavior::Update( CTFRobotDestruction_Robot *pMe, float interval )
 {
 	//const CKnownEntity *pThreat = pMe->GetVisionInterface()->GetPrimaryKnownThreat();
@@ -1121,6 +1130,7 @@ ActionResult< CTFRobotDestruction_Robot > CRobotBehavior::Update( CTFRobotDestru
 	//{
 	//	return SuspendFor( new CRobotAttackEnemy, "I see an enemy!" );
 	//}
+	if (!sv_rd_bots_STFU.GetBool())
 	{
 		// We've been wandering for a bit.  Speak!
 		if ( m_IdleSpeakTimer.IsElapsed() && m_SpeakTimer.IsElapsed() )
@@ -1128,7 +1138,7 @@ ActionResult< CTFRobotDestruction_Robot > CRobotBehavior::Update( CTFRobotDestru
 			m_SpeakTimer.Start( 1.f );
 			m_IdleSpeakTimer.Start( RandomFloat( 6.f, 10.f ) );
 			const RobotSpawnData_t & data = pMe->GetRobotSpawnData();
-			pMe->EmitSound( g_RobotData[ data.m_eType ]->GetStringData( RobotData_t::IDLE_SOUND_KEY ) ); 
+			pMe->EmitSound( pMe->m_spawnData.m_iszIdleSound );
 		}
 	}
 
@@ -1138,7 +1148,7 @@ ActionResult< CTFRobotDestruction_Robot > CRobotBehavior::Update( CTFRobotDestru
 
 EventDesiredResult< CTFRobotDestruction_Robot > CRobotBehavior::OnInjured( CTFRobotDestruction_Robot *pMe, const CTakeDamageInfo &info )
 {
-	return TrySuspendFor( new CRobotEnterPanic, RESULT_TRY, "I've been attacked" );
+		return TrySuspendFor( new CRobotEnterPanic, RESULT_TRY, "I've been attacked" );
 }
 
 
@@ -1150,7 +1160,7 @@ EventDesiredResult< CTFRobotDestruction_Robot > CRobotBehavior::OnContact( CTFRo
 
 		{
 			const RobotSpawnData_t & data = pMe->GetRobotSpawnData();
-			pMe->EmitSound( g_RobotData[ data.m_eType ]->GetStringData( RobotData_t::COLLIDE_SOUND_KEY ) );
+			pMe->EmitSound( pMe->m_spawnData.m_iszCollideSound );
 		}
 	}
 

@@ -229,9 +229,9 @@ CHudMainMenuOverride::CHudMainMenuOverride( IViewPort *pViewPort ) : BaseClass( 
 	m_pNotificationsControl = NotificationQueue_CreateMainMenuUIElement( m_pNotificationsPanel, "Notifications_Control" );
 	m_pNotificationsScroller = new vgui::ScrollableEditablePanel( m_pNotificationsPanel, m_pNotificationsControl, "Notifications_Scroller" );
 
-	m_pNotificationsPanel->SetVisible(false);
-	m_pNotificationsControl->SetVisible(false);
-	m_pNotificationsScroller->SetVisible(false);
+	m_pNotificationsPanel->SetVisible( true );
+	m_pNotificationsControl->SetVisible( true );
+	m_pNotificationsScroller->SetVisible( true );
 
 	m_iNumNotifications = 0;
 
@@ -1578,8 +1578,6 @@ void CHudMainMenuOverride::UpdateNotifications()
 //-----------------------------------------------------------------------------
 void CHudMainMenuOverride::SetNotificationsButtonVisible( bool bVisible )
 {
-	return;
-
 	if ( bVisible && ( m_pNotificationsPanel && m_pNotificationsPanel->IsVisible() ) )
 		return;
 
@@ -1601,7 +1599,6 @@ void CHudMainMenuOverride::SetNotificationsButtonVisible( bool bVisible )
 //-----------------------------------------------------------------------------
 void CHudMainMenuOverride::SetNotificationsPanelVisible( bool bVisible )
 {
-	return;
 
 	if ( m_pNotificationsPanel )
 	{
@@ -1620,8 +1617,8 @@ void CHudMainMenuOverride::SetNotificationsPanelVisible( bool bVisible )
 			m_pNotificationsScroller->GetScrollbar()->InvalidateLayout();
 			m_pNotificationsScroller->GetScrollbar()->SetValue( 0 );
 
-			SetMOTDVisible( false );
-			SetQuestMapVisible( false );
+			SetMOTDVisible( true );
+			SetQuestMapVisible( true );
 			//SetWatchStreamVisible( false );
 
 			m_pNotificationsShowPanel->SetVisible( false );

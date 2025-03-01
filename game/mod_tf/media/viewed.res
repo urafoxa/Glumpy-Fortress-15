@@ -14,7 +14,7 @@
 	}
 	"rd_asteroid"
 	{
-		"viewed"		"25"
+		"viewed"		"31"
 	}
 	"pl_upward"
 	{
