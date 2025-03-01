@@ -34,6 +34,11 @@
 ## Robot Destruction
 - Edit Blu/Red score via Input
 - Removed the 0 cap limit on flags to allow scoring negative points
+- Implemented **RUDE** Cvar to silence the robots from the Leak
+### The Robots
+- Customizable sounds (Death,Hurt,Collide,Idle)
+- Spawn with Dispenser Y/N
+- OnPanicStart, OnPanicEnd Outputs
 
 ## License
 The SDK is licensed to users on a non-commercial basis under the [SOURCE 1 SDK LICENSE](LICENSE), which is contained in the [LICENSE](LICENSE) file in the root of the repository.
