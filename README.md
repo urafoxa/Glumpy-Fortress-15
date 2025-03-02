@@ -8,6 +8,7 @@
 
 ![new_tf2_logo](https://github.com/user-attachments/assets/7e53da2e-abd5-4d16-bbb3-7e37997372a5)
 # FEATURES:
+- External scenes loader  (Mapbase | .VCD, Faceposer stuff)
 - Pyrovision Support keyvalue/netprop for tf_gamerules 
 ## Player
 - GiveItem (I/O and Command)
@@ -19,6 +20,8 @@
 - Now features an hammer keyvalue (from halloween 2014) | ```mallet```
 ## Items
 - "Addon" items_game loader (BetaM)
+- Reserve Shooter 🔧 | Engineer and Heavy can use it
+- The Winger, Prettyboy Pocket Pistol | Engineer can use it
 ### Attributes | 🔧 Edited original one
 - [330]🔧| Added Robot Footsteps | 10
 - [4000] | override voice sound set | 0 off, 1 robot, 2 giant robot
