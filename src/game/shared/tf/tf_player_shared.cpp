@@ -179,6 +179,7 @@ ConVar tf_feign_death_duration( "tf_feign_death_duration", "3.0", FCVAR_REPLICAT
 ConVar tf_feign_death_speed_duration( "tf_feign_death_speed_duration", "3.0", FCVAR_REPLICATED | FCVAR_DEVELOPMENTONLY | FCVAR_CHEAT, "Time that feign death speed boost last." );
 
 ConVar tf_allow_taunt_switch( "tf_allow_taunt_switch", "0", FCVAR_REPLICATED, "0 - players are not allowed to switch weapons while taunting, 1 - players can switch weapons at the start of a taunt (old bug behavior), 2 - players can switch weapons at any time during a taunt." );
+ConVar tf_burning_ragdolls("tf_burning_ragdolls", "1", FCVAR_REPLICATED | FCVAR_CHEAT, "Burning deathanimations");
 
 ConVar tf_allow_all_team_partner_taunt( "tf_allow_all_team_partner_taunt", "1", FCVAR_REPLICATED | FCVAR_DEVELOPMENTONLY );
 
@@ -13249,10 +13250,13 @@ int CTFPlayerShared::GetSequenceForDeath( CBaseAnimating* pRagdoll, bool bBurnin
 	}
 
 	int iDeathSeq = -1;
-// 	if ( bBurning )
-// 	{
-// 		iDeathSeq = pRagdoll->LookupSequence( "primary_death_burning" );
-// 	}
+	if ( tf_burning_ragdolls.GetBool() )
+	{
+		if (bBurning)
+		{
+			iDeathSeq = pRagdoll->LookupSequence("primary_death_burning");
+		}
+	}
 
 	switch ( nCustomDeath )
 	{

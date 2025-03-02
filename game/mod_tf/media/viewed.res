@@ -18,7 +18,7 @@
 	}
 	"pl_upward"
 	{
-		"viewed"		"29"
+		"viewed"		"38"
 	}
 	"pass_timbertown"
 	{
@@ -99,5 +99,9 @@
 	"ctf_well"
 	{
 		"viewed"		"1"
+	}
+	"ctf_foundry"
+	{
+		"viewed"		"12"
 	}
 }
