@@ -32,7 +32,7 @@
 
 
 // Half-Life User Info Configuration Layout Script (stores last settings chosen, too)
-// File generated:  Tue Feb 25 02:12:29 AM
+// File generated:  Mon Mar  3 22:56:10 AM
 //
 //
 // Cvar	-	Setting
@@ -98,7 +98,7 @@ DESCRIPTION INFO_OPTIONS
 		"#TF_Hitbeeps"
 		"#Tooltip_HitbeepsBurning"
 		{ BOOL }
-		{ "0" }
+		{ "1" }
 	}
 
 	"tf_dingaling_volume"

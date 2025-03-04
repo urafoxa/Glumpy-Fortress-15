@@ -696,3 +696,14 @@ game/mod_tf/media/baby.webm
 game/mod_tf/ServerConfig.vdf
 game/mod_tf/downloadlists/ctf_foundry.lst
 game/mod_tf/media/startupvids.txt
+game/mod_tf/materials/backpack/player/taunts/gangnam_ref.pdn
+game/mod_tf/materials/backpack/player/taunts/gangnam.png
+game/mod_tf/materials/backpack/player/taunts/gangnam.pdn
+game/mod_tf/maps/graphs/pd_cursed_cove_event.ain
+game/mod_tf/scenes/player/heavy/low/taunt_yetipunch_outside.vcd
+game/mod_tf/scripts/vscripts/taunts.nut
+game/mod_tf/scenes/player/heavy/low/taunt_the_fist_bump_action.vcd
+game/mod_tf/scenes/player/heavy/low/taunt_the_fist_bump.vcd
+game/English.lnk
+game/mod_tf/scenes/player/heavy/low/taunt_yetipunch_outside.vcd
+game/mod_tf/scenes/player/heavy/low/gangnam_style.vcd

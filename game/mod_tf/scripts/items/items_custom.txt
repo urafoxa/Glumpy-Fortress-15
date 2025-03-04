@@ -361,73 +361,6 @@
 	}
 	"items"
 	{
-"1182"
-		{
-			"name"	"Taunt: Yeti Punch"
-			"prefab"	"valve taunt"
-			"first_sale_date"		"2017/09/13"
-			"item_name"			"#TF_YetiPunch"
-			"item_description"	"#TF_YetiPunch_Desc"
-			"ad_text"			"#TF_YetiPunch_AdText"
-			"image_inventory"	"backpack/player/items/all_class/taunt_yeti_punch"
-			"image_inventory_size_w"	"128"
-			"image_inventory_size_h"	"82"
-			"item_quality"		"unique"
-			"min_ilevel"	"1"
-			"max_ilevel"	"100"
-			"used_by_classes"
-			{
-				"scout"		"1"
-				"sniper"	"1"
-				"soldier"	"1"
-				"demoman"	"1"
-				"medic"		"1"
-				"heavy"		"1"
-				"spy" 		"1"
-				"engineer" 	"1"
-				"pyro" 		"1"
-			}
-			"taunt"
-			{
-				"stop_taunt_if_moved"	"1"
-				"custom_taunt_scene_per_class"
-				{
-					"scout"		"scenes/player/scout/low/taunt_yetipunch.vcd"
-					"sniper"	"scenes/player/sniper/low/taunt_yetipunch.vcd"
-					"soldier"	"scenes/player/soldier/low/taunt_yetipunch.vcd"
-					"demoman"	"scenes/player/demoman/low/taunt_yetipunch.vcd"
-					"medic"		"scenes/player/medic/low/taunt_yetipunch.vcd"
-					"heavy"		"scenes/player/heavy/low/taunt_yetipunch_outside.vcd"
-					"spy" 		"scenes/player/spy/low/taunt_yetipunch.vcd"
-					"engineer" 	"scenes/player/engineer/low/taunt_yetipunch.vcd"
-					"pyro" 		"scenes/player/pyro/low/taunt_yetipunch.vcd"
-				}
-				"custom_taunt_prop_per_class"
-				{
-					"scout"		"models/player/items/taunts/yeti_standee/yeti_standee.mdl"
-					"sniper"	"models/player/items/taunts/yeti_standee/yeti_standee.mdl"
-					"soldier"	"models/player/items/taunts/yeti_standee/yeti_standee.mdl"
-					"demoman"	"models/player/items/taunts/yeti_standee/yeti_standee.mdl"
-					"medic"		"models/player/items/taunts/yeti_standee/yeti_standee.mdl"
-					"heavy"		"models/player/items/taunts/yeti_standee/yeti_standee.mdl"
-					"spy" 		"models/player/items/taunts/yeti_standee/yeti_standee.mdl"
-					"engineer" 	"models/player/items/taunts/yeti_standee/yeti_standee.mdl"
-					"pyro" 		"models/player/items/taunts/yeti_standee/yeti_standee.mdl"
-				}
-				"custom_taunt_prop_scene_per_class"
-				{
-					"scout"		"scenes/player/items/taunts/yeti_standee_scoutbreak.vcd"
-					"sniper"	"scenes/player/items/taunts/yeti_standee_sniperbreak.vcd"
-					"soldier"	"scenes/player/items/taunts/yeti_standee_soldierbreak.vcd"
-					"demoman"	"scenes/player/items/taunts/yeti_standee_demobreak.vcd"
-					"medic"		"scenes/player/items/taunts/yeti_standee_medicbreak.vcd"
-					"heavy"		"scenes/player/items/taunts/yeti_standee_heavybreak.vcd"
-					"spy" 		"scenes/player/items/taunts/yeti_standee_spybreak.vcd"
-					"engineer" 	"scenes/player/items/taunts/yeti_standee_engineerbreak.vcd"
-					"pyro" 		"scenes/player/items/taunts/yeti_standee_pyrobreak.vcd"
-				}
-			}
-		}
 		"773"
 		{
 			"name" "Pretty Boy's Pocket Pistol"
@@ -507,6 +440,82 @@
 			}
 			"mouse_pressed_sound"	"ui/item_light_gun_pickup.wav"
 			"drop_sound"		"ui/item_light_gun_drop.wav"
+		}
+		//TAUNTS
+		"29000"
+		{
+			"name"	"Taunt: Gangnam Mercs"
+			"prefab"	"valve taunt"
+			"first_sale_date"		"2014/06/17"
+			"item_name"	"#TBF_TauntGangnam"
+			"item_description"	"#TBF_TauntGangnam_Desc"
+			"image_inventory"	"backpack/player/taunts/taunt_gangnam"
+			"image_inventory_size_w"	"128"
+			"image_inventory_size_h"	"82"
+			"item_quality"		"unique"
+			"min_ilevel"	"1"
+			"max_ilevel"	"100"
+			"valid_for_shuffle"	"1"
+			"used_by_classes"
+			{
+				"scout"	"1"
+				"sniper"	"1"
+				"soldier"	"1"
+				"demoman"	"1"
+				"medic"	"1"
+				"heavy"	"1"
+				"spy" "1"
+				"engineer" "1"
+				"pyro" "1"
+			}
+			"attributes"
+			{
+				"taunt is press and hold"
+				{
+					"attribute_class"	"enable_misc2_holdtaunt"
+					"value"				"1"
+				}
+				"taunt move speed"
+				{
+					"attribute_class"	"taunt_move_speed"
+					"value"				"75"
+				}
+				"taunt turn speed"
+				{
+					"attribute_class"	"taunt_turn_speed"
+					"value"				"75"
+				}
+				"taunt mimic"
+				{
+					"attribute_class"	"taunt_mimic"
+					"value"				"1"
+				}
+				"taunt success sound loop"
+				{
+					"attribute_class"	"taunt_success_sound_loop"
+					"value"				"music.gangnam_loop"
+				}
+			}
+			"taunt"
+			{
+				"custom_taunt_scene_per_class"
+				{
+					"scout"		"scenes\player\scout\low\betterfortress\taunt_gangnam.vcd"
+					"sniper"	"scenes\player\sniper\low\betterfortress\taunt_gangnam.vcd"
+					"soldier"	"scenes\player\soldier\low\betterfortress\taunt_gangnam.vcd"
+					"demoman"	"scenes\player\demoman\low\betterfortress\taunt_gangnam.vcd"
+					"medic"		"scenes\player\medic\low\betterfortress\taunt_gangnam.vcd"
+					"heavy"		"scenes\player\heavy\low\betterfortress\taunt_gangnam.vcd"
+					"spy"		"scenes\player\spy\low\betterfortress\taunt_gangnam.vcd"
+					"engineer"	"scenes\player\engineer\low\betterfortress\taunt_gangnam.vcd"
+					"pyro"		"scenes\player\pyro\low\betterfortress\taunt_gangnam.vcd"
+				}
+				"is_partner_taunt" "1"
+			}
+			"visuals"
+			{
+				"custom_sound0"		"music.gangnam_loop"
+			}
 		}
 		//SWORDFISH
 		"32000"

@@ -862,6 +862,14 @@ ConCommand cc_CreatePredictionError( "CreatePredictionError", cc_CreatePredictio
 
 // -------------------------------------------------------------------------------- //
 
+CON_COMMAND_F(give_taunt, "Taunt from ID", FCVAR_CHEAT)
+{
+	char pszTaunt[32];
+	V_sprintf_safe(pszTaunt, "taunt %d", args.ArgC());
+
+	CTFPlayer* pPlayer = ToTFPlayer(UTIL_GetCommandClient());
+}
+
 CON_COMMAND_F(give_econ, "Give ECON item with specified ID from item schema.\nFormat: <id> <classname> <attribute1> <value1> <attribute2> <value2> ... <attributeN> <valueN>", FCVAR_CHEAT)
 {
 	if (args.ArgC() < 2)

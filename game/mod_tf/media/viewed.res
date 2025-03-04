@@ -18,7 +18,7 @@
 	}
 	"pl_upward"
 	{
-		"viewed"		"38"
+		"viewed"		"39"
 	}
 	"pass_timbertown"
 	{
@@ -46,7 +46,7 @@
 	}
 	"ctf_2fort"
 	{
-		"viewed"		"18"
+		"viewed"		"51"
 	}
 	"mvm_decoy"
 	{
@@ -102,6 +102,10 @@
 	}
 	"ctf_foundry"
 	{
-		"viewed"		"12"
+		"viewed"		"13"
+	}
+	"pd_cursed_cove_event"
+	{
+		"viewed"		"1"
 	}
 }
