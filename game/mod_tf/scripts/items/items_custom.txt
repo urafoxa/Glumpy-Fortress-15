@@ -361,6 +361,97 @@
 	}
 	"items"
 	{
+		"1179"
+		{
+			"name"	"The Thermal Thruster"
+			"item_class"			"tf_weapon_rocketpack"
+			"craft_class"			"weapon"
+			"craft_material_type"	"weapon"
+			"capabilities"
+			{
+				"nameable"		"1"
+			}
+			"item_logname"	"rocketpack"
+			"item_iconname"	"rocketpack"
+			"show_in_armory"	"1"
+			"item_type_name"	"#TF_Weapon_RocketPack"
+			"item_name"			"#TF_ThermalThruster"
+			"item_description"	"#TF_ThermalThruster_Desc"
+			"item_slot"			"secondary"
+			"equip_region"		"back"
+			"anim_slot"			"ITEM4"
+			"image_inventory"	"backpack/weapons/c_models/c_rocketpack/c_rocketpack"
+			"image_inventory_size_w"		"128"
+			"image_inventory_size_h"		"82"
+			"inspect_panel_dist" 				"60"			
+			"model_player"	"models/weapons/c_models/c_rocketpack/c_rocketpack.mdl" 
+			"attach_to_hands"	"1"
+			"attach_to_hands_vm_only"	"1"
+			"extra_wearable" "models/weapons/c_models/c_rocketpack/c_rocketpack.mdl" 
+			"item_quality"	"unique"
+			"propername"	"1"
+			"min_ilevel"	"1"
+			"max_ilevel"	"100"
+			"visuals"
+			{
+				"player_bodygroups"
+				{
+					"backpack"		"1"
+				}
+				"styles"
+				{
+					"0"
+					{
+						"skin_red"	"0"
+						"skin_blu"	"1"
+						"model_player" "models/weapons/c_models/c_rocketpack/c_rocketpack.mdl" 
+						"name"	"#TFB_Jetpack_S1"
+					}
+					"1"
+					{
+						"model_player" "models/weapons/c_models/c_rocketpack_fun/c_rocketpack_fun.mdl" 
+						"name"	"#TFB_Jetpack_S2"
+					}
+				}
+			}
+			"used_by_classes"
+			{
+				"pyro"	"1"
+			}
+			"static_attrs"
+			{
+				"min_viewmodel_offset"					"10 0 -9"	
+				"damage force increase hidden"	"1.5"
+				"taunt attack name"		"TAUNTATK_PYRO_GASBLAST"
+				"taunt attack time"		"4.7"
+				"item_meter_charge_type"						"1"
+				"item_meter_charge_rate"			"30"
+				"holster_anim_time"		"0.8"
+				"falling_impact_radius_pushback"	"1"
+				"thermal_thruster"					"1"
+			}
+			"taunt"
+			{
+				"custom_taunt_scene_per_class"
+				{
+					"pyro"	"scenes/player/pyro/low/taunt_gasblast.vcd"
+				}
+				"custom_taunt_prop_per_class"
+				{
+					"pyro"	"models/player/items/taunts/matchbox/matchbox.mdl"
+				}
+			}
+			"visuals_red"
+			{
+				"skin" "0"
+			}
+			"visuals_blu"
+			{
+				"skin" "1"
+			}
+			"mouse_pressed_sound"	"ui/item_metal_weapon_pickup.wav"
+			"drop_sound"		"ui/item_metal_weapon_drop.wav"
+		}
 		"773"
 		{
 			"name" "Pretty Boy's Pocket Pistol"
@@ -456,6 +547,7 @@
 			"min_ilevel"	"1"
 			"max_ilevel"	"100"
 			"valid_for_shuffle"	"1"
+			"moditem" "1"
 			"used_by_classes"
 			{
 				"scout"	"1"
@@ -517,12 +609,44 @@
 				"custom_sound0"		"music.gangnam_loop"
 			}
 		}
+		"29001"
+		{
+			"name"	"Taunt: Explosive Masterpiece"
+			"prefab"	"valve taunt"
+			"first_sale_date"		"2014/06/17"
+			"item_name"			"#TBF_TauntArtBoom"
+			"item_description"			"#TBF_TauntArtBoom_Desc"
+			"image_inventory"	"backpack/player/taunts/taunt_holder"
+			"image_inventory_size_w"	"128"
+			"image_inventory_size_h"	"82"
+			"item_quality"		"unique"
+			"min_ilevel"	"1"
+			"max_ilevel"	"100"
+			"valid_for_shuffle"	"1"
+			"moditem" "1"
+			"used_by_classes"
+			{
+				"demoman"	"1"
+			}
+			"taunt"
+			{
+				"custom_taunt_scene_per_class"
+				{
+					"demoman"	"scenes/player/demoman/low/betterfortress/taunt_artboom.vcd"
+				}
+				"custom_taunt_prop_per_class"
+				{
+					"demoman"	"models/player/items/taunts/beer_crate/beer_crate.mdl"
+				}
+			}
+		}
 		//SWORDFISH
 		"32000"
 		{
 			"name"	"The Holy Marlin"
 			"prefab"	"valve weapon_swordfish"
 			"first_sale_date"	"2025/02/21"
+			"moditem" "1"
 			"static_attrs"
 			{
 				"min_viewmodel_offset"		"10 0 -11"				

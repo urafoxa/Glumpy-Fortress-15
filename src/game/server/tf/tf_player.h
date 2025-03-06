@@ -575,15 +575,34 @@ public:
 	bool IsRobotCostumeEquipped( void ) const;
 	bool IsDemowolf( void ) const;
 	bool IsFrankenHeavy( void ) const;
+	bool IsYetiHeavy(void) const;
 	bool IsFairyHeavy( void ) const;
 	bool IsZombieCostumeEquipped( void ) const;
 	bool HasWearablesEquipped( const CSchemaItemDefHandle *ppItemDefs, int nWearables ) const;
+
+	//BetaM - Fixes custom taunts/action items to be "valid" for loadouts
+	CEconItemView* GetEquippedItemForLoadoutSlot(int iLoadoutSlot) {
+		auto itemID = m_EquippedLoadoutItemIndices[iLoadoutSlot];
+		CEconItemView* pItem;
+		if (itemID < 65536)
+		{
+			int count = TFInventoryManager()->GetModItemCount();
+			for (int i = 0; i < count; i++)
+			{
+				pItem = TFInventoryManager()->GetModItem(i);
+				if (pItem && pItem->GetItemDefIndex() == itemID)
+				{
+					return pItem;
+				}
+			}
+		}
+		return m_Inventory.GetInventoryItemByItemID(m_EquippedLoadoutItemIndices[iLoadoutSlot]);
+	}
 
 	void MVM_StartIdleSound(void);
 	void MVM_StopIdleSound(void);
 	CSoundPatch* m_pGiantIdleSound;
 
-	CEconItemView *GetEquippedItemForLoadoutSlot( int iLoadoutSlot ){ return m_Inventory.GetInventoryItemByItemID( m_EquippedLoadoutItemIndices[iLoadoutSlot] ); }
 	CBaseEntity *GetEntityForLoadoutSlot( int iLoadoutSlot, bool bForceCheckWearable = false );			//Gets whatever entity is associated with the loadout slot (wearable or weapon)
 	CTFWearable *GetEquippedWearableForLoadoutSlot( int iLoadoutSlot );
 

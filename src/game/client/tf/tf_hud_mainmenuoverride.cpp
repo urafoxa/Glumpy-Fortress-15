@@ -620,15 +620,17 @@ void CHudMainMenuOverride::ApplySchemeSettings( IScheme *scheme )
 		{
 			pPanelToAddTooltipTipTo->SetTooltip( m_pToolTip, pszTooltipText );
 
-			pPanelToAddTooltipTipTo->SetVisible(false);
+			pPanelToAddTooltipTipTo->SetVisible( true );
 		}
 	};
 
-	lambdaAddTooltip( "CommentaryButton", "#MMenu_Tooltip_Commentary" );
-	lambdaAddTooltip( "CoachPlayersButton", "#MMenu_Tooltip_Coach" );
-	lambdaAddTooltip( "ReportBugButton", "#MMenu_Tooltip_ReportBug" );
+
+	//For our mod, we don't need bug reports, coaching, commentary and new users, since it's TF2, and we are in 2025 bro
+	//lambdaAddTooltip( "CommentaryButton", "#MMenu_Tooltip_Commentary" );
+	//lambdaAddTooltip( "CoachPlayersButton", "#MMenu_Tooltip_Coach" );
+	//lambdaAddTooltip( "ReportBugButton", "#MMenu_Tooltip_ReportBug" );
 	lambdaAddTooltip( "AchievementsButton", "#MMenu_Tooltip_Achievements" );
-	lambdaAddTooltip( "NewUserForumsButton", "#MMenu_Tooltip_NewUserForum" );
+	//lambdaAddTooltip( "NewUserForumsButton", "#MMenu_Tooltip_NewUserForum" );
 	lambdaAddTooltip( "ReplayButton", "#MMenu_Tooltip_Replay" );
 	lambdaAddTooltip( "WorkshopButton", "#MMenu_Tooltip_Workshop" );
 	lambdaAddTooltip( "SettingsButton", "#MMenu_Tooltip_Options" );

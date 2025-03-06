@@ -561,6 +561,7 @@ criterion "IsRobotCostume" "IsRobotCostume" "1" "required" weight 100
 criterion "IsFairyHeavy" "IsFairyHeavy" "1" "required" weight 100
 criterion "IsDemowolf" "IsDemowolf" "1" "required" weight 100
 criterion "IsFrankenHeavy" "IsFrankenHeavy" "1" "required" weight 100
+criteria  "IsYetiHeavy"	"IsYetiHeavy" "1" "required" weight 100
 
 criterion "IsMedicDoubleFace" "IsMedicDoubleFace" "1" "required" weight 100
 criterion "IsMedicBirdHead" "IsMedicBirdHead" "1" "required" weight 100

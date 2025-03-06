@@ -707,3 +707,11 @@ game/mod_tf/scenes/player/heavy/low/taunt_the_fist_bump.vcd
 game/English.lnk
 game/mod_tf/scenes/player/heavy/low/taunt_yetipunch_outside.vcd
 game/mod_tf/scenes/player/heavy/low/gangnam_style.vcd
+game/mod_tf/maps/graphs/plr_nightfall_final.ain
+game/mod_tf/maps/graphs/cg_facility.ain
+game/mod_tf/downloadlists/plr_nightfall_final.lst
+game/mod_tf/downloadlists/plr_hightower_event.lst
+game/mod_tf/downloadlists/itemtest.lst
+game/mod_tf/scripts/protodefs/parser.js
+game/mod_tf/scripts/protodefs/proto_defs.vpd
+game/mod_tf/scripts/protodefs/proto_defs.vpd.sig

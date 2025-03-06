@@ -271,6 +271,7 @@ ConVar tf_nav_in_combat_range( "tf_nav_in_combat_range", "1000", FCVAR_CHEAT );
 
 ConVar tf_halloween_kart_punting_ghost_force_scale( "tf_halloween_kart_punting_ghost_force_scale", "4", FCVAR_CHEAT );
 ConVar tf_halloween_allow_ghost_hit_by_kart_delay( "tf_halloween_allow_ghost_hit_by_kart_delay", "0.5", FCVAR_CHEAT );
+ConVar tf_halloween_dance_chance( "tf_halloween_dance_chance", "0.4", FCVAR_REPLICATED, "Thriller Chance 0-1", true, 0.0, true, 1.0); //NO I DON'T WANNA DANCE, RAHHH
 
 ConVar tf_maxhealth_drain_hp_min( "tf_maxhealth_drain_hp_min", "100", FCVAR_DEVELOPMENTONLY );
 ConVar tf_maxhealth_drain_deploy_cost( "tf_maxhealth_drain_deploy_cost", "20", FCVAR_DEVELOPMENTONLY );
@@ -861,14 +862,6 @@ void cc_CreatePredictionError_f()
 ConCommand cc_CreatePredictionError( "CreatePredictionError", cc_CreatePredictionError_f, "Create a prediction error", FCVAR_CHEAT | FCVAR_DEVELOPMENTONLY );
 
 // -------------------------------------------------------------------------------- //
-
-CON_COMMAND_F(give_taunt, "Taunt from ID", FCVAR_CHEAT)
-{
-	char pszTaunt[32];
-	V_sprintf_safe(pszTaunt, "taunt %d", args.ArgC());
-
-	CTFPlayer* pPlayer = ToTFPlayer(UTIL_GetCommandClient());
-}
 
 CON_COMMAND_F(give_econ, "Give ECON item with specified ID from item schema.\nFormat: <id> <classname> <attribute1> <value1> <attribute2> <value2> ... <attributeN> <valueN>", FCVAR_CHEAT)
 {
@@ -7306,6 +7299,7 @@ static void DebugEconItemView( const char *pszDescStr, CEconItemView *pEconItemV
 	Warning("%s: \"%s\"\n", pszDescStr, pItemDef->GetDefinitionName() );
 }
 #endif
+
 
 bool CTFPlayer::ClientCommand( const CCommand &args )
 {
@@ -17448,6 +17442,18 @@ bool CTFPlayer::IsFrankenHeavy( void ) const
 //-----------------------------------------------------------------------------
 // Purpose: 
 //-----------------------------------------------------------------------------
+bool CTFPlayer::IsYetiHeavy(void) const
+{
+	if (GetPlayerClass()->GetClassIndex() != TF_CLASS_HEAVYWEAPONS)
+		return false;
+
+	static CSchemaItemDefHandle ppItemDefWearables[] = { CSchemaItemDefHandle("Yeti_Head"), CSchemaItemDefHandle("Yeti_Arms"), CSchemaItemDefHandle("Yeti_Legs") };
+	return HasWearablesEquipped(ppItemDefWearables, ARRAYSIZE(ppItemDefWearables));
+}
+
+//-----------------------------------------------------------------------------
+// Purpose: 
+//-----------------------------------------------------------------------------
 bool CTFPlayer::IsFairyHeavy( void ) const
 {
 	if ( GetPlayerClass()->GetClassIndex() != TF_CLASS_HEAVYWEAPONS )
@@ -17771,6 +17777,12 @@ bool CTFPlayer::PlayTauntSceneFromItem( const CEconItemView *pEconItemView )
 
 	return false;
 }
+//TODO - TAUNT COMMAND
+/*
+CON_COMMAND_F(give_taunt, "Taunt from ID", FCVAR_CHEAT)
+{
+	PlayTauntSceneFromItem( 1118 )
+}*/
 
 //-----------------------------------------------------------------------------
 // Purpose: 
@@ -19630,8 +19642,9 @@ void CTFPlayer::ModifyOrAppendCriteria( AI_CriteriaSet& criteriaSet )
 		CALL_ATTRIB_HOOK_INT_ON_OTHER( pActiveWeapon, iSpecialTaunt, special_taunt );
 	}
 
+	// Thriller - Taunt06 - Taunt07
 	// only roll random halloween taunt if the active weapon doesn't have special taunt attribute
-	if ( TFGameRules()->IsHolidayActive( kHoliday_Halloween ) && iSpecialTaunt == 0 )
+	if ( TFGameRules()->IsHolidayActive( kHoliday_Halloween ) && iSpecialTaunt == 0 && tf_halloween_dance_chance.GetFloat() > 0 )
 	{
 		if ( !TFGameRules()->IsMannVsMachineMode() || ( GetTeamNumber() != TF_TEAM_PVE_INVADERS ) )
 		{
@@ -19645,7 +19658,8 @@ void CTFPlayer::ModifyOrAppendCriteria( AI_CriteriaSet& criteriaSet )
 				if ( iWeaponID != TF_WEAPON_LUNCHBOX && !( iRageTaunt && m_Shared.GetRageMeter() >= 100.f ) )
 				{
 					float frand = (float) rand() / VALVE_RAND_MAX;
-					if ( frand < 0.4f )
+					//DevMsg("Thriller DEBUG: %.2f\n", frand );
+					if ( frand < tf_halloween_dance_chance.GetFloat() )
 					{
 						criteriaSet.AppendCriteria( "IsHalloweenTaunt", "1" );
 					}
@@ -19695,6 +19709,10 @@ void CTFPlayer::ModifyOrAppendCriteria( AI_CriteriaSet& criteriaSet )
 		else if ( IsFrankenHeavy() )
 		{
 			criteriaSet.AppendCriteria( "IsFrankenHeavy", "1" );
+		}
+		else if (IsYetiHeavy())
+		{
+			criteriaSet.AppendCriteria("IsYetiHeavy", "1");
 		}
 		// Single items with response rules
 		else

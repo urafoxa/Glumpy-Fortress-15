@@ -10,7 +10,7 @@
 	}
 	"cg_facility"
 	{
-		"viewed"		"1"
+		"viewed"		"6"
 	}
 	"rd_asteroid"
 	{
@@ -46,7 +46,7 @@
 	}
 	"ctf_2fort"
 	{
-		"viewed"		"51"
+		"viewed"		"61"
 	}
 	"mvm_decoy"
 	{
@@ -107,5 +107,17 @@
 	"pd_cursed_cove_event"
 	{
 		"viewed"		"1"
+	}
+	"plr_hightower_event"
+	{
+		"viewed"		"10"
+	}
+	"itemtest"
+	{
+		"viewed"		"1"
+	}
+	"plr_nightfall_final"
+	{
+		"viewed"		"3"
 	}
 }
