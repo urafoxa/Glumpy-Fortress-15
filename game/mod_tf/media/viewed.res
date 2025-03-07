@@ -10,7 +10,7 @@
 	}
 	"cg_facility"
 	{
-		"viewed"		"6"
+		"viewed"		"9"
 	}
 	"rd_asteroid"
 	{
@@ -58,7 +58,7 @@
 	}
 	"cp_dustbowl"
 	{
-		"viewed"		"1"
+		"viewed"		"2"
 	}
 	"cp_manor_event"
 	{
@@ -119,5 +119,9 @@
 	"plr_nightfall_final"
 	{
 		"viewed"		"3"
+	}
+	"inv_facility"
+	{
+		"viewed"		"4"
 	}
 }

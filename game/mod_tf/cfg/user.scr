@@ -32,7 +32,7 @@
 
 
 // Half-Life User Info Configuration Layout Script (stores last settings chosen, too)
-// File generated:  Mon Mar  3 22:56:10 AM
+// File generated:  Fri Mar  7 02:11:05 AM
 //
 //
 // Cvar	-	Setting
@@ -82,7 +82,7 @@ DESCRIPTION INFO_OPTIONS
 		"#TF_autoreload"
 		"#Tooltip_autoreload"
 		{ BOOL }
-		{ "1" }
+		{ "0" }
 	}
 
 	"hud_fastswitch"

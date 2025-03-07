@@ -32,7 +32,7 @@
 
 
 // Half-Life Server Configuration Layout Script (stores last settings chosen, too)
-// File generated:  Thu Mar  6 11:35:31 PM
+// File generated:  Fri Mar  7 10:47:54 PM
 //
 //
 // Cvar	-	Setting
@@ -59,7 +59,7 @@ DESCRIPTION SERVER_OPTIONS
 	{
 		"#Valve_Server_Password"
 		{ STRING }
-		{ "forfucksake" }
+		{ "gangnam" }
 	}
 
 	"mp_timelimit"

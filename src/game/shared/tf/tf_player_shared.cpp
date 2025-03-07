@@ -10203,11 +10203,11 @@ void CTFPlayer::FireBullet( CTFWeaponBase *pWpn, const FireBulletsInfo_t &info, 
 				continue;
 
 			trace_t *pTraceToUse = &pen_trace;
-			
+			//Friendly Fire
 			if ( ePenetrateType == TF_DMG_CUSTOM_PENETRATE_MY_TEAM )
 			{
 				// Skip friendlies if we're looking for the first enemy
-				if ( GetTeamNumber() == pTarget->GetTeamNumber() )
+				if ( GetTeamNumber() == pTarget->GetTeamNumber() && !friendlyfire.GetBool() )
 					continue;
 				
 				pTraceToUse = &trace;
@@ -13274,6 +13274,7 @@ int CTFPlayerShared::GetSequenceForDeath( CBaseAnimating* pRagdoll, bool bBurnin
 	return iDeathSeq;
 }
 
+extern ConVar friendlyfire;
 extern ConVar tf_halloween_kart_dash_speed;
 ConVar tf_halloween_kart_slow_turn_accel_speed( "tf_halloween_kart_slow_turn_accel_speed", "200", FCVAR_CHEAT | FCVAR_REPLICATED );
 ConVar tf_halloween_kart_fast_turn_accel_speed( "tf_halloween_kart_fast_turn_accel_speed", "400", FCVAR_CHEAT | FCVAR_REPLICATED );

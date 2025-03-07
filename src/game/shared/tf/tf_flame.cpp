@@ -41,6 +41,7 @@ ConVar tf_flame_waterfall_spread( "tf_flame_waterfall_spread", "40", FCVAR_REPLI
 
 extern ConVar tf_debug_flamethrower;
 extern ConVar tf_flamethrower_boxsize;
+extern ConVar friendlyfire;
 
 #ifdef CLIENT_DLL
 float tf_flame_particle_min_density = 0.01f;
@@ -591,7 +592,7 @@ bool CFlameEntityEnum::EnumEntity( IHandleEntity *pHandleEntity )
 		// add non-player bots
 		m_Targets.AddToTail( pEnt );
 	}
-	else if ( pEnt->IsBaseObject() && m_pShooter->GetTeamNumber() != pEnt->GetTeamNumber() )
+	else if ( pEnt->IsBaseObject() && ( m_pShooter->GetTeamNumber() != pEnt->GetTeamNumber() && !friendlyfire.GetBool() || friendlyfire.GetBool() ) )
 	{
 		// only add enemy objects
 		m_Targets.AddToTail( pEnt );
@@ -628,7 +629,7 @@ bool CTFFlameManager::IsValidBurnTarget( CBaseEntity *pEntity ) const
 		// add non-player bots
 		return true;
 	}
-	else if ( pEntity->IsBaseObject() && m_hAttacker->GetTeamNumber() != pEntity->GetTeamNumber() )
+	else if ( pEntity->IsBaseObject() && ( m_hAttacker->GetTeamNumber() != pEntity->GetTeamNumber() && !friendlyfire.GetBool() ) || friendlyfire.GetBool() )
 	{
 		// only add enemy objects
 		return true;
@@ -695,7 +696,7 @@ void CTFFlameManager::OnCollide( CBaseEntity *pEnt, int iPointIndex )
 	if ( !BCanBurnEntityThisFrame( pEnt ) )
 		return;
 
-	if ( pEnt->IsPlayer() && pEnt->InSameTeam( pAttacker ) )
+	if ( pEnt->IsPlayer() && pEnt->InSameTeam( pAttacker ) && !friendlyfire.GetBool() )
 	{
 		CTFPlayer *pPlayer = ToTFPlayer( pEnt );
 
