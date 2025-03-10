@@ -518,19 +518,10 @@ void CHud::Shutdown( void )
 //-----------------------------------------------------------------------------
 void CHud::LevelInit( void )
 {
-	// Clear all of the map-specific icons.
-	int c = m_MapIcons.Count();
-	for ( int i = c - 1; i >= 0; i-- )
-	{
-		CHudTexture *tex = m_MapIcons[ i ];
-		g_HudTextureMemoryPool.Free( tex );
-	}
-	m_MapIcons.Purge();
-
 	// Add the current map's icons.
 	CUtlDict< CHudTexture *, int >	textureList;
 	LoadHudTextures( textureList, "scripts/map_textures", NULL );
-	c = textureList.Count();
+	int c = textureList.Count();
 	for ( int index = 0; index < c; index++ )
 	{
 		CHudTexture* tex = textureList[ index ];
@@ -564,6 +555,15 @@ void CHud::LevelShutdown( void )
 	{
 		m_HudList[i]->LevelShutdown();
 	}
+
+	// Clear all of the map-specific icons.
+	int c = m_MapIcons.Count();
+	for ( int i = c - 1; i >= 0; i-- )
+	{
+		CHudTexture *tex = m_MapIcons[ i ];
+		g_HudTextureMemoryPool.Free( tex );
+	}
+	m_MapIcons.Purge();
 }
 
 //-----------------------------------------------------------------------------
