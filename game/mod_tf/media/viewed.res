@@ -134,7 +134,7 @@
 	}
 	"ctf_turbine"
 	{
-		"viewed"		"1"
+		"viewed"		"3"
 	}
 	"ctf_haarp"
 	{
@@ -142,7 +142,7 @@
 	}
 	"cp_steel"
 	{
-		"viewed"		"4"
+		"viewed"		"5"
 	}
 	"vsh_distillery"
 	{

@@ -15,13 +15,13 @@
 	
 	TextureData
 	{
-		"sniperrifle_custom"
+		"wrench_lettuce"
 		{
-				"dfile"	"HUD/d_images"
-				"dnegfile"	"HUD/dneg_images"
-				"x"		"16"
-				"y"		"96"
-				"width"		"32"
+				"dfile"	"HUD/d_images_mod"
+				"dnegfile"	"HUD/dneg_images_mod"
+				"x"		"2"
+				"y"		"4"
+				"width"		"88"
 				"height"	"32"
 		}
 	}	

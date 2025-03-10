@@ -729,3 +729,6 @@ game/mod_tf/maps/graphs/koth_badlands.ain
 game/mod_tf/maps/graphs/pl_perforation_a2.ain
 game/mod_tf/maps/graphs/vsh_skirmish.ain
 game/mod_tf/resource/ui/mainmenuoverride.res
+game/mod_tf/materials/hud/dneg_images_mod.png
+game/mod_tf/materials/hud/dneg_images.png
+game/mod_tf/materials/hud/d_images_mod.png
