@@ -51,6 +51,7 @@ ConVar tf_grenadelauncher_chargescale( "tf_grenadelauncher_chargescale", "1.0", 
 ConVar tf_grenadelauncher_livetime( "tf_grenadelauncher_livetime", "0.8", FCVAR_CHEAT | FCVAR_REPLICATED | FCVAR_DEVELOPMENTONLY );
 extern ConVar tf_sticky_radius_ramp_time;
 extern ConVar tf_sticky_airdet_radius;
+extern ConVar friendlyfire;
 
 #ifndef CLIENT_DLL
 
@@ -756,7 +757,7 @@ void CTFGrenadePipebombProjectile::PipebombTouch( CBaseEntity *pOther )
 	bool bExploded = false;
 
 	// Blow up if we hit an enemy we can damage
-	if ( pOther->GetTeamNumber() && pOther->GetTeamNumber() != GetTeamNumber() && pOther->m_takedamage != DAMAGE_NO )
+	if ( pOther->GetTeamNumber() && ( pOther->GetTeamNumber() != GetTeamNumber() || friendlyfire.GetBool() ) && pOther->m_takedamage != DAMAGE_NO)
 	{
 		// Check to see if this is a respawn room.
 		if ( !pOther->IsPlayer() )
@@ -874,7 +875,7 @@ void CTFGrenadePipebombProjectile::VPhysicsCollision( int index, gamevcollisione
 			}
 		}
 		// Blow up if we hit an enemy we can damage
-		else if ( pHitEntity->GetTeamNumber() && pHitEntity->GetTeamNumber() != GetTeamNumber() && pHitEntity->m_takedamage != DAMAGE_NO )
+		else if ( pHitEntity->GetTeamNumber() && ( pHitEntity->GetTeamNumber() != GetTeamNumber() || friendlyfire.GetBool() ) && pHitEntity->m_takedamage != DAMAGE_NO)
 		{
 			SetThink( &CTFGrenadePipebombProjectile::Detonate );
 			SetNextThink( gpGlobals->curtime );

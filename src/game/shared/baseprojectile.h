@@ -23,6 +23,7 @@
 #define CBaseProjectile C_BaseProjectile
 #endif // CLIENT_DLL
 
+extern ConVar friendlyfire;
 //=============================================================================
 //
 // Base Projectile.
@@ -50,7 +51,7 @@ public:
 	virtual int GetDestroyableHitCount( void ) const { return m_iDestroyableHitCount; }
 	void IncrementDestroyableHitCount( void ) { ++m_iDestroyableHitCount; }
 
-	virtual bool CanCollideWithTeammates() const { return m_bCanCollideWithTeammates; }
+	virtual bool CanCollideWithTeammates() const { return m_bCanCollideWithTeammates || friendlyfire.GetBool(); }
 	virtual float GetCollideWithTeammatesDelay() const { return 0.25f; }
 #endif // GAME_DLL
 

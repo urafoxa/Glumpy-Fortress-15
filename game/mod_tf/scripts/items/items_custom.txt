@@ -358,6 +358,16 @@
 			"effect_type"	"negative"
 			"stored_as_integer"	"0"
 		}
+		"4004"
+		{
+			"name"	"mod pda builds minidispenser"
+			"attribute_class"	"pda_builds_minidispenser"
+			"description_string"	"#Attrib_WrenchBuildsMiniSentry"
+			"description_format"	"value_is_additive"
+			"hidden"	"0"
+			"effect_type"	"negative"
+			"stored_as_integer"	"0"
+		}
 	}
 	"items"
 	{
@@ -679,8 +689,8 @@
 			"item_type_name"	"#TF_Weapon_RocketLauncher"
 			"item_name"			"#TFCW_SubRocket"
 			"item_description"	"#TFCW_SubRocket_Desc"
-			"item_logname"	"dumpster_device"
-			"item_iconname"	"dumpster_device"
+			"item_logname"	"sniperrifle_custom"
+			"item_iconname"	"sniperrifle_custom"
 			"item_slot"	"primary"
 			"item_quality"	"unique"
 			"inspect_panel_dist" "68"
@@ -728,6 +738,157 @@
 			}
 			"mouse_pressed_sound"	"ui/item_heavy_gun_pickup.wav"
 			"drop_sound"			"ui/item_heavy_gun_drop.wav"
+		}
+		//PDA TEST
+		"32003"
+		{
+			"name"	"TF_WEAPON_PDA_ENGINEER_BUILD"
+			"capabilities"
+			{
+				"nameable"		"1"
+			}
+			"first_sale_date"	"2010/09/29"
+			"item_class"	"tf_pda_expansion_dispenser"
+			"craft_class"	"weapon"
+			"craft_material_type"	"weapon"
+			"item_name"	"#TF_Weapon_PDA_Engineer_Builder"
+			"item_type_name"	"#TF_Weapon_PDA_Engineer"
+			"item_slot"	"pda"
+			"item_quality"	"unique"
+			"moditem" "1"
+			"min_ilevel"	"1"
+			"max_ilevel"	"1"
+			"attach_to_hands" "1"
+			"image_inventory"	"backpack/weapons/w_models/w_builder"
+			"image_inventory_size_w"		"128"
+			"image_inventory_size_h"		"82"
+			"model_player"	"models/weapons/c_models/c_minibuilder/c_minibuilder.mdl"
+			"used_by_classes"
+			{
+				"engineer"	"1"
+			}
+			"static_attrs"
+			{
+				"min_viewmodel_offset"					"10 0 -10"				
+			}
+			"attributes"
+			{
+				"mod pda builds minidispenser"
+				{
+					"attribute_class"	"pda_builds_minidispenser"
+					"value"	"1"
+				}
+				"kill eater score type"
+				{
+					"attribute_class"	"kill_eater_score_type"
+					"value" 	"3" 
+				}
+				"kill eater score type 2"
+				{
+					"attribute_class"	"kill_eater_score_type_2"
+					"value" 	"59" 
+				}
+				"kill eater score type 3"
+				{
+					"attribute_class"	"kill_eater_score_type_3"
+					"value" 	"60" 
+				}
+			}
+			"mouse_pressed_sound"	"ui/item_metal_weapon_pickup.wav"
+			"drop_sound"		"ui/item_metal_weapon_drop.wav"
+			"visuals"
+			{
+				"animation_replacement"
+				{
+					"ACT_VM_IDLE"	"ACT_ENGINEER_PDA2_VM_IDLE"
+					"ACT_VM_DRAW"	"ACT_ENGINEER_PDA2_VM_DRAW"
+				}
+			}
+		}
+		//VEGETABLE WRENCH
+		"32002"
+		{
+			"name"	"The Vegetable Mario"
+			"first_sale_date"	"2010/09/29"
+			"item_class"	"tf_weapon_wrench"
+			"craft_class"	"weapon"
+			"craft_material_type"	"weapon"
+			"capabilities"
+			{
+				"nameable"		"1"
+			}
+			"tags"
+			{
+				"can_deal_damage"				"1"
+				"can_deal_posthumous_damage"	"1"
+				"can_destroy_sappers"			"1"
+			}
+			"show_in_armory"	"1"
+			"moditem" "1"
+			"item_type_name"	"#TF_Weapon_Wrench"
+			"item_name"	"#TFCW_Pipewrench"
+			"item_description"	"#TFCW_Pipewrench_Desc"
+			"item_slot"	"melee"
+			"item_quality"	"unique"
+			"min_ilevel"	"20"
+			"max_ilevel"	"20"
+			"propername"	"1"
+			"item_logname"	"southern_hospitality"
+			"item_iconname"	"southern_comfort_kill"
+			"image_inventory"	"backpack/weapons/custommade/c_pipewrench"
+			"image_inventory_size_w"		"128"
+			"image_inventory_size_h"		"82"
+			"inspect_panel_dist" 			"45"
+			"model_player"	"models/weapons/c_models/c_pipewrench/c_pipewrench.mdl"
+			"attach_to_hands" "1"
+			"used_by_classes"
+			{
+				"engineer"	"1"
+			}
+			"static_attrs"
+			{
+				"min_viewmodel_offset"		"10 -2 -9"				
+			}
+			"attributes"
+			{
+				"crit mod disabled"
+				{
+					"attribute_class"	"mult_crit_chance"
+					"value"	"0"
+				}
+				"engy sentry damage bonus"
+				{
+					"attribute_class"	"mult_engy_sentry_damage"
+					"value" "1.25"
+				}
+				"fire rate penalty"
+				{
+					"attribute_class"	"mult_postfiredelay"
+					"value"	"1.2"
+				}
+				"kill eater score type"
+				{
+					"attribute_class"	"kill_eater_score_type"
+					"value" 	"0"									
+				}
+				"kill eater score type 2"
+				{
+					"attribute_class"	"kill_eater_score_type_2"
+					"value" 	"3"									
+				}
+			}
+			"visuals"
+			{
+				"animation_replacement"
+				{
+					"ACT_VM_IDLE"	"ACT_ITEM3_VM_IDLE"
+					"ACT_VM_DRAW"	"ACT_ITEM3_VM_DRAW"
+					"ACT_VM_HITCENTER"	"ACT_ITEM3_VM_HITCENTER"
+					"ACT_VM_SWINGHARD"	"ACT_ITEM3_VM_SWINGHARD"
+				}
+			}
+			"mouse_pressed_sound"	"ui/item_metal_weapon_pickup.wav"
+			"drop_sound"		"ui/item_metal_weapon_drop.wav"
 		}
 	}
 }

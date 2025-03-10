@@ -9871,8 +9871,11 @@ public:
 
 		if ( pEnt->IsCombatCharacter() || pEnt->IsBaseObject() )
 		{
-			if ( m_bIgnoreTeammates && pEnt->GetTeam() == m_pShooter->GetTeam() )
-				return true;
+			if ( !friendlyfire.GetBool() )
+			{ 
+				if ( m_bIgnoreTeammates && pEnt->GetTeam() == m_pShooter->GetTeam() )
+					return true;
+			}
 
 			Ray_t ray;
 			ray.Init( m_vecStart, m_vecEnd );
@@ -10214,7 +10217,7 @@ void CTFPlayer::FireBullet( CTFWeaponBase *pWpn, const FireBulletsInfo_t &info, 
 			}
 			else if ( ePenetrateType == TF_DMG_CUSTOM_PENETRATE_NONBURNING_TEAMMATE )
 			{
-				if ( GetTeamNumber() == pTarget->GetTeamNumber() )
+				if ( GetTeamNumber() == pTarget->GetTeamNumber() && !friendlyfire.GetBool() )
 				{
 					if ( pTarget->IsPlayer() )
 					{
@@ -10353,7 +10356,7 @@ void CTFPlayer::FireBullet( CTFWeaponBase *pWpn, const FireBulletsInfo_t &info, 
 				// Regular impact effects.
 
 				// don't decal your teammates or objects on your team
-				if ( trace.m_pEnt && trace.m_pEnt->GetTeamNumber() != GetTeamNumber() )
+				if ( trace.m_pEnt && ( trace.m_pEnt->GetTeamNumber() != GetTeamNumber() || friendlyfire.GetBool() ) )
 				{
 					UTIL_ImpactTrace( &trace, nDamageType );
 				}

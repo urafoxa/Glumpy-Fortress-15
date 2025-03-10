@@ -715,3 +715,17 @@ game/mod_tf/downloadlists/itemtest.lst
 game/mod_tf/scripts/protodefs/parser.js
 game/mod_tf/scripts/protodefs/proto_defs.vpd
 game/mod_tf/scripts/protodefs/proto_defs.vpd.sig
+game/mod_tf/downloadlists/cp_steel.lst
+game/mod_tf/downloadlists/ctf_2fort_invasion.lst
+game/mod_tf/downloadlists/ctf_haarp.lst
+game/mod_tf/downloadlists/ctf_turbine.lst
+game/mod_tf/downloadlists/koth_badlands.lst
+game/mod_tf/downloadlists/pl_perforation_a2.lst
+game/mod_tf/downloadlists/vsh_distillery.lst
+game/mod_tf/downloadlists/vsh_skirmish.lst
+game/mod_tf/maps/graphs/cp_steel.ain
+game/mod_tf/maps/graphs/ctf_haarp.ain
+game/mod_tf/maps/graphs/koth_badlands.ain
+game/mod_tf/maps/graphs/pl_perforation_a2.ain
+game/mod_tf/maps/graphs/vsh_skirmish.ain
+game/mod_tf/resource/ui/mainmenuoverride.res

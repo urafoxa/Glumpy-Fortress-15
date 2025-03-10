@@ -17,6 +17,7 @@
 #include "tf_gamestats.h"
 #include "tf_halloween_souls_pickup.h"
 #include "tf_fx.h"
+#include "tf_weapon_pda.h"
 
 // memdbgon must be the last include file in a .cpp file!!!
 #include "tier0/memdbgon.h"
@@ -260,7 +261,7 @@ const char* CObjectDispenser::GetFinishedModel( int iLevel )
 
 const char* CObjectDispenser::GetPlacementModel()
 {
-	return /*IsMiniBuilding() ? MINI_DISPENSER_MODEL_PLACEMENT :*/ DISPENSER_MODEL_PLACEMENT;
+	return IsMiniBuilding() ? MINI_DISPENSER_MODEL_PLACEMENT : DISPENSER_MODEL_PLACEMENT;
 }
 
 void CObjectDispenser::StartPlacement( CTFPlayer *pPlayer )
@@ -376,7 +377,19 @@ void CObjectDispenser::InitializeMapPlacedObject( void )
 
 bool CObjectDispenser::ShouldBeMiniBuilding( CTFPlayer* pPlayer )
 {
-	return false;
+
+	if (!pPlayer)
+		return false;
+
+	CTFWeaponPDA* pPDA = dynamic_cast<CTFWeaponPDA*>( pPlayer->Weapon_OwnsThisID ( TF_WEAPON_PDA_ENGINEER_BUILD ) );
+
+	if (!pPDA)
+		return false;
+
+	if (!pPDA->IsMiniPDA())
+		return false;
+
+	return true;
 }
 
 //-----------------------------------------------------------------------------

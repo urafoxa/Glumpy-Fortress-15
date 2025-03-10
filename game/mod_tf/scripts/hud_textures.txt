@@ -1,0 +1,28 @@
+"sprites/640_hud"
+{
+
+	TextureFileRefs
+	{
+		"dfile"
+		{
+			"prefix"		"d_"
+		}
+		"dnegfile"
+		{
+			"prefix"		"dneg_"
+		}
+	}
+	
+	TextureData
+	{
+		"sniperrifle_custom"
+		{
+				"dfile"	"HUD/d_images"
+				"dnegfile"	"HUD/dneg_images"
+				"x"		"16"
+				"y"		"96"
+				"width"		"32"
+				"height"	"32"
+		}
+	}	
+}

@@ -46,7 +46,7 @@
 	}
 	"ctf_2fort"
 	{
-		"viewed"		"61"
+		"viewed"		"64"
 	}
 	"mvm_decoy"
 	{
@@ -122,6 +122,38 @@
 	}
 	"inv_facility"
 	{
+		"viewed"		"5"
+	}
+	"koth_badlands"
+	{
+		"viewed"		"10"
+	}
+	"ctf_2fort_invasion"
+	{
+		"viewed"		"1"
+	}
+	"ctf_turbine"
+	{
+		"viewed"		"1"
+	}
+	"ctf_haarp"
+	{
+		"viewed"		"1"
+	}
+	"cp_steel"
+	{
 		"viewed"		"4"
+	}
+	"vsh_distillery"
+	{
+		"viewed"		"1"
+	}
+	"pl_perforation_a2"
+	{
+		"viewed"		"2"
+	}
+	"vsh_skirmish"
+	{
+		"viewed"		"1"
 	}
 }

@@ -90,7 +90,7 @@ PRECACHE_WEAPON_REGISTER( tf_projectile_cleaver );
 #define TF_WEAPON_CLEAVER_IMPACT_FLESH_SOUND	"Cleaver.ImpactFlesh"
 #define TF_WEAPON_CLEAVER_IMPACT_WORLD_SOUND	"Cleaver.ImpactWorld"
 
-
+extern ConVar friendlyfire;
 //=============================================================================
 //
 // Weapon Jar functions.
@@ -337,8 +337,11 @@ void JarExplode( int iEntIndex, CTFPlayer *pAttacker, CBaseEntity *pOriginalWeap
 				continue;
 
 			// Drench the target.
-			if ( pPlayer->GetTeamNumber() != iTeam )
+			if ( pPlayer->GetTeamNumber() != iTeam && !friendlyfire.GetBool() || friendlyfire.GetBool() )
 			{
+				if ( pPlayer == pAttacker )
+					continue;
+
 				if ( TFGameRules() && TFGameRules()->IsTruceActive() )
 					continue;
 
@@ -565,7 +568,7 @@ void CTFProjectile_Jar::OnBreadMonsterHit( CBaseEntity *pOther, trace_t *pTrace 
 		return;
 
 	CTFPlayer *pVictim = ToTFPlayer( pOther );
-	if ( !pVictim || pVictim->GetTeamNumber() == GetTeamNumber() )
+	if ( !pVictim || pVictim->GetTeamNumber() == GetTeamNumber() && !friendlyfire.GetBool() )
 		return;
 
 	// This is a player on the other team, attach a breadmonster
@@ -999,7 +1002,7 @@ void CTFProjectile_Cleaver::OnHit( CBaseEntity *pOther )
 	if ( pPlayer->m_Shared.IsInvulnerable() || pPlayer->m_Shared.InCond( TF_COND_INVULNERABLE_WEARINGOFF ) )
 		return;
 
-	if ( pPlayer->GetTeamNumber() == pOwner->GetTeamNumber() )
+	if ( pPlayer->GetTeamNumber() == pOwner->GetTeamNumber() && !friendlyfire.GetBool() )
 		return;
 
 	if ( TFGameRules() && TFGameRules()->IsTruceActive() && pOwner->IsTruceValidForEnt() )

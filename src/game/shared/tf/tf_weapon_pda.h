@@ -42,6 +42,7 @@ public:
 	CTFWeaponPDA();
 
 	virtual void	Spawn();
+	bool			IsMiniPDA(void) { int iMode = 0; CALL_ATTRIB_HOOK_INT(iMode, pda_builds_minidispenser); return iMode == 1; };
 
 #if !defined( CLIENT_DLL )
 		virtual void	Precache();

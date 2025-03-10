@@ -108,6 +108,7 @@ ConVar tf_obj_damage_tank_achievement_amount( "tf_obj_damage_tank_achievement_am
 
 extern short g_sModelIndexFireball;
 extern ConVar tf_cheapobjects;
+extern ConVar friendlyfire;
 
 // Minimum distance between 2 objects to ensure player movement between them
 #define MINIMUM_OBJECT_SAFE_DISTANCE		100
@@ -1630,7 +1631,7 @@ void CBaseObject::TraceAttack( const CTakeDamageInfo &inputInfo, const Vector &v
 	// Prevent team damage here so blood doesn't appear
 	if ( inputInfo.GetAttacker() )
 	{
-		if ( InSameTeam(inputInfo.GetAttacker()) )
+		if ( InSameTeam(inputInfo.GetAttacker()) && !friendlyfire.GetBool() )
 		{
 			// Pass Damage to enemy attachments
 			int iNumObjects = GetNumObjectsOnMe();
@@ -1871,7 +1872,7 @@ int CBaseObject::OnTakeDamage( const CTakeDamageInfo &info )
 	// Check teams
 	if ( info.GetAttacker() )
 	{
-		if ( InSameTeam(info.GetAttacker()) )
+		if ( InSameTeam(info.GetAttacker()) && !friendlyfire.GetBool() )
 			return 0;
 
 		if ( TFGameRules() && TFGameRules()->IsTruceActive() )
