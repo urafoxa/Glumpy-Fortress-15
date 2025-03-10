@@ -453,7 +453,6 @@ void CHud::Init( void )
 
 		kv->deleteThis();
 	}
-
 	if ( m_bHudTexturesLoaded )
 		return;
 
@@ -519,6 +518,26 @@ void CHud::Shutdown( void )
 //-----------------------------------------------------------------------------
 void CHud::LevelInit( void )
 {
+	// Clear all of the map-specific icons.
+	int c = m_MapIcons.Count();
+	for ( int i = c - 1; i >= 0; i-- )
+	{
+		CHudTexture *tex = m_MapIcons[ i ];
+		g_HudTextureMemoryPool.Free( tex );
+	}
+	m_MapIcons.Purge();
+
+	// Add the current map's icons.
+	CUtlDict< CHudTexture *, int >	textureList;
+	LoadHudTextures( textureList, "scripts/map_textures", NULL );
+	c = textureList.Count();
+	for ( int index = 0; index < c; index++ )
+	{
+		CHudTexture* tex = textureList[ index ];
+		AddSearchableHudIconToList( *tex, true);
+	}
+	FreeHudTextureList( textureList );
+
 	// Tell all the registered hud elements to LevelInit
 	for ( int i = 0; i < m_HudList.Size(); i++ )
 	{
@@ -559,6 +578,14 @@ CHud::~CHud()
 		g_HudTextureMemoryPool.Free( tex );
 	}
 	m_Icons.Purge();
+
+	c = m_MapIcons.Count();
+	for ( int i = c - 1; i >= 0; i-- )
+	{
+		CHudTexture *tex = m_MapIcons[ i ];
+		g_HudTextureMemoryPool.Free( tex );
+	}
+	m_MapIcons.Purge();
 
 	c = m_RenderGroups.Count();
 	for ( int i = c - 1; i >= 0; i-- )
@@ -767,7 +794,7 @@ CHudTexture *CHud::AddUnsearchableHudIconToList( CHudTexture& texture )
 }
 
 //-----------------------------------------------------------------------------
-// Purpose: 
+// Purpose: Add an Icon to the m_Icons list
 //-----------------------------------------------------------------------------
 CHudTexture *CHud::AddSearchableHudIconToList( CHudTexture& texture )
 {
@@ -787,11 +814,36 @@ CHudTexture *CHud::AddSearchableHudIconToList( CHudTexture& texture )
 }
 
 //-----------------------------------------------------------------------------
+// Purpose: Add a map-specific icons to the m_Icons list
+//-----------------------------------------------------------------------------
+CHudTexture *CHud::AddSearchableHudIconToList( CHudTexture& texture, bool bMapicon )
+{
+	CHudTexture *icon = GetIcon( texture.szShortName );
+	if ( icon )
+	{
+		return icon;
+	}
+
+	CHudTexture *newTexture = ( CHudTexture * )g_HudTextureMemoryPool.Alloc();
+	*newTexture = texture;
+
+	SetupNewHudTexture( newTexture );
+
+	int idx = m_MapIcons.Insert( texture.szShortName, newTexture );
+	return m_MapIcons[ idx ];
+}
+
+//-----------------------------------------------------------------------------
 // Purpose: returns a pointer to an icon in the list
 //-----------------------------------------------------------------------------
 CHudTexture *CHud::GetIcon( const char *szIcon )
 {
 	int i = m_Icons.Find( szIcon );
+	int i2 = m_MapIcons.Find( szIcon );
+
+	if ( i2 != m_MapIcons.InvalidIndex() ) 
+		return m_MapIcons[ i2 ];
+
 	if ( i == m_Icons.InvalidIndex() )
 		return NULL;
 

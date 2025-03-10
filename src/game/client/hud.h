@@ -143,6 +143,7 @@ public:
 	// loads a new icon into the list, without duplicates
 	CHudTexture					*AddUnsearchableHudIconToList( CHudTexture& texture );
 	CHudTexture					*AddSearchableHudIconToList( CHudTexture& texture );
+	CHudTexture					*AddSearchableHudIconToList( CHudTexture& texture, bool bMapicon );
 
 	void						RefreshHudTextures();
 
@@ -194,6 +195,7 @@ private:
 
 	// Global list of known icons
 	CUtlDict< CHudTexture *, int >		m_Icons;
+	CUtlDict< CHudTexture *, int >		m_MapIcons;
 
 	CUtlVector< const char * >				m_RenderGroupNames;
 	CUtlMap< int, CHudRenderGroup * >		m_RenderGroups;
