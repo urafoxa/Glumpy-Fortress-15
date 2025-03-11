@@ -357,9 +357,9 @@ bool CTFWeaponPDA_Spy::VisibleInWeaponSelection( void )
 //-----------------------------------------------------------------------------
 // Purpose: Kill all buildings when pda is changed.
 //-----------------------------------------------------------------------------
-#ifdef GAME_DLL
 void CTFWeaponPDA::Equip(CBaseCombatCharacter* pOwner)
 {
+#ifdef GAME_DLL
 	// STAGING_ENGY
 	CTFPlayer* pPlayer = ToTFPlayer(pOwner);
 	if (pPlayer)
@@ -377,8 +377,8 @@ void CTFWeaponPDA::Equip(CBaseCombatCharacter* pOwner)
 			}
 		}
 	}
-
-	//BaseClass::Equip(pOwner);
+#endif
+	BaseClass::Equip( pOwner );
 }
 //-----------------------------------------------------------------------------
 // Purpose: Kill all buildings when pda is changed.
@@ -386,6 +386,7 @@ void CTFWeaponPDA::Equip(CBaseCombatCharacter* pOwner)
 void CTFWeaponPDA::Detach(void)
 {
 	// STAGING_ENGY
+#ifdef GAME_DLL
 	CTFPlayer* pPlayer = GetTFPlayerOwner();
 	if (pPlayer)
 	{
@@ -417,11 +418,9 @@ void CTFWeaponPDA::Detach(void)
 			}
 		}
 	}
-
-	//BaseClass::Detach();
-}
-
 #endif
+	BaseClass::Detach();
+}
 
 //-----------------------------------------------------------------------------
 // PDA Expansion Slots

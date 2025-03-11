@@ -2315,7 +2315,7 @@ CTFAmmoPack* CBaseObject::CreateAmmoPack( const char *pchModel, int nMetal )
 		pAmmoPack->SetHealth( 900 );
 		pAmmoPack->m_bObjGib = true;
 
-		if ( IsMiniBuilding() )
+		if ( IsMiniBuilding() && ( GetType() != OBJ_DISPENSER ) )
 		{
 			pAmmoPack->SetModelScale( 0.6f );
 		}

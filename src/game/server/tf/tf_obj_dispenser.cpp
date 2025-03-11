@@ -214,7 +214,7 @@ const char* CObjectDispenser::GetBuildingModel( int iLevel )
 		switch ( iLevel )
 		{
 		case 1:
-			return DISPENSER_MODEL_BUILDING;
+			return IsMiniBuilding() ? MINI_DISPENSER_MODEL_BUILDING : DISPENSER_MODEL_BUILDING;
 			break;
 		case 2:
 			return DISPENSER_MODEL_BUILDING_LVL2;
@@ -241,7 +241,7 @@ const char* CObjectDispenser::GetFinishedModel( int iLevel )
 		switch ( iLevel )
 		{
 		case 1:
-			return DISPENSER_MODEL;
+			return IsMiniBuilding() ? MINI_DISPENSER_MODEL : DISPENSER_MODEL;
 			break;
 		case 2:
 			return DISPENSER_MODEL_LVL2;
@@ -267,6 +267,7 @@ const char* CObjectDispenser::GetPlacementModel()
 void CObjectDispenser::StartPlacement( CTFPlayer *pPlayer )
 {
 	BaseClass::StartPlacement( pPlayer );
+	MakeMiniBuilding(pPlayer);
 }
 
 //-----------------------------------------------------------------------------
@@ -494,11 +495,18 @@ void CObjectDispenser::Precache()
 	int iModelIndex;
 
 	PrecacheModel( DISPENSER_MODEL_PLACEMENT );
+	PrecacheModel( MINI_DISPENSER_MODEL_PLACEMENT );
 
 	iModelIndex = PrecacheModel( DISPENSER_MODEL_BUILDING );
 	PrecacheGibsForModel( iModelIndex );
 
 	iModelIndex = PrecacheModel( DISPENSER_MODEL );
+	PrecacheGibsForModel( iModelIndex );
+
+	iModelIndex = PrecacheModel( MINI_DISPENSER_MODEL_BUILDING );
+	PrecacheGibsForModel( iModelIndex );
+
+	iModelIndex = PrecacheModel( MINI_DISPENSER_MODEL );
 	PrecacheGibsForModel( iModelIndex );
 
 	iModelIndex = PrecacheModel( DISPENSER_MODEL_BUILDING_LVL2 );

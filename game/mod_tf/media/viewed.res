@@ -58,7 +58,7 @@
 	}
 	"cp_dustbowl"
 	{
-		"viewed"		"2"
+		"viewed"		"3"
 	}
 	"cp_manor_event"
 	{
@@ -142,7 +142,7 @@
 	}
 	"cp_steel"
 	{
-		"viewed"		"5"
+		"viewed"		"11"
 	}
 	"vsh_distillery"
 	{
@@ -155,5 +155,9 @@
 	"vsh_skirmish"
 	{
 		"viewed"		"1"
+	}
+	"cp_5gorge"
+	{
+		"viewed"		"2"
 	}
 }
