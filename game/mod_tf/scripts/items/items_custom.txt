@@ -335,6 +335,7 @@
 		{
 			"name"	"sniperrifle has laser pointer"
 			"attribute_class"	"sniper_has_laserdot"
+			"description_string"	"#Attrib_SniperLaser"
 			"description_format"	"value_is_additive"
 			"hidden"	"1"
 			"effect_type"	"negative"
@@ -362,7 +363,7 @@
 		{
 			"name"	"mod pda builds minidispenser"
 			"attribute_class"	"pda_builds_minidispenser"
-			"description_string"	"#Attrib_WrenchBuildsMiniSentry"
+			"description_string"	"#Attrib_WrenchBuildsMiniDispenser"
 			"description_format"	"value_is_additive"
 			"hidden"	"0"
 			"effect_type"	"negative"
@@ -742,7 +743,7 @@
 		//PDA TEST
 		"32003"
 		{
-			"name"	"TF_WEAPON_PDA_ENGINEER_BUILD"
+			"name"	"TF_WEAPON_PDA_BUILD_MINIDISPENSER"
 			"capabilities"
 			{
 				"nameable"		"1"
@@ -751,7 +752,7 @@
 			"item_class"	"tf_weapon_pda_engineer_build"
 			"craft_class"	"weapon"
 			"craft_material_type"	"weapon"
-			"item_name"	"#TF_Weapon_PDA_Engineer_Builder"
+			"item_name"	"#TFCW_HandyPartner"
 			"item_type_name"	"#TF_Weapon_PDA_Engineer"
 			"item_slot"	"pda"
 			"item_quality"	"unique"

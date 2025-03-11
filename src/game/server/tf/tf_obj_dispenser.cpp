@@ -358,10 +358,12 @@ void CObjectDispenser::SetModel( const char *pModel )
 {
 	BaseClass::SetModel( pModel );
 
+		bool bShouldBeMini = ShouldBeMiniBuilding(GetOwner());
+
 		// Reset this after model change
-		UTIL_SetSize( this,
-			DISPENSER_MINS,
-			DISPENSER_MAXS );
+		UTIL_SetSize(this,
+			bShouldBeMini ? MINI_DISPENSER_MINS : DISPENSER_MINS,
+			bShouldBeMini ? MINI_DISPENSER_MAXS : DISPENSER_MAXS);
 	ResetSequenceInfo();
 }
 

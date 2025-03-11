@@ -142,7 +142,7 @@
 	}
 	"cp_steel"
 	{
-		"viewed"		"11"
+		"viewed"		"14"
 	}
 	"vsh_distillery"
 	{
@@ -159,5 +159,9 @@
 	"cp_5gorge"
 	{
 		"viewed"		"2"
+	}
+	"cp_coldfront"
+	{
+		"viewed"		"1"
 	}
 }

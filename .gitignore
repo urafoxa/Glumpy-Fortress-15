@@ -733,3 +733,8 @@ game/mod_tf/materials/hud/dneg_images_mod.png
 game/mod_tf/materials/hud/dneg_images.png
 game/mod_tf/materials/hud/d_images_mod.png
 game/mod_tf/downloadlists/cp_5gorge.lst
+game/mod_tf/maps/graphs/tr_target.ain
+game/mod_tf/maps/graphs/cp_coldfront.ain
+game/mod_tf/downloadlists/tr_target.lst
+game/mod_tf/downloadlists/cp_coldfront.lst
+game/mod_tf/trainingprogress.txt
