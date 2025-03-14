@@ -30,7 +30,7 @@
 #include "soundenvelope.h"
 #include "tf_obj_sentrygun.h"
 
-
+extern ConVar friendlyfire;
 //=============================================================================
 //
 // TF Arrow Projectile functions (Server specific).
@@ -475,7 +475,7 @@ bool CTFProjectile_Arrow::StrikeTarget( mstudiobbox_t *pBox, CBaseEntity *pOther
 			}
 		}
 
-		if ( !InSameTeam( pOther ) )
+		if ( ( !InSameTeam( pOther ) && !friendlyfire.GetBool() ) || friendlyfire.GetBool() )
 		{
 			IScorer *pScorerInterface = dynamic_cast<IScorer*>( pAttacker );
 			if ( pScorerInterface )

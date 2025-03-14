@@ -58,7 +58,7 @@
 	}
 	"cp_dustbowl"
 	{
-		"viewed"		"8"
+		"viewed"		"16"
 	}
 	"cp_manor_event"
 	{

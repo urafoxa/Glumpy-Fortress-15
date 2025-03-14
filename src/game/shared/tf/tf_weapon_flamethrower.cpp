@@ -78,7 +78,7 @@ ConVar  tf_flamethrower_flametime("tf_flamethrower_flametime", "0.5", FCVAR_CHEA
 // (TODO: Add con commands to modify stock attributes on the fly)
 ConVar	tf_flamethrower_waterfall_damage_per_tick( "tf_flamethrower_waterfall_damage_per_tick", "7", FCVAR_REPLICATED );
 #endif // WATERFALL_FLAMETHROWER_TEST
-
+extern ConVar friendlyfire;
 #if defined( GAME_DLL )
 // TODO These should be cheat upon shipping probably
 ConVar tf_airblast_cray( "tf_airblast_cray", "1", FCVAR_CHEAT,
@@ -1615,46 +1615,49 @@ void CTFFlameThrower::ComputeCrayAirBlastForce( CTFPlayer *pTarget, CTFPlayer *p
 //-----------------------------------------------------------------------------
 bool CTFFlameThrower::DeflectPlayer( CTFPlayer *pTarget, CTFPlayer *pOwner, Vector &vecForward )
 {
-	if ( pTarget->GetTeamNumber() == pOwner->GetTeamNumber() && pTarget != pOwner )
+	if ( !friendlyfire.GetBool() )
 	{
-		if ( pTarget->m_Shared.InCond( TF_COND_BURNING ) && CanAirBlastPutOutTeammate() )
+		if (pTarget->GetTeamNumber() == pOwner->GetTeamNumber() && pTarget != pOwner)
 		{
-			ExtinguishPlayer( this, pOwner, pTarget, "tf_weapon_flamethrower" );
-
-			// Return health to the Pyro. 
-			// We may want to cap the amount of health per extinguish but for now lets test this
-			int iRestoreHealthOnExtinguish = 0;
-			CALL_ATTRIB_HOOK_INT( iRestoreHealthOnExtinguish, extinguish_restores_health );
-			if ( iRestoreHealthOnExtinguish > 0 )
+			if (pTarget->m_Shared.InCond(TF_COND_BURNING) && CanAirBlastPutOutTeammate())
 			{
-				pOwner->TakeHealth( iRestoreHealthOnExtinguish, DMG_GENERIC );
-				IGameEvent *healevent = gameeventmanager->CreateEvent( "player_healonhit" );
-				if ( healevent )
-				{
-					healevent->SetInt( "amount", iRestoreHealthOnExtinguish );
-					healevent->SetInt( "entindex", pOwner->entindex() );
-					item_definition_index_t healingItemDef = INVALID_ITEM_DEF_INDEX;
-					if ( GetAttributeContainer() && GetAttributeContainer()->GetItem() )
-					{
-						healingItemDef = GetAttributeContainer()->GetItem()->GetItemDefIndex();
-					}
-					healevent->SetInt( "weapon_def_index", healingItemDef );
+				ExtinguishPlayer(this, pOwner, pTarget, "tf_weapon_flamethrower");
 
-					gameeventmanager->FireEvent( healevent ); 
+				// Return health to the Pyro. 
+				// We may want to cap the amount of health per extinguish but for now lets test this
+				int iRestoreHealthOnExtinguish = 0;
+				CALL_ATTRIB_HOOK_INT(iRestoreHealthOnExtinguish, extinguish_restores_health);
+				if (iRestoreHealthOnExtinguish > 0)
+				{
+					pOwner->TakeHealth(iRestoreHealthOnExtinguish, DMG_GENERIC);
+					IGameEvent* healevent = gameeventmanager->CreateEvent("player_healonhit");
+					if (healevent)
+					{
+						healevent->SetInt("amount", iRestoreHealthOnExtinguish);
+						healevent->SetInt("entindex", pOwner->entindex());
+						item_definition_index_t healingItemDef = INVALID_ITEM_DEF_INDEX;
+						if (GetAttributeContainer() && GetAttributeContainer()->GetItem())
+						{
+							healingItemDef = GetAttributeContainer()->GetItem()->GetItemDefIndex();
+						}
+						healevent->SetInt("weapon_def_index", healingItemDef);
+
+						gameeventmanager->FireEvent(healevent);
+					}
 				}
 			}
-		}
 
-		float flGiveTeammateSpeedBoost = 0;
-		CALL_ATTRIB_HOOK_FLOAT( flGiveTeammateSpeedBoost, airblast_give_teammate_speed_boost );
-		if ( flGiveTeammateSpeedBoost > 0.f )
-		{
-			pTarget->m_Shared.AddCond( TF_COND_SPEED_BOOST, flGiveTeammateSpeedBoost );
-			// give the owner extra time to catch up with faster class
-			pOwner->m_Shared.AddCond( TF_COND_SPEED_BOOST, flGiveTeammateSpeedBoost + 1.f );
-		}
+			float flGiveTeammateSpeedBoost = 0;
+			CALL_ATTRIB_HOOK_FLOAT(flGiveTeammateSpeedBoost, airblast_give_teammate_speed_boost);
+			if (flGiveTeammateSpeedBoost > 0.f)
+			{
+				pTarget->m_Shared.AddCond(TF_COND_SPEED_BOOST, flGiveTeammateSpeedBoost);
+				// give the owner extra time to catch up with faster class
+				pOwner->m_Shared.AddCond(TF_COND_SPEED_BOOST, flGiveTeammateSpeedBoost + 1.f);
+			}
 
-		return false;
+			return false;
+		}
 	}
 	
 	if ( CanAirBlastPushPlayer() )
@@ -1913,10 +1916,13 @@ bool CTFFlameThrower::DeflectEntity( CBaseEntity *pTarget, CTFPlayer *pOwner, Ve
 
 	// can't deflect things on our own team
 	// except the passtime ball when in passtime mode
-	if ( (pTarget->GetTeamNumber() == pOwner->GetTeamNumber()) 
-		&& !(g_pPasstimeLogic && (g_pPasstimeLogic->GetBall() == pTarget)) )
+	if (!friendlyfire.GetBool())
 	{
-		return false;
+		if ((pTarget->GetTeamNumber() == pOwner->GetTeamNumber())
+			&& !(g_pPasstimeLogic && (g_pPasstimeLogic->GetBall() == pTarget)))
+		{
+			return false;
+		}
 	}
 
 	// Grab the owner of the projectile *before* we reflect it.

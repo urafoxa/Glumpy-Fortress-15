@@ -38,7 +38,7 @@ ConVar tf_fireball_radius( "tf_fireball_radius", "22.5", FCVAR_REPLICATED | FCVA
 ConVar tf_fireball_draw_debug_radius( "tf_fireball_draw_debug_radius", "0", FCVAR_REPLICATED | FCVAR_CHEAT );
 ConVar tf_fireball_burning_bonus( "tf_fireball_burning_bonus", "3", FCVAR_REPLICATED | FCVAR_CHEAT );
 ConVar tf_fireball_max_lifetime( "tf_fireball_max_lifetime", "0.5", FCVAR_REPLICATED | FCVAR_CHEAT );
-
+extern ConVar friendlyfire;
 
 class CTFProjectile_BallOfFire : public CTFProjectile_Rocket
 {
@@ -265,13 +265,16 @@ public:
 		CTFPlayer* pTFOwner = ToTFPlayer( pOwner );
 		CTFPlayer *pTFPlayer = ToTFPlayer( pTarget );
 		
-		if ( pOwner->InSameTeam( pTarget ) )
+		if ( !friendlyfire.GetBool() )
 		{
-			if ( pTFPlayer )
+			if (pOwner->InSameTeam(pTarget))
 			{
-				OnCollideWithTeammate( pTFPlayer );
+				if (pTFPlayer)
+				{
+					OnCollideWithTeammate(pTFPlayer);
+				}
+				return;
 			}
-			return;
 		}
 		
 		int nEntIndex = pTarget->entindex();
