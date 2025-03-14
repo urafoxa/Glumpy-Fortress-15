@@ -73,7 +73,7 @@ END_DATADESC()
 //
 // Weapon Minigun functions.
 //
-
+extern ConVar friendlyfire;
 //-----------------------------------------------------------------------------
 // Purpose: Constructor.
 //-----------------------------------------------------------------------------
@@ -514,8 +514,9 @@ void CTFMinigun::RingOfFireAttack( int nDamage )
 	for ( CEntitySphereQuery sphere( vOrigin, flFireRadius ); (pEntity = sphere.GetCurrentEntity()) != NULL; sphere.NextEntity() )
 	{
 		// Skip players on the same team or who are invuln
+		CTFPlayer *pOwner = ToTFPlayer(GetPlayerOwner());
 		CTFPlayer *pVictim = ToTFPlayer( pEntity );
-		if ( !pVictim || InSameTeam( pVictim ) || pVictim->m_Shared.InCond( TF_COND_INVULNERABLE ) )
+		if ( !pVictim || pVictim == pOwner || ( InSameTeam( pVictim ) && !friendlyfire.GetBool() ) || pVictim->m_Shared.InCond(TF_COND_INVULNERABLE))
 			continue;
 
 		// Make sure their bounding box is near our ground plane
