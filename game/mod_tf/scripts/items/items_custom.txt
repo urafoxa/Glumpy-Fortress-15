@@ -891,5 +891,18 @@
 			"mouse_pressed_sound"	"ui/item_metal_weapon_pickup.wav"
 			"drop_sound"		"ui/item_metal_weapon_drop.wav"
 		}
+		"32004"
+		{
+			"name"	"TF_WEAPON_FIREAXE"
+			"prefab"	"weapon_fireaxe"
+			"item_name"	"#TFCW_Torchlight"
+			"item_description"	"#TFCW_Torchlight_Desc"
+			"item_quality"	"unique"
+			"moditem" "1"
+			"item_logname"	"baleful_beacon"
+			"item_iconname"	"baleful_beacon"
+			"model_player"	"models/weapons/c_models/c_baleful_beacon/c_baleful_beacon.mdl"
+			"image_inventory"	"backpack/weapons/custommade/c_baleful_beacon"
+		}
 	}
 }

@@ -22,7 +22,7 @@
 #include "c_tf_player.h"
 #endif
 
-
+extern ConVar friendlyfire;
 
 //=============================================================================
 //
@@ -147,7 +147,7 @@ bool CTFMechanicalArm::IsValidVictim( CTFPlayer *pOwner, CBaseEntity *pTarget )
 	if ( pTarget->IsPlayer() && pTarget->GetTeamNumber() == TEAM_SPECTATOR )
 		return false;
 
-	if ( pTarget->GetTeamNumber() == pOwner->GetTeamNumber() )
+	if ( pTarget->GetTeamNumber() == pOwner->GetTeamNumber() && !friendlyfire.GetBool() )
 		return false;
 
 	if ( pTarget->IsPlayer() && !pTarget->IsAlive() )
@@ -761,10 +761,13 @@ void CTFProjectile_MechanicalArmOrb::CheckForPlayers( int nNumToZap )
 		if ( !pTarget )
 			continue;
 
+		if ( pTarget == pTFOwner )
+			continue;
+
 		if ( !pTarget->IsAlive() )
 			continue;
 
-		if ( pTFOwner->InSameTeam( pTarget ) )
+		if ( pTFOwner->InSameTeam( pTarget ) && !friendlyfire.GetBool() )
 			continue;
 
 		if ( !FVisible( pTarget, MASK_OPAQUE ) )

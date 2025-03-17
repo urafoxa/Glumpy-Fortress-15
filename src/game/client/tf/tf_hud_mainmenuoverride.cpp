@@ -574,13 +574,13 @@ void CHudMainMenuOverride::ApplySchemeSettings( IScheme *scheme )
 	// m_pNotificationsShowPanel shows number of unread notifications. Pressing it pops up the first notification.
 	m_pNotificationsShowPanel = dynamic_cast<vgui::EditablePanel*>( FindChildByName("Notifications_ShowButtonPanel") );
 
-	m_pNotificationsShowPanel->SetVisible(false);
+	m_pNotificationsShowPanel->SetVisible( true );
 
 	m_iNotiPanelWide = m_pNotificationsPanel->GetWide();
 
 	// m_pMOTDShowPanel shows that the player has an unread MOTD. Pressing it pops up the MOTD.
 	m_pMOTDShowPanel = dynamic_cast<vgui::EditablePanel*>( FindChildByName("MOTD_ShowButtonPanel") );
-	m_pMOTDShowPanel->SetVisible(false);
+	m_pMOTDShowPanel->SetVisible(true);
 
 	vgui::EditablePanel* pHeaderContainer = dynamic_cast<vgui::EditablePanel*>( m_pMOTDPanel->FindChildByName( "MOTD_HeaderContainer" ) );
 	if ( pHeaderContainer )
@@ -1407,15 +1407,14 @@ void CHudMainMenuOverride::UpdateMOTD( bool bNewMOTDs )
 //-----------------------------------------------------------------------------
 void CHudMainMenuOverride::SetMOTDButtonVisible( bool bVisible )
 {
-	if (m_pMOTDShowPanel)
+	/*if (m_pMOTDShowPanel)
 	{
 		m_pMOTDShowPanel->SetVisible(false);
 	}
 	if (m_pMOTDPanel)
 	{
 		m_pMOTDPanel->SetVisible(false);
-	}
-	return;
+	}*/
 
 	if ( bVisible && m_pMOTDPanel && m_pMOTDPanel->IsVisible() )
 		return;
@@ -1538,7 +1537,6 @@ bool CHudMainMenuOverride::CheckAndWarnForPREC( void )
 //-----------------------------------------------------------------------------
 void CHudMainMenuOverride::UpdateNotifications()
 {
-	return;
 
 	int iNumNotifications = NotificationQueue_GetNumMainMenuNotifications();
 
@@ -1619,8 +1617,8 @@ void CHudMainMenuOverride::SetNotificationsPanelVisible( bool bVisible )
 			m_pNotificationsScroller->GetScrollbar()->InvalidateLayout();
 			m_pNotificationsScroller->GetScrollbar()->SetValue( 0 );
 
-			SetMOTDVisible( true );
-			SetQuestMapVisible( true );
+			SetMOTDVisible( false );
+			SetQuestMapVisible( false );
 			//SetWatchStreamVisible( false );
 
 			m_pNotificationsShowPanel->SetVisible( false );
@@ -1653,7 +1651,7 @@ void CHudMainMenuOverride::SetNotificationsPanelVisible( bool bVisible )
 //-----------------------------------------------------------------------------
 void CHudMainMenuOverride::AdjustNotificationsPanelHeight()
 {
-	return;
+
 
 	// Fit to our contents, which may change without notifying us.
 	int iNotiTall = m_pNotificationsControl->GetTall();

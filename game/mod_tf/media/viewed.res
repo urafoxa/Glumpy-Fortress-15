@@ -18,7 +18,7 @@
 	}
 	"pl_upward"
 	{
-		"viewed"		"39"
+		"viewed"		"41"
 	}
 	"pass_timbertown"
 	{
@@ -46,7 +46,7 @@
 	}
 	"ctf_2fort"
 	{
-		"viewed"		"64"
+		"viewed"		"66"
 	}
 	"mvm_decoy"
 	{
@@ -58,7 +58,7 @@
 	}
 	"cp_dustbowl"
 	{
-		"viewed"		"16"
+		"viewed"		"19"
 	}
 	"cp_manor_event"
 	{
@@ -150,7 +150,7 @@
 	}
 	"pl_perforation_a2"
 	{
-		"viewed"		"2"
+		"viewed"		"3"
 	}
 	"vsh_skirmish"
 	{
@@ -161,6 +161,22 @@
 		"viewed"		"2"
 	}
 	"cp_coldfront"
+	{
+		"viewed"		"1"
+	}
+	"free_2fort_invasion"
+	{
+		"viewed"		"6"
+	}
+	"cp_gravelpit"
+	{
+		"viewed"		"2"
+	}
+	"pl_aquarius_proto"
+	{
+		"viewed"		"1"
+	}
+	"war_desolation"
 	{
 		"viewed"		"1"
 	}

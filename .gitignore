@@ -739,3 +739,11 @@ game/mod_tf/downloadlists/tr_target.lst
 game/mod_tf/downloadlists/cp_coldfront.lst
 game/mod_tf/trainingprogress.txt
 game/mod_tf/bin.rar
+game/mod_tf/downloadlists/cp_gravelpit.lst
+game/mod_tf/downloadlists/free_2fort_invasion.lst
+game/mod_tf/downloadlists/pl_aquarius_proto.lst
+game/mod_tf/downloadlists/war_desolation.lst
+game/mod_tf/maps/graphs/free_2fort_invasion.ain
+game/mod_tf/maps/graphs/pl_aquarius_proto.ain
+game/mod_tf/maps/pl_aquarius_proto.bsp
+game/mod_tf/scripts/vscripts/physgun.nut
