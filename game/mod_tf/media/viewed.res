@@ -18,7 +18,7 @@
 	}
 	"pl_upward"
 	{
-		"viewed"		"41"
+		"viewed"		"42"
 	}
 	"pass_timbertown"
 	{
@@ -46,7 +46,7 @@
 	}
 	"ctf_2fort"
 	{
-		"viewed"		"66"
+		"viewed"		"81"
 	}
 	"mvm_decoy"
 	{
@@ -126,7 +126,7 @@
 	}
 	"koth_badlands"
 	{
-		"viewed"		"10"
+		"viewed"		"16"
 	}
 	"ctf_2fort_invasion"
 	{
@@ -134,7 +134,7 @@
 	}
 	"ctf_turbine"
 	{
-		"viewed"		"3"
+		"viewed"		"4"
 	}
 	"ctf_haarp"
 	{
@@ -158,7 +158,7 @@
 	}
 	"cp_5gorge"
 	{
-		"viewed"		"2"
+		"viewed"		"3"
 	}
 	"cp_coldfront"
 	{
@@ -177,6 +177,26 @@
 		"viewed"		"1"
 	}
 	"war_desolation"
+	{
+		"viewed"		"1"
+	}
+	"ctf_pressure_b1"
+	{
+		"viewed"		"3"
+	}
+	"ctf_pressure_b2"
+	{
+		"viewed"		"1"
+	}
+	"ctf_doublecross"
+	{
+		"viewed"		"1"
+	}
+	"cp_8pluspoints_sdk"
+	{
+		"viewed"		"4"
+	}
+	"ctf_pressure_b5"
 	{
 		"viewed"		"1"
 	}

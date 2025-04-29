@@ -651,6 +651,32 @@
 				}
 			}
 		}
+		"29002"
+		{
+			"name"	"Taunt: Scootin "
+			"prefab"	"valve taunt"
+			"item_name"			"#OFFSHORE_TauntDirtkick"
+			"item_description"			"#OFFSHORE_TauntDirtkick_Desc"
+			"image_inventory"	"backpack/player/taunts/taunt_scoutkick"
+			"image_inventory_size_w"	"128"
+			"image_inventory_size_h"	"82"
+			"item_quality"		"unique"
+			"min_ilevel"	"1"
+			"max_ilevel"	"100"
+			"valid_for_shuffle"	"1"
+			"moditem" "1"
+			"used_by_classes"
+			{
+				"scout"	"1"
+			}
+			"taunt"
+			{
+				"custom_taunt_scene_per_class"
+				{
+					"scout"	"scenes/player/scout/low/offshore/taunt_dirtkick.vcd"
+				}
+			}
+		}
 		//SWORDFISH
 		"32000"
 		{
@@ -899,6 +925,7 @@
 			"item_description"	"#TFCW_Torchlight_Desc"
 			"item_quality"	"unique"
 			"moditem" "1"
+			"show_in_armory"	"1"
 			"item_logname"	"baleful_beacon"
 			"item_iconname"	"baleful_beacon"
 			"model_player"	"models/weapons/c_models/c_baleful_beacon/c_baleful_beacon.mdl"

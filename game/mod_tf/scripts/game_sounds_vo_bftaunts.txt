@@ -129,3 +129,47 @@
 		"wave"			"vo/taunts/spy/spy_taunt_dosi_int_16.mp3"
 	}
 }
+
+// ***********************************************
+// OFFSHORE PROJECT
+// ***********************************************
+
+"Offshore.Taunt_Dirtkick_Vo"
+{
+	"channel" 			"CHAN_VOICE"
+	"volume" 			"VOL_NORM"
+	"pitch" 			"PITCH_NORM"
+	"soundlevel" 		"SNDLVL_95dB"
+	"rndwave"
+	{ 
+		"wave"			"vo/scout_battlecry03.mp3"
+		"wave"			"vo/taunts/scout_taunts15.mp3"
+		"wave"			"vo/taunts/scout_taunts07.mp3"
+	}
+}
+"Offshore.Taunt_Dirtkick_Vo_End"
+{
+	"channel" 			"CHAN_VOICE"
+	"volume" 			"VOL_NORM"
+	"pitch" 			"PITCH_NORM"
+	"soundlevel" 		"SNDLVL_95dB"
+	"rndwave"
+	{ 
+		"wave"			"vo/scout_award12.mp3"
+		"wave"			"vo/scout_goodjob02.mp3"
+		"wave"			"vo/scout_cheers05.mp3"
+	}
+}
+"Offshore.Taunt_Dirtkick_Vo_Kick"
+{
+	"channel" 			"CHAN_VOICE"
+	"volume" 			"VOL_NORM"
+	"pitch" 			"PITCH_NORM"
+	"soundlevel" 		"SNDLVL_95dB"
+	"rndwave"
+	{ 
+		"wave"			"vo/taunts/scout/scout_taunt_flip_exert_10.mp3"
+		"wave"			"vo/taunts/scout/scout_taunt_exert_23.mp3"
+		"wave"			"vo/taunts/scout/scout_taunt_flip_exert_01.mp3"
+	}
+}
