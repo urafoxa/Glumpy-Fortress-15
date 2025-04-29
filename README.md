@@ -1,5 +1,6 @@
 > [!IMPORTANT]
 > ### Collection of changes that could end up in LIVE-TF2, the goal is to try making as much stuff as possible less hardcoded, to give mappers and vscripters more customization like, Custom map titles, killicons, and so on.
+> ## This is also meant to be as a "Playground" build, demonstating how TF2 could function with community fixes and such, this is just for fun feel free to fork, or use
 
 > [!WARNING]
 > - Features some community fixes which i DO NOT CLAIM as mine, but credited (if i forgot please tell).
@@ -10,6 +11,8 @@
 # FEATURES:
 - External scenes loader  (Mapbase | .VCD, Faceposer stuff)
 - Pyrovision Support keyvalue/netprop for tf_gamerules 
+- ```nav_generate``` now reloads navigation instead of the map 
+- ```sv_infinite_ammo```
 ## Player
 - GiveItem (I/O and Command)
 - Penetration kill sound toggle cvar | ```tf_snd_penetrationkill```
