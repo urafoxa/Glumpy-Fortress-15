@@ -86,6 +86,7 @@
 	#include "halloween/merasmus/merasmus.h"
 	#include "halloween/merasmus/merasmus_dancer.h"
 	#include "tf_extra_map_entity.h"
+	#include "entity_bird.h"
 	#include "tf_weapon_grenade_pipebomb.h"
 	#include "tf_weapon_flaregun.h"
 	#include "tf_weapon_sniperrifle.h"
@@ -4170,6 +4171,7 @@ static const char *s_PreserveEnts[] =
 	"func_upgradestation",
 	"entity_rocket",
 	"entity_carrier",
+	"entity_bird",
 	"entity_sign",
 	"entity_saucer",
 	"tf_halloween_gift_pickup",
@@ -4437,6 +4439,7 @@ void CTFGameRules::Activate()
  	if ( !IsInTournamentMode() && tf_teaserprops.GetBool() )
  	{
  		CExtraMapEntity::SpawnExtraModel();
+		CEntityBird::SpawnRandomBirds();
  	}
 
 	// If leaving MvM for any other game mode, clean up any sticky UI/state

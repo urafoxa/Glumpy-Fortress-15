@@ -46,7 +46,7 @@
 	}
 	"ctf_2fort"
 	{
-		"viewed"		"90"
+		"viewed"		"91"
 	}
 	"mvm_decoy"
 	{
@@ -250,7 +250,7 @@
 	}
 	"cp_well"
 	{
-		"viewed"		"1"
+		"viewed"		"9"
 	}
 	"pl_badwater"
 	{
