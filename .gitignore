@@ -809,3 +809,7 @@ game/mod_tf/scripts/vscripts/vip/vip/gamemode/overtime.nut
 game/mod_tf/scripts/vscripts/vip/vip/gamemode/vip_gamemode.nut
 game/mod_tf/scripts/vscripts/vip/vip/vip.nut
 game/mod_tf/scripts/vscripts/warpaints.nut
+game/mod_tf/downloadlists/cp_well.lst
+game/mod_tf/downloadlists/pl_badwater.lst
+game/mod_tf/maps/graphs/cp_well.ain
+game/mod_tf/maps/graphs/pl_badwater.ain

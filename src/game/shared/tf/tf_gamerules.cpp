@@ -649,6 +649,7 @@ extern ConVar mp_idlemaxtime;
 
 extern ConVar tf_mm_strict;
 extern ConVar mp_autoteambalance;
+extern ConVar tf_teaserprops;
 
 
 // STAGING_SPY
@@ -4433,10 +4434,10 @@ void CTFGameRules::Activate()
 		}
 	}
 
-// 	if ( !IsInTournamentMode() )
-// 	{
-// 		CExtraMapEntity::SpawnExtraModel();
-// 	}
+ 	if ( !IsInTournamentMode() && tf_teaserprops.GetBool() )
+ 	{
+ 		CExtraMapEntity::SpawnExtraModel();
+ 	}
 
 	// If leaving MvM for any other game mode, clean up any sticky UI/state
 	if ( IsInTournamentMode() && m_nGameType != TF_GAMETYPE_MVM && g_TFGameModeHistory.GetPrevState() == TF_GAMETYPE_MVM )

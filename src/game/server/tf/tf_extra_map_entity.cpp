@@ -14,13 +14,16 @@ struct EntityWhiteList_t
 	const char *pszEntName;
 };
 
+ConVar tf_teaserprops("tf_teaserprops", "0", FCVAR_REPLICATED, "Enable teaser props on mapspawn.");
+ConVar tf_teaserprops_type("tf_teaserprops_type", "0", FCVAR_REPLICATED, "Which teaser you want to spawn with?");
+
 // limit the entities that can be created using this method
 EntityWhiteList_t g_szEntityWhiteList[] =
 {
-//	{ "rocket", "entity_rocket" },
-//	{ "carrier", "entity_carrier" },
+	{ "rocket", "entity_rocket" },
+	{ "carrier", "entity_carrier" },
 	{ "sign", "entity_sign" },
-//	{ "saucer", "entity_saucer" },
+	{ "saucer", "entity_saucer" },
 };
 
 
@@ -112,7 +115,7 @@ void CExtraMapEntity::PrepareModelName( const char *szModelName )
 
 void CExtraMapEntity::SpawnExtraModel( void )
 {
-/*
+
 	const char *pszMapName = STRING( gpGlobals->mapname );
 	if ( !pszMapName || !pszMapName[0] )
 		return;
@@ -179,7 +182,7 @@ void CExtraMapEntity::SpawnExtraModel( void )
 	}
 
 	pFileKV->deleteThis();
-*/
+
 }
 
 //-----------------------------------------------------------------------------
@@ -187,10 +190,14 @@ void CExtraMapEntity::SpawnExtraModel( void )
 //-----------------------------------------------------------------------------
 void CExtraMapEntity_Rocket::Spawn( void )
 {
-	BaseClass::Spawn();
+	if (tf_teaserprops_type.GetBool() == 0)
+	{
 
-	SetSolid( SOLID_BBOX );
-	SetSize( -Vector( 8, 8, 0 ), Vector( 8, 8, 16 ) );
+		BaseClass::Spawn();
+
+		SetSolid(SOLID_BBOX);
+		SetSize(-Vector(8, 8, 0), Vector(8, 8, 16));
+	}
 }
 
 void CExtraMapEntity_Rocket::Precache_Internal( void )
@@ -204,10 +211,14 @@ void CExtraMapEntity_Rocket::Precache_Internal( void )
 //-----------------------------------------------------------------------------
 void CExtraMapEntity_Carrier::Spawn( void )
 {
-	BaseClass::Spawn();
+	if (tf_teaserprops_type.GetBool() == 1)
+	{
 
-	SetSolid( SOLID_BBOX );
-	SetSize( -Vector( 8, 8, 0 ), Vector( 8, 8, 16 ) );
+		BaseClass::Spawn();
+
+		SetSolid(SOLID_BBOX);
+		SetSize(-Vector(8, 8, 0), Vector(8, 8, 16));
+	}
 }
 
 //-----------------------------------------------------------------------------
@@ -215,10 +226,14 @@ void CExtraMapEntity_Carrier::Spawn( void )
 //-----------------------------------------------------------------------------
 void CExtraMapEntity_Sign::Spawn( void )
 {
-	BaseClass::Spawn();
+	if (tf_teaserprops_type.GetBool() == 2)
+	{
 
-	SetSolid( SOLID_NONE );
-	AddEffects( EF_NOSHADOW );
+		BaseClass::Spawn();
+
+		SetSolid(SOLID_NONE);
+		AddEffects(EF_NOSHADOW);
+	}
 }
 
 //-----------------------------------------------------------------------------
@@ -226,8 +241,12 @@ void CExtraMapEntity_Sign::Spawn( void )
 //-----------------------------------------------------------------------------
 void CExtraMapEntity_Saucer::Spawn( void )
 {
-	BaseClass::Spawn();
+	if (tf_teaserprops_type.GetBool() == 2)
+	{
 
-	SetSolid( SOLID_NONE );
-	AddEffects( EF_NOSHADOW );
+		BaseClass::Spawn();
+
+		SetSolid(SOLID_NONE);
+		AddEffects(EF_NOSHADOW);
+	}
 }

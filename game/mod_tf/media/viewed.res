@@ -248,4 +248,12 @@
 	{
 		"viewed"		"1"
 	}
+	"cp_well"
+	{
+		"viewed"		"1"
+	}
+	"pl_badwater"
+	{
+		"viewed"		"4"
+	}
 }
