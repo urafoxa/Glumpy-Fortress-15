@@ -29,6 +29,7 @@ extern bool CheckValveSignature( const void *data, uint32 nDataSize, const void 
 
 const char* g_pszProtoPath = "scripts/protodefs/unencrypted/";
 const char* g_pszProtoDefFile = "scripts/protodefs/proto_defs.vpd";
+const char* g_pszProtoDefFile_MOD = "scripts/protodefs/proto_defs_mod.vpd";
 const char* g_pszProtoLocFileName = "resource/tf_proto_obj_defs_english.txt";
 
 #ifdef CLIENT_DLL
@@ -651,6 +652,8 @@ bool CProtoBufScriptObjectDefinitionManager::BInitDefinitions()
 	CUtlBuffer buffer;
 	bool bReadFileOK = g_pFullFileSystem->ReadFile( g_pszProtoDefFile, "GAME", buffer );
 	SCHEMA_INIT_CHECK( bReadFileOK, "Failed to load %s!", g_pszProtoDefFile );
+	bool bReadFileOK2 = g_pFullFileSystem->ReadFile(g_pszProtoDefFile_MOD, "GAME", buffer);
+	SCHEMA_INIT_CHECK(bReadFileOK2, "Failed to load %s!", g_pszProtoDefFile_MOD);
 
 	// Do we need to check the signature?
 #if defined(TF_DLL) || defined(TF_CLIENT_DLL)

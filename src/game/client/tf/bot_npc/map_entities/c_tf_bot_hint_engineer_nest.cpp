@@ -63,6 +63,7 @@ void C_TFBotHintEngineerNest::StartEffect()
 	if ( !m_pMvMActiveTeleporter )
 	{
 		m_pMvMActiveTeleporter = ParticleProp()->Create( "teleporter_mvm_bot_persist", PATTACH_ABSORIGIN );
+		EmitSound("MVM.Robot_Teleporter_Activate");
 	}
 }
 

@@ -5,6 +5,25 @@
 "items_game"
 {
 
+	"item_collections"
+	{
+		"BetterFortressPaintkits_collection"
+		{
+			"name"				"#BetterFortress_collection"
+			"description"		"#BetterFortress_collection_desc"
+			"items"
+			{
+				"ancient"
+				{
+					"Paintkit 800"				"10"
+				}
+				"legendary"
+				{
+					"Paintkit 801"        		"10"
+				}
+			}
+		}
+	}
 	"prefabs"
 	{
 		"weapon_reserve_shooter"
@@ -919,7 +938,7 @@
 		}
 		"32004"
 		{
-			"name"	"TF_WEAPON_FIREAXE"
+			"name"	"TF_WEAPON_TORCHLIGHT"
 			"prefab"	"weapon_fireaxe"
 			"item_name"	"#TFCW_Torchlight"
 			"item_description"	"#TFCW_Torchlight_Desc"
@@ -931,5 +950,36 @@
 			"model_player"	"models/weapons/c_models/c_baleful_beacon/c_baleful_beacon.mdl"
 			"image_inventory"	"backpack/weapons/custommade/c_baleful_beacon"
 		}
+		// WARPAINT ITEMS
+		"34000" 
+		{
+			"name"		"Paintkit 800"
+			"prefab"	"paintkit_tool"
+			"static_attrs"
+			{
+				"paintkit_proto_def_index"					"800"
+			}
+		}
+		"34001" 
+		{
+			"name"		"Paintkit 801"
+			"prefab"	"paintkit_tool"
+			"static_attrs"
+			{
+				"paintkit_proto_def_index"					"801"
+			}
+		}
+	}
+	"client_loot_lists"
+	{
+		"BetterFortress_Warpaints_loot_list"
+		{
+			"hide_lootlist"		"1"
+			"loot_list_collection"		"BetterFortressPaintkits_collection"
+		}		
+	}
+	"revolving_loot_lists"
+	{
+		"BetterFortress_Warpaints_loot_list"	"200"	
 	}
 }

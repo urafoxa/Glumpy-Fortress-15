@@ -18,7 +18,7 @@
 	}
 	"pl_upward"
 	{
-		"viewed"		"42"
+		"viewed"		"43"
 	}
 	"pass_timbertown"
 	{
@@ -26,7 +26,7 @@
 	}
 	"koth_megaton"
 	{
-		"viewed"		"6"
+		"viewed"		"8"
 	}
 	"koth_nucleus"
 	{
@@ -46,7 +46,7 @@
 	}
 	"ctf_2fort"
 	{
-		"viewed"		"81"
+		"viewed"		"90"
 	}
 	"mvm_decoy"
 	{
@@ -58,7 +58,7 @@
 	}
 	"cp_dustbowl"
 	{
-		"viewed"		"19"
+		"viewed"		"20"
 	}
 	"cp_manor_event"
 	{
@@ -82,7 +82,7 @@
 	}
 	"cp_yukon_final"
 	{
-		"viewed"		"1"
+		"viewed"		"2"
 	}
 	"cp_granary"
 	{
@@ -90,7 +90,7 @@
 	}
 	"cp_vanguard"
 	{
-		"viewed"		"1"
+		"viewed"		"2"
 	}
 	"arena_watchtower"
 	{
@@ -134,7 +134,7 @@
 	}
 	"ctf_turbine"
 	{
-		"viewed"		"4"
+		"viewed"		"5"
 	}
 	"ctf_haarp"
 	{
@@ -142,11 +142,11 @@
 	}
 	"cp_steel"
 	{
-		"viewed"		"14"
+		"viewed"		"15"
 	}
 	"vsh_distillery"
 	{
-		"viewed"		"1"
+		"viewed"		"2"
 	}
 	"pl_perforation_a2"
 	{
@@ -190,13 +190,61 @@
 	}
 	"ctf_doublecross"
 	{
-		"viewed"		"1"
+		"viewed"		"4"
 	}
 	"cp_8pluspoints_sdk"
 	{
 		"viewed"		"4"
 	}
 	"ctf_pressure_b5"
+	{
+		"viewed"		"2"
+	}
+	"ctf_pressure_b6"
+	{
+		"viewed"		"4"
+	}
+	"koth_slime"
+	{
+		"viewed"		"1"
+	}
+	"pd_mannsylvania"
+	{
+		"viewed"		"2"
+	}
+	"rs_testbed"
+	{
+		"viewed"		"9"
+	}
+	"ctf_pressure_b7"
+	{
+		"viewed"		"1"
+	}
+	"vip_idol_b12a"
+	{
+		"viewed"		"1"
+	}
+	"arena_byre"
+	{
+		"viewed"		"1"
+	}
+	"cp_freight_final1"
+	{
+		"viewed"		"1"
+	}
+	"tow_dynamite"
+	{
+		"viewed"		"1"
+	}
+	"rs_testbed_rev"
+	{
+		"viewed"		"2"
+	}
+	"ctf_pressure_b9"
+	{
+		"viewed"		"2"
+	}
+	"mvm_bigrock"
 	{
 		"viewed"		"1"
 	}
