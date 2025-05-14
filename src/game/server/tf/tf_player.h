@@ -1339,7 +1339,7 @@ private:
 	// In-game currency
 	CNetworkVar( int, m_nCurrency );
 	CNetworkVar( bool, m_bIsMiniBoss );
-	CNetworkVar(bool, m_bUsesGiantSounds);
+	CNetworkVar( bool, m_bUsesGiantSounds );
 
 	// Bounty Mode
 	CNetworkVar( uint32, m_nExperienceLevel );

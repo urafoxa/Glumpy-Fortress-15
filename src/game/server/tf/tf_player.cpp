@@ -789,11 +789,11 @@ IMPLEMENT_SERVERCLASS_ST( CTFPlayer, DT_TFPlayer )
 	SendPropExclude( "DT_BaseFlex", "m_blinktoggle" ),
 	SendPropExclude( "DT_BaseFlex", "m_viewtarget" ),
 
-	SendPropBool(SENDINFO(m_bSaveMeParity)),
-	SendPropBool(SENDINFO(m_bIsMiniBoss)),
-	SendPropBool(SENDINFO(m_bUsesGiantSounds)),
-	SendPropBool(SENDINFO(m_bIsABot)),
-	SendPropInt( SENDINFO(m_nBotSkill), 3, SPROP_UNSIGNED ),
+	SendPropBool( SENDINFO( m_bSaveMeParity ) ),
+	SendPropBool( SENDINFO( m_bIsMiniBoss) ),
+	SendPropBool( SENDINFO( m_bUsesGiantSounds ) ),
+	SendPropBool( SENDINFO( m_bIsABot ) ),
+	SendPropInt( SENDINFO( m_nBotSkill ), 3, SPROP_UNSIGNED ),
 
 	// This will create a race condition will the local player, but the data will be the same so.....
 	SendPropInt( SENDINFO( m_nWaterLevel ), 2, SPROP_UNSIGNED ),
