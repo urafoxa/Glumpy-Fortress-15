@@ -36,7 +36,7 @@ void RenderPartyChatMessage( const ChatMessage_t& message,
 							 RichText* pRichText,
 							 const Color& colorSystemMessage,
 							 const Color& colorPlayerName, 
-							 const Color& colorText )
+							 const Color& colorText, bool shouldPrint )
 {
 	CSteamID localSteamID;
 	if ( SteamUser() )
@@ -128,6 +128,14 @@ void RenderPartyChatMessage( const ChatMessage_t& message,
 		pRichText->InsertString( ": " );
 		pRichText->InsertColorChange( colorText );
 		pRichText->InsertString( message.m_pwszText );
+		if(shouldPrint)
+		{
+			char ansiName[ 128 ];
+			char ansiText[ 256 ];
+			g_pVGuiLocalize->ConvertUnicodeToANSI( ConvertCRtoNL( wCharPlayerName ), ansiName, sizeof( ansiName ) );
+			g_pVGuiLocalize->ConvertUnicodeToANSI( ConvertCRtoNL( message.m_pwszText ), ansiText, sizeof( ansiText ) );
+			Msg( "(PARTY) %s : %s\n", ansiName, ansiText);
+		}
 	}
 	break;
 	}

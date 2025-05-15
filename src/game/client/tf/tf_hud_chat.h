@@ -25,7 +25,7 @@ void RenderPartyChatMessage( const ChatMessage_t& message,
 							 vgui::RichText* pRichText,
 							 const Color& colorSystemMessage,
 							 const Color& colorPlayerName, 
-							 const Color& colorText );
+							 const Color& colorText, bool shouldPrint = false);
 
 class CHudChatLine : public CBaseHudChatLine
 {
