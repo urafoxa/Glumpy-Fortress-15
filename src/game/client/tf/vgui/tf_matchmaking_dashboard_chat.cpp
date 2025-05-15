@@ -295,7 +295,7 @@ void CPartyChatPanel::FireGameEvent( IGameEvent *event )
 		{
 			m_pChatLog->InsertString("\n");
 		}
-		RenderPartyChatMessage( sm_vecChatMessages.Tail(), m_pChatLog, m_colorChatPartyEvent, colorName, m_colorChatPlayerChatText );
+		RenderPartyChatMessage( sm_vecChatMessages.Tail(), m_pChatLog, m_colorChatPartyEvent, colorName, m_colorChatPlayerChatText, true );
 
 		return;
 	}
