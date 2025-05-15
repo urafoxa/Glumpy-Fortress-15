@@ -190,7 +190,7 @@ void CExtraMapEntity::SpawnExtraModel( void )
 //-----------------------------------------------------------------------------
 void CExtraMapEntity_Rocket::Spawn( void )
 {
-	if (tf_teaserprops_type.GetBool() == 0)
+	if (tf_teaserprops_type.GetInt() == 0)
 	{
 
 		BaseClass::Spawn();
@@ -211,7 +211,7 @@ void CExtraMapEntity_Rocket::Precache_Internal( void )
 //-----------------------------------------------------------------------------
 void CExtraMapEntity_Carrier::Spawn( void )
 {
-	if (tf_teaserprops_type.GetBool() == 1)
+	if (tf_teaserprops_type.GetInt() == 1)
 	{
 
 		BaseClass::Spawn();
@@ -226,7 +226,7 @@ void CExtraMapEntity_Carrier::Spawn( void )
 //-----------------------------------------------------------------------------
 void CExtraMapEntity_Sign::Spawn( void )
 {
-	if (tf_teaserprops_type.GetBool() == 2)
+	if (tf_teaserprops_type.GetInt() == 2)
 	{
 
 		BaseClass::Spawn();
@@ -241,7 +241,7 @@ void CExtraMapEntity_Sign::Spawn( void )
 //-----------------------------------------------------------------------------
 void CExtraMapEntity_Saucer::Spawn( void )
 {
-	if (tf_teaserprops_type.GetBool() == 2)
+	if (tf_teaserprops_type.GetInt() == 2)
 	{
 
 		BaseClass::Spawn();
