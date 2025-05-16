@@ -212,13 +212,26 @@ const char *CTFGrenadePipebombProjectile::GetTrailParticleName( void )
 
 	if ( HasStickyEffects() )
 	{
+		//Change particle for our stickies!
+		int particle = 0;
+		CALL_ATTRIB_HOOK_INT_ON_OTHER (GetLauncher (), particle, custom_sticky_trail);
 		if ( iTeamNumber == TF_TEAM_BLUE )
 		{
-			return "stickybombtrail_blue";
+			if (particle == 1)
+			{
+				return "hellstickybombtrail_blue";
+			}
+			else
+				return "stickybombtrail_blue";
 		}
 		else
 		{
-			return "stickybombtrail_red";
+			if (particle == 1)
+			{
+				return "hellstickybombtrail_red";
+			}
+			else
+				return "stickybombtrail_red";
 		}
 	}
 	else
@@ -560,6 +573,7 @@ void CTFGrenadePipebombProjectile::Precache()
 	// Must add All custom Models here
 	iModel = PrecacheModel( "models/workshop/weapons/c_models/c_kingmaker_sticky/w_kingmaker_stickybomb.mdl" );
 	iModel = PrecacheModel( "models/workshop/weapons/c_models/c_quadball/w_quadball_grenade.mdl" );
+	iModel = PrecacheModel ("models/workshop/weapons/c_models/c_seamine_launcher/c_seamine_launcher_sticky.mdl");
 
 	PrecacheParticleSystem( "stickybombtrail_blue" );
 	PrecacheParticleSystem( "stickybombtrail_red" );

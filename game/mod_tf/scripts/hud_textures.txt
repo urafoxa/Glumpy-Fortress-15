@@ -24,5 +24,14 @@
 				"width"		"88"
 				"height"	"32"
 		}
+		"offshore_stickylauncher"
+		{
+				"dfile"	"HUD/d_images_mod"
+				"dnegfile"	"HUD/dneg_images_mod"
+				"x"		"93"
+				"y"		"2"
+				"width"		"84"
+				"height"	"32"
+		}
 	}	
 }

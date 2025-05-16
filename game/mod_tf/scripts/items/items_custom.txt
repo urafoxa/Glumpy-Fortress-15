@@ -388,6 +388,15 @@
 			"effect_type"	"negative"
 			"stored_as_integer"	"0"
 		}
+		"4005"
+		{
+			"name"	"custom sticky trail"
+			"attribute_class"	"custom_sticky_trail"
+			"description_format"	"value_is_additive"
+			"hidden"	"0"
+			"effect_type"	"negative"
+			"stored_as_integer"	"0"
+		}
 	}
 	"items"
 	{
@@ -950,6 +959,103 @@
 			"model_player"	"models/weapons/c_models/c_baleful_beacon/c_baleful_beacon.mdl"
 			"image_inventory"	"backpack/weapons/custommade/c_baleful_beacon"
 		}
+		"32005"
+		{
+			"name"	"The Hell Beneath"
+			"item_class"	"tf_weapon_pipebomblauncher"
+			"craft_class"	"weapon"
+			"craft_material_type"	"weapon"
+			"capabilities"
+			{
+				"nameable"		"1"
+			}
+			"tags"
+			{
+				"can_deal_damage"		"1"
+				"can_deal_gib_damage"	"1"
+				"can_be_equipped_by_soldier_or_demo"	"1"
+				"can_deal_critical_damage"	"1"
+				"can_deal_long_distance_damage"	"1"
+			}
+			"show_in_armory"	"1"
+			"moditem" "1"
+			"item_type_name"	"#TF_Weapon_PipebombLauncher"
+			"item_name" "#TFCW_HellSticky"
+			"item_description"	"#TFCW_HellSticky_Desc"
+			"item_slot"	"secondary"
+			"anim_slot"	"primary"
+			"item_quality"	"unique"
+			"propername"	"1"
+			"item_logname"	"offshore_stickylauncher"
+			"item_iconname"	"offshore_stickylauncher"
+			"min_ilevel"	"1"
+			"max_ilevel"	"99"
+			"image_inventory"	"backpack/weapons/custommade/c_hellsticky"
+			"image_inventory_size_w"		"128"
+			"image_inventory_size_h"		"82"
+			"inspect_panel_dist" 			"50"
+			"model_player"	"models/workshop/weapons/c_models/c_seamine_launcher/c_seamine_launcher.mdl"
+			"attach_to_hands"	"1"
+			"used_by_classes"
+			{
+				"demoman"	"1"
+			}
+			"static_attrs"
+			{
+				"min_viewmodel_offset"		"10 0 -10"				
+			}
+			"attributes"
+			{
+				"sticky arm time bonus"
+				{
+					"attribute_class"	"sticky_arm_time"
+					"value"	"-0.2"
+				}
+				"stickybomb charge rate"
+				{
+					"attribute_class"	"stickybomb_charge_rate"
+					"value"	"0.3"
+				}
+				"stickybomb_charge_damage_increase"
+				{
+					"attribute_class"	"stickybomb_charge_damage_increase"
+					"value"	"1.35"
+				}
+				"stickies detonate stickies"
+				{
+					"attribute_class"	"stickies_detonate_stickies"
+					"value"	"1"
+				}
+				"clip size penalty"
+				{
+					"attribute_class"	"mult_clipsize"
+					"value"	"0.5"
+				}
+				"damage penalty"
+				{
+					"attribute_class"	"mult_dmg"
+					"value"	"0.85"
+				}
+				"custom projectile model"
+				{
+					"attribute_class"	"custom_projectile_model"
+					"value"				"models/workshop/weapons/c_models/c_seamine_launcher/c_seamine_launcher_sticky.mdl"
+				}
+				"custom sticky trail"
+				{
+					"attribute_class"	"custom_sticky_trail"
+					"value"	"1"
+				}
+			}
+			"visuals"
+			{
+				"sound_single_shot"		"Weapon_AirBurster.Single"
+				"sound_burst"			"Weapon_AirBurster.SingleCrit"
+				"sound_special1"		"Weapon_AirBurster.Explode"
+			}
+			"mouse_pressed_sound"	"ui/item_heavy_gun_pickup.wav"
+			"drop_sound"		"ui/item_heavy_gun_drop.wav"
+		}
 		// WARPAINT ITEMS
 		"34000" 
 		{
@@ -967,6 +1073,62 @@
 			"static_attrs"
 			{
 				"paintkit_proto_def_index"					"801"
+			}
+		}
+		// CRATES & KEYS
+		"33000" 
+		{
+			"name"	"Offshore Oceanic Case"
+			"first_sale_date"	"2016/10/19"
+			"prefab" "base_cosmetic_case"
+			"tool"
+			{
+				"restriction"	"offshore2025"
+			}
+			"item_name"			"#Offshore2025_Crate_sea"
+			"item_description"	"#Offshore2025_Crate_sea_desc"
+			"ad_text"			"#Offshore2025_Crate_sea_adtext"
+			"image_inventory"	"backpack/crafting/op_case_cyan"
+			"model_player"		"models/player/items/crafting/op_case_cyan.mdl"
+			"default_skin"		"0"
+			"inspect_panel_dist" "80"
+			"static_attrs"
+			{
+				"set supply crate series"		"104"		
+				"hide crate series number"		"1"
+				"decoded by itemdefindex"		"33001"
+				"weapon_allow_inspect"			"1"
+			}
+			"event_desc_footer"			"#Offshore2025_Crate_sea_footer"			
+			"collection_reference"		"halloween2016_collection_lootlist"
+			"visuals"
+			{
+				"styles"
+				{
+					"0"
+					{
+						"skin" "0"
+					}
+				}
+			}
+		}
+		"33001"
+		{
+			"name"	"Offshore Oceanic Key" 
+			"first_sale_date"	"2016/10/19"
+			"prefab" 			"eventkey"
+			"item_name"			"#Offshore2025_Crate_sea_key"					
+			"item_description"	"#Offshore2025_Crate_sea_key_desc"						
+			"ad_text"			"#Offshore2025_Crate_sea_key_adtext"
+			"image_inventory"	"backpack/crafting/op_key_cyan"
+			"tool"
+			{
+				"type"	"decoder_ring"
+				"usage_capabilities"
+				{
+					"decodable"	"1"
+				}
+				"restriction"	"offshore2025"
 			}
 		}
 	}
