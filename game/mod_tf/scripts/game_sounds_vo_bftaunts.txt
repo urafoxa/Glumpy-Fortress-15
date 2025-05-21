@@ -173,3 +173,44 @@
 		"wave"			"vo/taunts/scout/scout_taunt_flip_exert_01.mp3"
 	}
 }
+"TauntKill.Heavy_Crushfall_Start"
+{
+	"channel" 			"CHAN_VOICE"
+	"volume" 			"VOL_NORM"
+	"pitch" 			"PITCH_NORM"
+	"soundlevel" 		"SNDLVL_95dB"
+	"rndwave"
+	{ 
+		"wave"			"vo/heavy_battlecry01.mp3"
+		"wave"			"vo/heavy_incoming01.mp3"
+		"wave"			"vo/heavy_incoming02.mp3"
+		"wave"			"vo/heavy_mvm_say_ready01.mp3"
+	}
+}
+"TauntKill.Heavy_Crushfall_Hit"
+{
+	"channel" 			"CHAN_VOICE"
+	"volume" 			"VOL_NORM"
+	"pitch" 			"PITCH_NORM"
+	"soundlevel" 		"SNDLVL_95dB"
+	"rndwave"
+	{ 
+		"wave"			"vo\heavy_painsharp03.mp3"
+		"wave"			"vo\heavy_painsevere02.mp3"
+		"wave"			"vo\heavy_painsevere03.mp3"
+	}
+}
+"TauntKill.Heavy_Crushfall_End"
+{
+	"channel" 			"CHAN_VOICE"
+	"volume" 			"VOL_NORM"
+	"pitch" 			"PITCH_NORM"
+	"soundlevel" 		"SNDLVL_95dB"
+	"rndwave"
+	{ 
+		"wave"			"vo\heavy_autodejectedtie03.mp3"
+		"wave"			"vo\heavy_domination07.mp3"
+		"wave"			"vo\heavy_fairyprincess12.mp3"
+		"wave"			"vo\heavy_jeers02.mp3"
+	}
+}

@@ -1185,8 +1185,7 @@ void CTFPlayerInventory::OnHasNewItems()
 {
 	BaseClass::OnHasNewItems();
 #ifdef CLIENT_DLL
-	if ( TFGameRules() && TFGameRules()->IsInTraining() )
-		return;
+
 
 	NotificationQueue_Remove( &CEconNotification_HasNewItems::IsNotificationType );
 	CEconNotification_HasNewItems *pNotification = new CEconNotification_HasNewItems();
@@ -1203,7 +1202,7 @@ void CTFPlayerInventory::OnHasNewQuest()
 #endif
 }
 
-#ifdef _DEBUG
+
 #ifdef CLIENT_DLL
 CON_COMMAND( cl_newitem_test, "Tests the new item ui notification." )
 {
@@ -1216,7 +1215,7 @@ CON_COMMAND( cl_newitem_test, "Tests the new item ui notification." )
 	NotificationQueue_Add( pNotification );
 }
 #endif
-#endif // _DEBUG
+
 
 //-----------------------------------------------------------------------------
 // Purpose: 

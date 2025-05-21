@@ -18525,7 +18525,7 @@ void CTFPlayer::DoTauntAttack( void )
 	m_iTauntAttack = TAUNTATK_NONE;
 
 	if ( iTauntAttack == TAUNTATK_PYRO_HADOUKEN || iTauntAttack == TAUNTATK_SPY_FENCING_SLASH_A || 
-		 iTauntAttack == TAUNTATK_SPY_FENCING_SLASH_B || iTauntAttack == TAUNTATK_SPY_FENCING_STAB || iTauntAttack == TAUNTATK_PYRO_GASBLAST )
+		 iTauntAttack == TAUNTATK_SPY_FENCING_SLASH_B || iTauntAttack == TAUNTATK_SPY_FENCING_STAB || iTauntAttack == TAUNTATK_PYRO_GASBLAST || iTauntAttack == TAUNTATK_HEAVY_FALLCRUSH)
 	{
 		// Pyro Hadouken fireball attack
 		// Kill all enemies within a small volume in front of the player.
@@ -18569,6 +18569,10 @@ void CTFPlayer::DoTauntAttack( void )
 				else if ( iTauntAttack == TAUNTATK_PYRO_GASBLAST )
 				{
 					pList[i]->TakeDamage( CTakeDamageInfo( this, this, GetActiveTFWeapon(), vecForward * 25000, vecPos, 500.0f, DMG_BURN | DMG_IGNITE, TF_DMG_CUSTOM_TAUNTATK_GASBLAST ) );
+				}
+				else if (iTauntAttack == TAUNTATK_HEAVY_FALLCRUSH)
+				{
+					pList[i]->TakeDamage (CTakeDamageInfo (this, this, GetActiveTFWeapon (), vecForward * 20000, vecPos, 500.0f, DMG_BLAST | DMG_PREVENT_PHYSICS_FORCE, TF_DMG_CUSTOM_TAUNTATK_HIGH_NOON));
 				}
 			}
 		}
