@@ -21346,11 +21346,11 @@ int CTFGameRules::GetTeamAssignmentOverride( CTFPlayer *pTFPlayer, int iDesiredT
 	int nMatchPlayers = pMatch ? pMatch->GetNumActiveMatchPlayers() : 0;
 	CMatchInfo::PlayerMatchData_t *pMatchPlayer = ( pMatch && steamID.IsValid() ) ? pMatch->GetMatchDataForPlayer( steamID ) : NULL;
 
-	if ( IsMannVsMachineMode() )
+	if ( IsMannVsMachineMode() && !tf_mvm_forceversus.GetBool() )
 	{
 		if ( !pTFPlayer->IsBot() && iTeam != TEAM_SPECTATOR )
 		{
-			if ( pMatchPlayer && !pMatchPlayer->bDropped && !tf_mvm_forceversus.GetBool() )
+			if ( pMatchPlayer && !pMatchPlayer->bDropped )
 			{
 				// Part of the lobby match
 				Log( "MVM assigned %s to defending team (player is in lobby)\n", pTFPlayer->GetPlayerName() );

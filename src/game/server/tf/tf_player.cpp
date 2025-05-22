@@ -6128,7 +6128,7 @@ int CTFPlayer::GetAutoTeam( int nPreferedTeam /*= TF_TEAM_AUTOASSIGN*/ )
 			}
 #endif // TF_RAID_MODE
 
-			if ( TFGameRules()->IsMannVsMachineMode() && !tf_mvm_forceversus.GetBool() )
+			if ( TFGameRules()->IsMannVsMachineMode())
 			{
 				bReturnDefenders = true;
 			}
@@ -6169,8 +6169,7 @@ int CTFPlayer::GetAutoTeam( int nPreferedTeam /*= TF_TEAM_AUTOASSIGN*/ )
 						}
 					}
 				}
-				if ( !tf_mvm_forceversus.GetBool() )
-					return TFGameRules()->GetTeamAssignmentOverride( this, TF_TEAM_PVE_DEFENDERS );
+				return TFGameRules()->GetTeamAssignmentOverride( this, tf_mvm_forceversus.GetBool() ? TF_TEAM_PVE_DEFENDERS : nPreferedTeam );
 			}
 		}
 
@@ -19926,7 +19925,7 @@ bool CTFPlayer::CanHearAndReadChatFrom( CBasePlayer *pPlayer )
 		if ( IsHLTV() || IsReplay() )
 			return true;
 		
-		return ( GetTeamNumber() == pPlayer->GetTeamNumber() );
+		return ( GetTeamNumber() == pPlayer->GetTeamNumber() || tf_mvm_forceversus.GetBool() );
 	}
 
 	if ( pPlayer->m_lifeState != LIFE_ALIVE && m_lifeState == LIFE_ALIVE )
