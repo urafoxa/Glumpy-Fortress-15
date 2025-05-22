@@ -6128,7 +6128,7 @@ int CTFPlayer::GetAutoTeam( int nPreferedTeam /*= TF_TEAM_AUTOASSIGN*/ )
 			}
 #endif // TF_RAID_MODE
 
-			if ( TFGameRules()->IsMannVsMachineMode() )
+			if ( TFGameRules()->IsMannVsMachineMode() && !tf_mvm_forceversus.GetBool() )
 			{
 				bReturnDefenders = true;
 			}
@@ -6169,8 +6169,8 @@ int CTFPlayer::GetAutoTeam( int nPreferedTeam /*= TF_TEAM_AUTOASSIGN*/ )
 						}
 					}
 				}
-
-				return TFGameRules()->GetTeamAssignmentOverride( this, TF_TEAM_PVE_DEFENDERS );
+				if ( !tf_mvm_forceversus.GetBool() )
+					return TFGameRules()->GetTeamAssignmentOverride( this, TF_TEAM_PVE_DEFENDERS );
 			}
 		}
 
@@ -6293,7 +6293,7 @@ bool CTFPlayer::ShouldForceAutoTeam( void )
 	if ( mp_forceautoteam.GetBool() )
 		return true;
 
-	if ( TFGameRules() && TFGameRules()->IsMannVsMachineMode() )
+	if ( TFGameRules() && TFGameRules()->IsMannVsMachineMode() && !tf_mvm_forceversus.GetBool() )
 		return true;
 
 	if ( TFGameRules() && TFGameRules()->IsCompetitiveMode() )

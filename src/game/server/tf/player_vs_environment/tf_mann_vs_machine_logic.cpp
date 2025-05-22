@@ -19,6 +19,7 @@ CHandle<CMannVsMachineLogic> g_hMannVsMachineLogic;
 //-------------------------------------------------------------------------
 BEGIN_DATADESC( CMannVsMachineLogic )
 	DEFINE_THINKFUNC( Update ),
+	DEFINE_KEYFIELD(m_bAllowVersus, FIELD_BOOLEAN, "pvp"),
 END_DATADESC()
 
 LINK_ENTITY_TO_CLASS( tf_logic_mann_vs_machine, CMannVsMachineLogic );

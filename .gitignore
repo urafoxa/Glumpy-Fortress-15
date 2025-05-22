@@ -956,3 +956,5 @@ game/mod_tf/sound/mvm/mobster_firebrand_r1a/mobster_yes04.mp3
 game/mod_tf/voice_ban.dt
 game/mod_tf/stats.txt
 game/mod_tf/GameState.txt
+game/mod_tf/scripts/vscripts/mvmswitch.nut
+game/mod_tf/downloadlists/mvm_coaltown.lst

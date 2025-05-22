@@ -36,6 +36,7 @@ private:
 	void InitPopulationManager( void );
 
 	float m_flNextAlarmCheck;
+	bool m_bAllowVersus;
 };
 
 extern CHandle<CMannVsMachineLogic> g_hMannVsMachineLogic;

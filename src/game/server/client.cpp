@@ -56,6 +56,7 @@ extern CBaseEntity*	FindPickerEntity( CBasePlayer* pPlayer );
 extern bool IsInCommentaryMode( void );
 
 ConVar  *sv_cheats = NULL;
+ConVar  noclip_fixup("noclip_fixup", "1", FCVAR_REPLICATED | FCVAR_NOTIFY, "Teleport if stuck");
 
 #ifdef TF_DLL
 // The default value here should match the default of the convar
@@ -1185,26 +1186,29 @@ void CC_Player_NoClip( void )
 
 	Vector oldorigin = pPlayer->GetAbsOrigin();
 	ClientPrint( pPlayer, HUD_PRINTCONSOLE, "noclip OFF\n");
-	if ( !TestEntityPosition( pPlayer ) )
-	{
-		Vector forward, right, up;
-
-		AngleVectors ( pl->v_angle, &forward, &right, &up);
-		
-		// Try to move into the world
-		if ( !FindPassableSpace( pPlayer, forward, 1, oldorigin ) )
+	if ( noclip_fixup.GetBool() )
+	{ 
+		if(!TestEntityPosition(pPlayer))
 		{
-			if ( !FindPassableSpace( pPlayer, right, 1, oldorigin ) )
+			Vector forward, right, up;
+
+			AngleVectors (pl->v_angle, &forward, &right, &up);
+
+			// Try to move into the world
+			if(!FindPassableSpace(pPlayer, forward, 1, oldorigin))
 			{
-				if ( !FindPassableSpace( pPlayer, right, -1, oldorigin ) )		// left
+				if(!FindPassableSpace(pPlayer, right, 1, oldorigin))
 				{
-					if ( !FindPassableSpace( pPlayer, up, 1, oldorigin ) )	// up
+					if(!FindPassableSpace(pPlayer, right, -1, oldorigin))		// left
 					{
-						if ( !FindPassableSpace( pPlayer, up, -1, oldorigin ) )	// down
+						if(!FindPassableSpace(pPlayer, up, 1, oldorigin))	// up
 						{
-							if ( !FindPassableSpace( pPlayer, forward, -1, oldorigin ) )	// back
+							if(!FindPassableSpace(pPlayer, up, -1, oldorigin))	// down
 							{
-								Msg( "Can't find the world\n" );
+								if(!FindPassableSpace(pPlayer, forward, -1, oldorigin))	// back
+								{
+									Msg("Can't find the world\n");
+								}
 							}
 						}
 					}
