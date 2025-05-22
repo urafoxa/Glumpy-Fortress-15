@@ -168,6 +168,8 @@ extern ConVar	tf_bot_quota_mode;
 extern ConVar	tf_bot_quota;
 extern ConVar	halloween_starting_souls;
 
+extern ConVar tf_mvm_miniboss_scale;
+
 extern ConVar tf_powerup_mode_killcount_timer_length;
 
 float GetCurrentGravity( void );
@@ -2877,6 +2879,7 @@ void CTFPlayer::PrecacheMvM()
 	PrecacheParticleSystem( "bot_death" );
 	PrecacheParticleSystem( "bot_radio_waves" );
 
+	PrecacheScriptSound( "MVM.FallDamageBots");
 	PrecacheScriptSound( "MVM.BotStep" );
 	PrecacheScriptSound( "MVM.GiantHeavyStep" );
 	PrecacheScriptSound( "MVM.GiantSoldierStep" );
@@ -3765,6 +3768,27 @@ void CTFPlayer::Spawn()
 			TFGameRules()->ShowRoundInfoPanel( this );
 			m_bSeenRoundInfo = true;
 		}
+		//MVM Versus
+		int nRobotClassIndex = (GetPlayerClass() ? GetPlayerClass()->GetClassIndex() : TF_CLASS_UNDEFINED);
+		if( TFGameRules()->IsMannVsMachineMode() && !IsFakeClient() && GetTeamNumber() == TF_TEAM_PVE_INVADERS )
+		{
+			if(nRobotClassIndex >= TF_CLASS_SCOUT && nRobotClassIndex <= TF_CLASS_ENGINEER)
+			{
+				if((-1.0f >= tf_mvm_miniboss_scale.GetFloat() || IsMiniBoss()) && g_pFullFileSystem->FileExists(g_szBotBossModels[nRobotClassIndex]))
+				{
+					GetPlayerClass()->SetCustomModel(g_szBotBossModels[nRobotClassIndex], USE_CLASS_ANIMATIONS);
+					UpdateModel();
+					SetBloodColor(DONT_BLEED);
+				}
+				else if(g_pFullFileSystem->FileExists(g_szBotModels[nRobotClassIndex]))
+				{
+					GetPlayerClass()->SetCustomModel(g_szBotModels[nRobotClassIndex], USE_CLASS_ANIMATIONS);
+					UpdateModel();
+					SetBloodColor(DONT_BLEED);
+				}
+			}
+		}
+
 
 		if ( IsInCommentaryMode() && !IsFakeClient() )
 		{
@@ -6169,7 +6193,7 @@ int CTFPlayer::GetAutoTeam( int nPreferedTeam /*= TF_TEAM_AUTOASSIGN*/ )
 						}
 					}
 				}
-				return TFGameRules()->GetTeamAssignmentOverride( this, tf_mvm_forceversus.GetBool() ? TF_TEAM_PVE_DEFENDERS : nPreferedTeam );
+					return TFGameRules()->GetTeamAssignmentOverride( this, tf_mvm_forceversus.GetBool() ? TF_TEAM_PVE_DEFENDERS : nPreferedTeam );
 			}
 		}
 
@@ -12358,7 +12382,8 @@ void CTFPlayer::Event_Killed( const CTakeDamageInfo &info )
 
 			// Electrical effect whenever a bot dies
 			CPVSFilter filter( WorldSpaceCenter() );
-			TE_TFParticleEffect( filter, 0.f, "bot_death", GetAbsOrigin(), vec3_angle );
+			if ( GetTeamNumber() == TF_TEAM_PVE_INVADERS )
+				TE_TFParticleEffect( filter, 0.f, "bot_death", GetAbsOrigin(), vec3_angle );
 		}
 		else
 		{
@@ -12385,7 +12410,7 @@ void CTFPlayer::Event_Killed( const CTakeDamageInfo &info )
 			}
 		}
 
-		if ( !IsBot() && !m_hReviveMarker )
+		if ( GetTeamNumber() != TF_TEAM_PVE_INVADERS && !m_hReviveMarker )
 		{
 			m_hReviveMarker = CTFReviveMarker::Create( this );
 		}
@@ -15252,7 +15277,16 @@ void CTFPlayer::PainSound( const CTakeDamageInfo &info )
 			TFPlayerClassData_t *pData = GetPlayerClass()->GetData();
 			if ( pData )
 			{
-				EmitSound( pData->GetDeathSound( DEATH_SOUND_GENERIC ) );
+				//Robots need to play their Robotic pain lines!
+				if(TFGameRules()->IsMannVsMachineMode())
+				{
+					if (GetTeamNumber() == TF_TEAM_PVE_INVADERS)
+						EmitSound( pData->GetDeathSound(IsMiniBoss() ? DEATH_SOUND_GENERIC_GIANT_MVM : DEATH_SOUND_GENERIC_MVM ));
+					else
+						EmitSound(pData->GetDeathSound(DEATH_SOUND_GENERIC));
+				}
+				else
+					EmitSound(pData->GetDeathSound(DEATH_SOUND_GENERIC));
 			}
 		}
 		return;

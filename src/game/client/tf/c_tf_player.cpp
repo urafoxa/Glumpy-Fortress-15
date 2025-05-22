@@ -9759,6 +9759,7 @@ void C_TFPlayer::GetTargetIDDataString( bool bIsDisguised, OUT_Z_BYTECAP(iMaxLen
 void C_TFPlayer::ThirdPersonSwitch( bool bThirdperson )
 {
 	FlushAllPlayerVisibilityState();
+	UpdateMVMEyeGlowEffect(bThirdperson);
 }
 
 void C_TFPlayer::ForceTempForceDraw( bool bThirdPerson )
@@ -9831,6 +9832,7 @@ void C_TFPlayer::FlushAllPlayerVisibilityState()
 				}
 			}
 		}
+
 	}
 
 	// Update our viewmodel whenever we switch view modes
@@ -10519,7 +10521,7 @@ void C_TFPlayer::UpdateMVMEyeGlowEffect( bool bVisible )
 	m_pMVMEyeGlowEffect[ 0 ] = NULL;
 	m_pMVMEyeGlowEffect[ 1 ] = NULL;
 
-	if ( bVisible )
+	if ( bVisible && !(IsLocalPlayer() && LocalPlayerInFirstPersonView()) )
 	{
 		// Set color based on skill
 		Vector vColor = m_nBotSkill >= 2 ? Vector( 255, 180, 36 ) : Vector( 0, 240, 255 );
