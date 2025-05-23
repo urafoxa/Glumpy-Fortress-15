@@ -958,3 +958,4 @@ game/mod_tf/stats.txt
 game/mod_tf/GameState.txt
 game/mod_tf/scripts/vscripts/mvmswitch.nut
 game/mod_tf/downloadlists/mvm_coaltown.lst
+*.lst
