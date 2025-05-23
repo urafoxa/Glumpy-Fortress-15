@@ -341,6 +341,18 @@
 	}
 	"attributes"
 	{
+		//RESTORED ONES
+		"483"
+		{
+			"name"	"medigun heals buildings"
+			"attribute_class"	"medic_machinery_beam"
+			"description_string"	"#Attrib_Heal_EngiBuildings"
+			"description_format"	"value_is_additive"
+			"hidden"	"1"
+			"effect_type"	"negative"
+			"stored_as_integer"	"0"
+		}
+		//CUSTOM ONES
 		"4000"
 		{
 			"name"	"override voice sound set"
@@ -371,15 +383,6 @@
 		}
 		"4003"
 		{
-			"name"	"medigun heals buildings"
-			"attribute_class"	"medic_machinery_beam"
-			"description_format"	"value_is_additive"
-			"hidden"	"1"
-			"effect_type"	"negative"
-			"stored_as_integer"	"0"
-		}
-		"4004"
-		{
 			"name"	"mod pda builds minidispenser"
 			"attribute_class"	"pda_builds_minidispenser"
 			"description_string"	"#Attrib_WrenchBuildsMiniDispenser"
@@ -388,7 +391,7 @@
 			"effect_type"	"negative"
 			"stored_as_integer"	"0"
 		}
-		"4005"
+		"4004"
 		{
 			"name"	"custom sticky trail"
 			"attribute_class"	"custom_sticky_trail"
@@ -396,6 +399,15 @@
 			"hidden"	"1"
 			"effect_type"	"positive"
 			"stored_as_integer" "0"
+		}
+		"4005"
+		{
+			"name"	"override hand model index"
+			"attribute_class"	"override_hand_model_index"
+			"description_format"	"value_is_additive"
+			"hidden"	"1"
+			"effect_type"	"positive"
+			"stored_as_integer"	"0"
 		}
 	}
 	"items"

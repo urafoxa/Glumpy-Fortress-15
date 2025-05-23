@@ -656,7 +656,7 @@ const char *CTFWeaponBase::GetViewModel( int iViewModel ) const
 	int iHandModelIndex = 0;
 	if ( pPlayer )
 	{
-		//CALL_ATTRIB_HOOK_FLOAT_ON_OTHER( pPlayer, iHandModelIndex, override_hand_model_index );		// this is a cleaner way of doing it, but...
+		CALL_ATTRIB_HOOK_FLOAT_ON_OTHER( pPlayer, iHandModelIndex, override_hand_model_index );		// this is a cleaner way of doing it, but...
 		CALL_ATTRIB_HOOK_FLOAT_ON_OTHER( pPlayer, iHandModelIndex, wrench_builds_minisentry );			// ...the gunslinger is the only thing that uses this attribute for now
 	}
 
@@ -665,6 +665,17 @@ const char *CTFWeaponBase::GetViewModel( int iViewModel ) const
 	{
 		// Should always be valid, because players without classes shouldn't be carrying items
 		const char *pszHandModel = pPlayer->GetPlayerClass()->GetHandModelName( iHandModelIndex );
+
+		//MVM Versus
+		if(TFGameRules()->IsMannVsMachineMode() && GetTeamNumber() == TF_TEAM_PVE_INVADERS)
+		{
+			int nBotViewmodelIndex = (pPlayer->GetPlayerClass() ? pPlayer->GetPlayerClass()->GetClassIndex() : TF_CLASS_UNDEFINED);
+			if(nBotViewmodelIndex >= TF_CLASS_SCOUT && nBotViewmodelIndex <= TF_CLASS_ENGINEER)
+			{ 
+				Assert( pPlayer->IsMiniBoss() ? g_szBotBossViewmodels[nBotViewmodelIndex] : g_szBotViewmodels[nBotViewmodelIndex]);
+				return pPlayer->IsMiniBoss() ? g_szBotBossViewmodels[nBotViewmodelIndex] : g_szBotViewmodels[nBotViewmodelIndex];
+			}
+		}
 		Assert( pszHandModel );
 
 		return pszHandModel;
