@@ -224,6 +224,7 @@ ConVar tf_boss_battle_respawn_on_friends( "tf_boss_battle_respawn_on_friends", "
 ConVar tf_mvm_death_penalty( "tf_mvm_death_penalty", "0", FCVAR_NOTIFY | FCVAR_CHEAT | FCVAR_DEVELOPMENTONLY, "How much currency players lose when dying" );
 extern ConVar tf_populator_damage_multiplier;
 extern ConVar tf_mvm_skill;
+ConVar tf_mvm_maxcurrency ("tf_mvm_maxcurrency","30000",FCVAR_CHEAT);
 
 ConVar tf_highfive_separation_forward( "tf_highfive_separation_forward", "0", FCVAR_CHEAT | FCVAR_DEVELOPMENTONLY, "Forward distance between high five partners" );
 ConVar tf_highfive_separation_right( "tf_highfive_separation_right", "0", FCVAR_CHEAT | FCVAR_DEVELOPMENTONLY, "Right distance between high five partners" );
@@ -3215,6 +3216,7 @@ void CTFPlayer::PrecacheTFPlayer()
 	PrecacheModel( "models/effects/resist_shield/resist_shield.mdl" );
 
 	PrecacheModel( "models/props_mvm/mvm_revive_tombstone.mdl" );
+	PrecacheModel( "models/vgui/UI_class01_mvm.mdl" );
 
 	PrecacheScriptSound( "General.banana_slip" ); // Used for SodaPopper Hype Jumps
 
@@ -3778,6 +3780,12 @@ void CTFPlayer::Spawn()
 		{
 			if(GetTeamNumber() == TF_TEAM_PVE_INVADERS)
 			{
+				//Spawn the player as Miniboss
+				if ( random->RandomInt(0,1) == 1)
+				{
+					SetIsMiniBoss(true);
+					MVM_StartIdleSound();
+				}
 				if(nRobotClassIndex >= TF_CLASS_SCOUT && nRobotClassIndex <= TF_CLASS_ENGINEER)
 				{
 					if((GetModelScale() >= tf_mvm_miniboss_scale.GetFloat() || IsMiniBoss()) && g_pFullFileSystem->FileExists(g_szBotBossModels[nRobotClassIndex]))
@@ -7076,6 +7084,8 @@ void CTFPlayer::HandleCommand_JoinClass( const char *pClassName, bool bAllowSpaw
 
 		gameeventmanager->FireEvent( event );
 	}
+	//MvM Versus
+	MVM_StartIdleSound();
 
 	// are they TF_CLASS_RANDOM and trying to select the class they're currently playing as (so they can stay this class)?
 	if ( iClass == GetPlayerClass()->GetClassIndex() )
@@ -20725,7 +20735,7 @@ void CTFPlayer::SaveLastWeaponSlot( void )
 	}
 }
 //-----------------------------------------------------------------------------
-// MVM Port
+// MVM Versus
 // ----------------------------------------------------------------------------
 void CTFPlayer::MVM_StartIdleSound(void)
 {
