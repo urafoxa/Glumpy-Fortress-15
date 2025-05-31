@@ -1883,3 +1883,13 @@
 	"soundlevel"  	"SNDLVL_150dB"
 	"wave"			")mvm/mvm_tele_activate.wav"
 }
+
+"MVM.Endless_BotsUpgraded"
+{
+	"channel"		"CHAN_STATIC"
+	"volume"		"0.500"
+	"pitch"			"135"
+	"soundlevel"	"SNDLVL_NONE"
+
+	"wave"			"#*mvm/mvm_warning.wav"
+}
