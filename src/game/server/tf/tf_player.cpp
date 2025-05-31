@@ -3939,10 +3939,13 @@ void CTFPlayer::Spawn()
 		{
 			if(GetTeamNumber() == TF_TEAM_PVE_INVADERS)
 			{
+				//We Reset your tags if you were for example a Gatebot
+				ClearTags();
 				//Spawn the player as Miniboss 50% chance
 				if ( random->RandomInt(0,1) == 1)
 				{
 					SetIsMiniBoss(true);
+					AddTag("bot_gatebot");
 					MVM_SetMinibossType();
 					MVM_StartIdleSound();
 				}
@@ -20949,6 +20952,55 @@ void CTFPlayer::MVM_StopIdleSound(void)
 		CSoundEnvelopeController::GetController().SoundDestroy(m_pGiantIdleSound);
 		m_pGiantIdleSound = NULL;
 	}
+}
+
+//-----------------------------------------------------------------------------
+// MVM Versus - Placeholder boss list
+// ----------------------------------------------------------------------------
+
+void CTFPlayer::ClearTags(void)
+{
+	m_tags.RemoveAll();
+}
+
+
+//---------------------------------------------------------------------------------------------
+void CTFPlayer::AddTag(const char* tag)
+{
+	if(!HasTag(tag))
+	{
+		m_tags.AddToTail(CFmtStr("%s",tag));
+	}
+}
+
+
+//---------------------------------------------------------------------------------------------
+void CTFPlayer::RemoveTag(const char* tag)
+{
+	for(int i = 0; i < m_tags.Count(); ++i)
+	{
+		if(FStrEq(tag,m_tags[i]))
+		{
+			m_tags.Remove(i);
+			return;
+		}
+	}
+}
+
+
+//---------------------------------------------------------------------------------------------
+// TODO: Make this an efficient lookup/match
+bool CTFPlayer::HasTag(const char* tag)
+{
+	for(int i = 0; i < m_tags.Count(); ++i)
+	{
+		if(FStrEq(tag,m_tags[i]))
+		{
+			return true;
+		}
+	}
+
+	return false;
 }
 
 //-----------------------------------------------------------------------------
