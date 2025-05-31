@@ -1870,9 +1870,152 @@ void CTFPlayer::TFPlayerThink()
 */
 
 	SetContextThink( &CTFPlayer::TFPlayerThink, gpGlobals->curtime, "TFPlayerThink" );
+	if( TFGameRules()->IsMannVsMachineMode() && tf_mvm_forceversus.GetBool() && GetTeamNumber() == TF_TEAM_PVE_INVADERS && !IsBot() && HasItem() && !TFGameRules()->InSetup() )
+	{
+		CCaptureFlag *pCaptureFlag = dynamic_cast<CCaptureFlag *>( GetItem() );
+		if ( pCaptureFlag )
+		{
+			SetContextThink( &CTFPlayer::MvMDeployBombThink, gpGlobals->curtime, "MvMDeployBombThink" );
+		}
+	}
 	m_flLastThinkTime = gpGlobals->curtime;
 }
 
+void CTFPlayer::MvMDeployBombThink()
+{
+	if (GetDeployingBombState() != TF_BOMB_DEPLOYING_NONE )
+	{
+		CCaptureZone *pAreaTrigger = NULL;
+
+		if ( GetDeployingBombState() != TF_BOMB_DEPLOYING_COMPLETE )
+		{
+			pAreaTrigger = GetClosestCaptureZone();
+			if ( !pAreaTrigger )
+			{
+				return; //Done( "No capture zone!" );
+			}
+
+			m_Shared.RemoveCond( TF_COND_FREEZE_INPUT );
+			SetForcedTauntCam( 0 );
+			// if we've been moved, give up and go back to normal behavior
+			const float movedRange = 20.0f;
+			Vector to = m_deployAnchorPos - GetAbsOrigin();
+			if( to.IsLengthGreaterThan( movedRange ) )
+			{
+				// Look for players that pushed me away and send an event
+				CUtlVector<CTFPlayer *> playerVector;
+				CollectPlayers( &playerVector, TF_TEAM_PVE_DEFENDERS );
+				FOR_EACH_VEC( playerVector, i )
+				{
+					CTFPlayer *pPlayer = playerVector[i];
+					if ( !pPlayer )
+						continue;
+
+					if ( m_AchievementData.IsPusherInHistory( pPlayer, 2.f ) )
+					{
+						IGameEvent *event = gameeventmanager->CreateEvent( "mvm_bomb_deploy_reset_by_player" );
+						if ( event )
+						{
+							event->SetInt( "player", pPlayer->entindex() );
+							gameeventmanager->FireEvent( event );
+						}
+					}
+				}
+
+				return; //Done( "I've been pushed" );
+			}
+
+			// slam facing towards bomb hole
+			to = pAreaTrigger->WorldSpaceCenter() - WorldSpaceCenter();
+			to.NormalizeInPlace();
+
+			QAngle desiredAngles;
+			VectorAngles( to, desiredAngles );
+
+			SnapEyeAngles( desiredAngles );
+		}
+
+		switch ( GetDeployingBombState() )
+		{
+		case TF_BOMB_DEPLOYING_DELAY:
+			if ( m_deployBombTimer.IsElapsed() )
+			{
+				m_Shared.AddCond( TF_COND_FREEZE_INPUT );
+				SetForcedTauntCam( 1 );
+				PlaySpecificSequence( "primary_deploybomb" );
+				m_deployBombTimer.Start( tf_deploying_bomb_time.GetFloat() );
+				SetDeployingBombState( TF_BOMB_DEPLOYING_ANIMATING );
+
+				const char *pszSoundName = IsMiniBoss() ? "MVM.DeployBombGiant" : "MVM.DeployBombSmall";
+				EmitSound( pszSoundName );
+
+				TFGameRules()->PlayThrottledAlert( 255, "Announcer.MVM_Bomb_Alert_Deploying", 5.0f );
+			}
+			break;
+
+		case TF_BOMB_DEPLOYING_ANIMATING:
+			if ( m_deployBombTimer.IsElapsed() )
+			{
+				if ( pAreaTrigger )
+				{
+					pAreaTrigger->Capture( this );
+				}
+
+				m_deployBombTimer.Start( 2.0f );
+				TFGameRules()->BroadcastSound( 255, "Announcer.MVM_Robots_Planted" );
+				SetDeployingBombState( TF_BOMB_DEPLOYING_COMPLETE );
+				m_takedamage = DAMAGE_NO;
+				AddEffects( EF_NODRAW );
+				RemoveAllWeapons();
+			}
+			break;
+
+		case TF_BOMB_DEPLOYING_COMPLETE:
+			if ( m_deployBombTimer.IsElapsed() )
+			{
+				SetDeployingBombState( TF_BOMB_DEPLOYING_NONE );
+				m_takedamage = DAMAGE_YES;
+				TakeDamage( CTakeDamageInfo( this, this, 99999.9f, DMG_CRUSH ) );
+				return; //Done( "I've deployed successfully" );
+			}
+			break;
+		}
+	}
+	else
+	{
+		FOR_EACH_VEC( ICaptureZoneAutoList::AutoList(), i )
+		{
+			CCaptureZone  *pTriggerCapture = static_cast< CCaptureZone * >( ICaptureZoneAutoList::AutoList()[i] );
+			if ( pTriggerCapture->IsTouching( this ) )
+			{
+				SetDeployingBombState( TF_BOMB_DEPLOYING_DELAY );
+				m_deployBombTimer.Start( tf_deploying_bomb_delay_time.GetFloat() );
+				
+				// remember where we start deploying
+				m_deployAnchorPos = GetAbsOrigin();
+				SetAbsVelocity( Vector( 0.0f, 0.0f, 0.0f ) );
+
+				if ( IsMiniBoss() )
+				{
+					static CSchemaAttributeDefHandle pAttrDef_AirblastVerticalVulnerability( "airblast vertical vulnerability multiplier" );
+
+					// Minibosses can't be pushed once they start deploying
+					if ( !pAttrDef_AirblastVerticalVulnerability )
+					{
+						Warning( "TFBotSpawner: Invalid attribute 'airblast vertical vulnerability multiplier'\n" );
+					}
+					else
+					{
+						GetAttributeList()->SetRuntimeAttributeValue( pAttrDef_AirblastVerticalVulnerability, 0.0f );
+					}
+				}
+
+				break;
+			}
+		}
+		//SetDeployingBombState( TF_BOMB_DEPLOYING_DELAY );
+	}
+}
 //-----------------------------------------------------------------------------
 // Purpose: Returns a portion of health every think.
 //-----------------------------------------------------------------------------

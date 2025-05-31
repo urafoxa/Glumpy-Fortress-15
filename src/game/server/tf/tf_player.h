@@ -1147,6 +1147,8 @@ protected:
 	void				RuneRegenThink();
 	void				RegenAmmoInternal( int iAmmo, float flRegen );
 	void				ResetPlayerClass( void );
+	void				MvMDeployBombOnStart();
+	void				MvMDeployBombThink();
 
 	virtual void		Internal_HandleMapEvent( inputdata_t &inputdata ) OVERRIDE;
 
@@ -1386,6 +1388,9 @@ private:
 	CountdownTimer		m_placedSapperTimer;
 
 	CountdownTimer		m_inCombatThrottleTimer;
+
+	CountdownTimer		m_deployBombTimer;
+	Vector				m_deployAnchorPos;
 
 	mutable char		m_bIsCalculatingMaximumSpeed;
 
