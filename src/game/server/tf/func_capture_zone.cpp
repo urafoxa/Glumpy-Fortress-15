@@ -12,9 +12,6 @@
 #include "entity_capture_flag.h"
 #include "tf_logic_player_destruction.h"
 
-extern ConVar tf_deploying_bomb_delay_time;
-extern ConVar tf_deploying_bomb_time;
-
 //=============================================================================
 //
 // CTF Flag Capture Zone tables.
@@ -252,101 +249,34 @@ void CCaptureZone::ShimTouch( CBaseEntity *pOther )
 					if ( GetTeamNumber() != TEAM_UNASSIGNED )
 					{
 						// Check to see if the capture zone team matches the player's team.
-						// MVM Versus
-						if(TFGameRules()->FlagsMayBeCapped())
+						if ( pPlayer->GetTeamNumber() != TEAM_UNASSIGNED && pPlayer->GetTeamNumber() != GetTeamNumber() )
 						{
-							if( !TFGameRules()->IsMannVsMachineMode() )
+							if ( pFlag->GetType() == TF_FLAGTYPE_CTF )
 							{
-								if(pPlayer->GetTeamNumber() != TEAM_UNASSIGNED && pPlayer->GetTeamNumber() != GetTeamNumber())
+								// Do this at most once every 5 seconds
+								if ( m_flNextTouchingEnemyZoneWarning < gpGlobals->curtime )
 								{
-									if(pFlag->GetType() == TF_FLAGTYPE_CTF)
-									{
-										// Do this at most once every 5 seconds
-										if(m_flNextTouchingEnemyZoneWarning < gpGlobals->curtime)
-										{
-											CSingleUserRecipientFilter filter(pPlayer);
-											TFGameRules()->SendHudNotification(filter,HUD_NOTIFY_TOUCHING_ENEMY_CTF_CAP);
-											m_flNextTouchingEnemyZoneWarning = gpGlobals->curtime + 5;
-										}
-									}
-									// 						else if ( pFlag->GetGameType() == TF_FLAGTYPE_INVADE )
-									// 						{
-									// 						}
-									return;
+									CSingleUserRecipientFilter filter( pPlayer );
+									TFGameRules()->SendHudNotification( filter, HUD_NOTIFY_TOUCHING_ENEMY_CTF_CAP );
+									m_flNextTouchingEnemyZoneWarning = gpGlobals->curtime + 5;
 								}
 							}
-							else if(pPlayer->IsFakeClient())
-								Capture(pOther);
-							else
-								DeployMVMBomb(pOther);
+		// 						else if ( pFlag->GetGameType() == TF_FLAGTYPE_INVADE )
+		// 						{
+		// 						}
+
+							return;
 						}
 					}
 				}
+
+				// in MvM, the "flag" is the bomb and is captured when the carrying bot deploys it
+				if ( TFGameRules()->FlagsMayBeCapped() && !TFGameRules()->IsMannVsMachineMode() )
+				{
+					Capture( pOther );
+				}
 			}
 		}
-	}
-}
-
-void CCaptureZone::DeployMVMBomb( CBaseEntity* pOther )
-{
-	CTFPlayer* pPlayer = ToTFPlayer(pOther);
-	pPlayer->SetDeployingBombState(TF_BOMB_DEPLOYING_DELAY);
-	m_MVM_bombtimer.Start(tf_deploying_bomb_delay_time.GetFloat());
-
-	SetAbsVelocity(Vector(0.0f,0.0f,0.0f));
-
-	if(pPlayer->IsMiniBoss())
-	{
-		static CSchemaAttributeDefHandle pAttrDef_AirblastVerticalVulnerability("airblast vertical vulnerability multiplier");
-
-		// Minibosses can't be pushed once they start deploying
-		if(!pAttrDef_AirblastVerticalVulnerability)
-		{
-			Warning("Bomb Deploy: Invalid attribute 'airblast vertical vulnerability multiplier'\n");
-		}
-		else
-		{
-			pPlayer->GetAttributeList()->SetRuntimeAttributeValue(pAttrDef_AirblastVerticalVulnerability,0.0f);
-		}
-	}
-	switch(pPlayer->GetDeployingBombState())
-	{
-	case TF_BOMB_DEPLOYING_DELAY:
-		if(m_MVM_bombtimer.IsElapsed())
-		{
-			pPlayer->PlaySpecificSequence("primary_deploybomb");
-			m_MVM_bombtimer.Start(tf_deploying_bomb_time.GetFloat());
-			pPlayer->SetDeployingBombState(TF_BOMB_DEPLOYING_ANIMATING);
-
-			const char* pszSoundName = pPlayer->IsMiniBoss() ? "MVM.DeployBombGiant" : "MVM.DeployBombSmall";
-			EmitSound(pszSoundName);
-
-			TFGameRules()->PlayThrottledAlert(255,"Announcer.MVM_Bomb_Alert_Deploying",5.0f);
-		}
-		break;
-
-	case TF_BOMB_DEPLOYING_ANIMATING:
-		if(m_MVM_bombtimer.IsElapsed())
-		{
-			Capture( pOther );
-
-			m_MVM_bombtimer.Start(2.0f);
-			TFGameRules()->BroadcastSound(255,"Announcer.MVM_Robots_Planted");
-			pPlayer->SetDeployingBombState(TF_BOMB_DEPLOYING_COMPLETE);
-			pPlayer->m_takedamage = DAMAGE_NO;
-			AddEffects(EF_NODRAW);
-			pPlayer->RemoveAllWeapons();
-		}
-		break;
-
-	case TF_BOMB_DEPLOYING_COMPLETE:
-		if(m_MVM_bombtimer.IsElapsed())
-		{
-			pPlayer->SetDeployingBombState(TF_BOMB_DEPLOYING_NONE);
-			pPlayer->m_takedamage = DAMAGE_YES;
-			TakeDamage(CTakeDamageInfo(pPlayer,pPlayer,99999.9f,DMG_CRUSH));
-		}
-		break;
 	}
 }
 

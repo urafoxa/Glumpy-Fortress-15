@@ -38,7 +38,6 @@ public:
 	virtual void	ShimTouch( CBaseEntity *pOther ) OVERRIDE;
 
 	void	Capture( CBaseEntity *pOther );
-	void	DeployMVMBomb( CBaseEntity* pOther );
 
 	bool	IsDisabled( void );
 	void	SetDisabled( bool bDisabled );
@@ -62,7 +61,6 @@ private:
 	COutputEvent	m_OnCapTeam2;
 	COutputEvent	m_OnCapTeam1_PD;
 	COutputEvent	m_OnCapTeam2_PD;
-	CountdownTimer  m_MVM_bombtimer;
 
 	DECLARE_DATADESC();
 
