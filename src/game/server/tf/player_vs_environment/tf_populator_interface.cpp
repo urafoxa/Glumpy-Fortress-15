@@ -77,6 +77,9 @@ void CPointPopulatorInterface::InputChangeBotAttributes( inputdata_t &inputdata 
 
 		for ( int i=0; i<botVector.Count(); ++i )
 		{
+			CTFBot *pBot = ToTFBot( botVector[i] );
+			if ( !pBot )
+				continue;
 			const CTFBot::EventChangeAttributes_t* pEvent = botVector[i]->GetEventChangeAttributes( pszEventName );
 			if ( pEvent )
 			{
