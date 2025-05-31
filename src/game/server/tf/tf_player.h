@@ -1147,8 +1147,8 @@ protected:
 	void				RuneRegenThink();
 	void				RegenAmmoInternal( int iAmmo, float flRegen );
 	void				ResetPlayerClass( void );
-	void				MvMDeployBombOnStart();
 	void				MvMDeployBombThink();
+	void				MvMDeployBombEnd();
 
 	virtual void		Internal_HandleMapEvent( inputdata_t &inputdata ) OVERRIDE;
 

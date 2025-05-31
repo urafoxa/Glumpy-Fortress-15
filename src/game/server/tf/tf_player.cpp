@@ -1870,20 +1870,17 @@ void CTFPlayer::TFPlayerThink()
 */
 
 	SetContextThink( &CTFPlayer::TFPlayerThink, gpGlobals->curtime, "TFPlayerThink" );
-	if( TFGameRules()->IsMannVsMachineMode() && tf_mvm_forceversus.GetBool() && GetTeamNumber() == TF_TEAM_PVE_INVADERS && !IsBot() && HasItem() && !TFGameRules()->InSetup() )
+	if( TFGameRules()->IsMannVsMachineMode() && tf_mvm_forceversus.GetBool() && GetTeamNumber() == TF_TEAM_PVE_INVADERS && !IsBot() && !TFGameRules()->InSetup() )
 	{
-		CCaptureFlag *pCaptureFlag = dynamic_cast<CCaptureFlag *>( GetItem() );
-		if ( pCaptureFlag )
-		{
-			SetContextThink( &CTFPlayer::MvMDeployBombThink, gpGlobals->curtime, "MvMDeployBombThink" );
-		}
+		SetContextThink( &CTFPlayer::MvMDeployBombThink, gpGlobals->curtime, "MvMDeployBombThink" );
 	}
 	m_flLastThinkTime = gpGlobals->curtime;
 }
 
 void CTFPlayer::MvMDeployBombThink()
 {
-	if (GetDeployingBombState() != TF_BOMB_DEPLOYING_NONE )
+
+	if( GetDeployingBombState() != TF_BOMB_DEPLOYING_NONE )
 	{
 		CCaptureZone *pAreaTrigger = NULL;
 
@@ -1892,16 +1889,15 @@ void CTFPlayer::MvMDeployBombThink()
 			pAreaTrigger = GetClosestCaptureZone();
 			if ( !pAreaTrigger )
 			{
-				return; //Done( "No capture zone!" );
+				return MvMDeployBombEnd(); //Done( "No capture zone!" );
 			}
-
-			m_Shared.RemoveCond( TF_COND_FREEZE_INPUT );
-			SetForcedTauntCam( 0 );
 			// if we've been moved, give up and go back to normal behavior
 			const float movedRange = 20.0f;
 			Vector to = m_deployAnchorPos - GetAbsOrigin();
 			if( to.IsLengthGreaterThan( movedRange ) )
 			{
+				m_Shared.RemoveCond( TF_COND_FREEZE_INPUT );
+				SetForcedTauntCam( 0 );
 				// Look for players that pushed me away and send an event
 				CUtlVector<CTFPlayer *> playerVector;
 				CollectPlayers( &playerVector, TF_TEAM_PVE_DEFENDERS );
@@ -1922,7 +1918,7 @@ void CTFPlayer::MvMDeployBombThink()
 					}
 				}
 
-				return; //Done( "I've been pushed" );
+				return MvMDeployBombEnd(); //Done( "I've been pushed" );
 			}
 
 			// slam facing towards bomb hole
@@ -1973,48 +1969,61 @@ void CTFPlayer::MvMDeployBombThink()
 		case TF_BOMB_DEPLOYING_COMPLETE:
 			if ( m_deployBombTimer.IsElapsed() )
 			{
-				SetDeployingBombState( TF_BOMB_DEPLOYING_NONE );
 				m_takedamage = DAMAGE_YES;
 				TakeDamage( CTakeDamageInfo( this, this, 99999.9f, DMG_CRUSH ) );
-				return; //Done( "I've deployed successfully" );
+				return MvMDeployBombEnd(); //Done( "I've deployed successfully" );
 			}
 			break;
 		}
 	}
 	else
 	{
-		FOR_EACH_VEC( ICaptureZoneAutoList::AutoList(), i )
+		CCaptureFlag *pCaptureFlag = dynamic_cast<CCaptureFlag *>( GetItem() );
+		if ( pCaptureFlag )
 		{
-			CCaptureZone  *pTriggerCapture = static_cast< CCaptureZone * >( ICaptureZoneAutoList::AutoList()[i] );
-			if ( pTriggerCapture->IsTouching( this ) )
+			FOR_EACH_VEC( ICaptureZoneAutoList::AutoList(), i )
 			{
-				SetDeployingBombState( TF_BOMB_DEPLOYING_DELAY );
-				m_deployBombTimer.Start( tf_deploying_bomb_delay_time.GetFloat() );
-				
-				// remember where we start deploying
-				m_deployAnchorPos = GetAbsOrigin();
-				SetAbsVelocity( Vector( 0.0f, 0.0f, 0.0f ) );
-
-				if ( IsMiniBoss() )
+				CCaptureZone  *pTriggerCapture = static_cast< CCaptureZone * >( ICaptureZoneAutoList::AutoList()[i] );
+				if ( pTriggerCapture->IsTouching( this ) )
 				{
-					static CSchemaAttributeDefHandle pAttrDef_AirblastVerticalVulnerability( "airblast vertical vulnerability multiplier" );
+					SetDeployingBombState( TF_BOMB_DEPLOYING_DELAY );
+					m_deployBombTimer.Start( tf_deploying_bomb_delay_time.GetFloat() );
 
-					// Minibosses can't be pushed once they start deploying
-					if ( !pAttrDef_AirblastVerticalVulnerability )
-					{
-						Warning( "TFBotSpawner: Invalid attribute 'airblast vertical vulnerability multiplier'\n" );
-					}
-					else
-					{
-						GetAttributeList()->SetRuntimeAttributeValue( pAttrDef_AirblastVerticalVulnerability, 0.0f );
-					}
+					// remember where we start deploying
+					m_deployAnchorPos = GetAbsOrigin();
+					SetAbsVelocity( Vector( 0.0f, 0.0f, 0.0f ) );
+
+					break;
 				}
-
-				break;
 			}
 		}
-		//SetDeployingBombState( TF_BOMB_DEPLOYING_DELAY );
 	}
+}
+
+void CTFPlayer::MvMDeployBombEnd()
+{
+	if ( GetDeployingBombState() == TF_BOMB_DEPLOYING_ANIMATING )
+	{
+		// reset the in-progress deploy animation
+		DoAnimationEvent( PLAYERANIMEVENT_SPAWN );
+	}
+
+	if ( IsMiniBoss() )
+	{
+		static CSchemaAttributeDefHandle pAttrDef_AirblastVerticalVulnerability( "airblast vertical vulnerability multiplier" );
+
+		// Minibosses can be pushed again
+		if ( !pAttrDef_AirblastVerticalVulnerability )
+		{
+			Warning( "TFBotSpawner: Invalid attribute 'airblast vertical vulnerability multiplier'\n" );
+		}
+		else
+		{
+			GetAttributeList()->RemoveAttribute( pAttrDef_AirblastVerticalVulnerability );
+		}
+	}
+
+	SetDeployingBombState( TF_BOMB_DEPLOYING_NONE );
 }
 //-----------------------------------------------------------------------------
 // Purpose: Returns a portion of health every think.
