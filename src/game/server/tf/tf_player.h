@@ -642,6 +642,7 @@ public:
 	}
 
 	void MVM_StartIdleSound(void);
+	void MVM_SetMinibossType(void);
 	void MVM_StopIdleSound(void);
 	CSoundPatch* m_pGiantIdleSound;
 

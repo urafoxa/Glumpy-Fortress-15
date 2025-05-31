@@ -3930,16 +3930,20 @@ void CTFPlayer::Spawn()
 		m_bIsMiniBoss = false;
 		m_bUseBossHealthBar = false;
 
+		// make sure we clear custom attributes that we added
+		RemoveAllCustomAttributes();
+
 		//MVM Versus
 		int nRobotClassIndex = (GetPlayerClass() ? GetPlayerClass()->GetClassIndex() : TF_CLASS_UNDEFINED);
 		if( TFGameRules()->IsMannVsMachineMode() && !IsFakeClient() )
 		{
 			if(GetTeamNumber() == TF_TEAM_PVE_INVADERS)
 			{
-				//Spawn the player as Miniboss
+				//Spawn the player as Miniboss 50% chance
 				if ( random->RandomInt(0,1) == 1)
 				{
 					SetIsMiniBoss(true);
+					MVM_SetMinibossType();
 					MVM_StartIdleSound();
 				}
 				if(nRobotClassIndex >= TF_CLASS_SCOUT && nRobotClassIndex <= TF_CLASS_ENGINEER)
@@ -4189,9 +4193,6 @@ void CTFPlayer::Spawn()
 		UTIL_Remove( m_hReviveMarker );
 		m_hReviveMarker = NULL;
 	}
-
-	// make sure we clear custom attributes that we added
-	RemoveAllCustomAttributes();
 
 
 	CTFPlayerResource *pResource = dynamic_cast<CTFPlayerResource *>( g_pPlayerResource );
@@ -20950,6 +20951,62 @@ void CTFPlayer::MVM_StopIdleSound(void)
 	}
 }
 
+//-----------------------------------------------------------------------------
+// MVM Versus - Placeholder boss list
+// ----------------------------------------------------------------------------
+void CTFPlayer::MVM_SetMinibossType(void)
+{
+	if(IsMiniBoss())
+	{
+
+		int iClass = GetPlayerClass()->GetClassIndex();
+		switch(iClass)
+		{
+			case TF_CLASS_HEAVYWEAPONS:
+			{
+				SetHealth(5000);
+				AddCustomAttribute("max health additive bonus",4700,-1);
+				AddCustomAttribute("damage force reduction",0.3,-1);
+				AddCustomAttribute("airblast vulnerability multiplier",0.3,-1);
+				break;
+			}
+			case TF_CLASS_SOLDIER:
+			{
+				SetHealth(3800);
+				AddCustomAttribute("max health additive bonus",3600,-1);
+				AddCustomAttribute("damage force reduction",0.4,-1);
+				AddCustomAttribute("airblast vulnerability multiplier",0.4,-1);
+				break;
+			}
+			case TF_CLASS_DEMOMAN:
+			{
+				SetHealth(3000);
+				AddCustomAttribute("max health additive bonus",2825,-1);
+				AddCustomAttribute("damage force reduction",0.5,-1);
+				AddCustomAttribute("airblast vulnerability multiplier",0.5,-1);
+				break;
+			}
+			case TF_CLASS_SCOUT:
+			{
+				SetHealth(1600);
+				AddCustomAttribute("max health additive bonus",1475,-1);
+				AddCustomAttribute("damage force reduction",0.7,-1);
+				AddCustomAttribute("airblast vulnerability multiplier",0.7,-1);
+				break;
+			}
+			case TF_CLASS_PYRO:
+			{
+				SetHealth(3000);
+				AddCustomAttribute("max health additive bonus",2825,-1);
+				AddCustomAttribute("damage force reduction",0.6,-1);
+				AddCustomAttribute("airblast vulnerability multiplier",0.6,-1);
+				break;
+			}
+		}
+		SetModelScale(1.9,0);
+		AddCustomAttribute("override footstep sound set",2,-1);
+	}
+}
 //-----------------------------------------------------------------------------
 // Purpose: 
 //-----------------------------------------------------------------------------
