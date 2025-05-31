@@ -3926,6 +3926,10 @@ void CTFPlayer::Spawn()
 			TFGameRules()->ShowRoundInfoPanel( this );
 			m_bSeenRoundInfo = true;
 		}
+
+		m_bIsMiniBoss = false;
+		m_bUseBossHealthBar = false;
+
 		//MVM Versus
 		int nRobotClassIndex = (GetPlayerClass() ? GetPlayerClass()->GetClassIndex() : TF_CLASS_UNDEFINED);
 		if( TFGameRules()->IsMannVsMachineMode() && !IsFakeClient() )
@@ -4094,9 +4098,6 @@ void CTFPlayer::Spawn()
 	m_bIsTeleportingUsingEurekaEffect = false;
 
 	m_playerMovementStuckTimer.Invalidate();
-
-	m_bIsMiniBoss = false;
-	m_bUseBossHealthBar = false;
 
 	m_hGrapplingHookTarget = NULL;
 	m_nHookAttachedPlayers = 0;
