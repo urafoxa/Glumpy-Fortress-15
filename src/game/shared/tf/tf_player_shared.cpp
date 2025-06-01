@@ -11951,7 +11951,7 @@ const char *CTFPlayer::GetOverrideStepSound( const char *pszBaseStepSoundName )
 
 	Assert( pszBaseStepSoundName );
 
-	struct override_sound_entry_t { int iOverrideIndex; char *pszBaseSoundName; char *pszNewSoundName; };
+	struct override_sound_entry_t { int iOverrideIndex; const char *pszBaseSoundName; const char *pszNewSoundName; };
 
 	enum
 	{
@@ -11974,7 +11974,7 @@ const char *CTFPlayer::GetOverrideStepSound( const char *pszBaseStepSoundName )
 
 	if ( iOverrideFootstepSoundSet != kFootstepSoundSet_Default )
 	{
-		override_sound_entry_t s_ReplacementSounds[] =
+		static const override_sound_entry_t s_ReplacementSounds[] =
 		{
 			{ kFootstepSoundSet_SoccerCleats,	"Default.StepLeft",		"cleats_conc.StepLeft" },
 			{ kFootstepSoundSet_SoccerCleats,	"Default.StepRight",	"cleats_conc.StepRight" },

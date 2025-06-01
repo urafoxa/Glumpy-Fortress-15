@@ -3953,6 +3953,7 @@ void CTFPlayer::Spawn()
 					SetIsMiniBoss(true);
 					MVM_SetMinibossType();
 					MVM_StartIdleSound();
+					TFGameRules()->HaveAllPlayersSpeakConceptIfAllowed(MP_CONCEPT_MVM_GIANT_CALLOUT,TF_TEAM_PVE_DEFENDERS);
 				}
 				if(nRobotClassIndex >= TF_CLASS_SCOUT && nRobotClassIndex <= TF_CLASS_ENGINEER)
 				{

@@ -284,6 +284,7 @@ DocProject/Help/html
 
 # Click-Once directory
 publish/
+externalignore/
 
 # Publish Web Output
 *.[Pp]ublish.xml
