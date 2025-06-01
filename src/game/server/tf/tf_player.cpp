@@ -3038,6 +3038,7 @@ void CTFPlayer::PrecacheMvM()
 
 	PrecacheScriptSound( "MVM.FallDamageBots");
 	PrecacheScriptSound( "MVM.BotStep" );
+	PrecacheScriptSound( "MVM.BotGiantStep" );
 	PrecacheScriptSound( "MVM.GiantHeavyStep" );
 	PrecacheScriptSound( "MVM.GiantSoldierStep" );
 	PrecacheScriptSound( "MVM.GiantDemomanStep" );
@@ -3941,11 +3942,15 @@ void CTFPlayer::Spawn()
 			{
 				//We Reset your tags if you were for example a Gatebot
 				ClearTags();
-				//Spawn the player as Miniboss 50% chance
+				//Spawn the player as Gatebot | 50% chance
+				if(random->RandomInt(0,1) == 1)
+				{
+					MVM_SetGatebot();
+				}
+				//Spawn the player as Miniboss | 50% chance
 				if ( random->RandomInt(0,1) == 1)
 				{
 					SetIsMiniBoss(true);
-					AddTag("bot_gatebot");
 					MVM_SetMinibossType();
 					MVM_StartIdleSound();
 				}
@@ -21002,6 +21007,13 @@ bool CTFPlayer::HasTag(const char* tag)
 
 	return false;
 }
+//-----------------------------------------------------------------------------
+// MVM Versus - Placeholder boss list
+// ----------------------------------------------------------------------------
+void CTFPlayer::MVM_SetGatebot(void)
+{
+	AddTag("bot_gatebot");
+}
 
 //-----------------------------------------------------------------------------
 // MVM Versus - Placeholder boss list
@@ -21010,13 +21022,15 @@ void CTFPlayer::MVM_SetMinibossType(void)
 {
 	if(IsMiniBoss())
 	{
-
+		AddTag("bot_giant");
 		int iClass = GetPlayerClass()->GetClassIndex();
 		switch(iClass)
 		{
 			case TF_CLASS_HEAVYWEAPONS:
 			{
 				SetHealth(5000);
+				AddCustomAttribute("override footstep sound set",2,-1);
+				AddCustomAttribute("move speed bonus",0.5,-1);
 				AddCustomAttribute("max health additive bonus",4700,-1);
 				AddCustomAttribute("damage force reduction",0.3,-1);
 				AddCustomAttribute("airblast vulnerability multiplier",0.3,-1);
@@ -21025,6 +21039,8 @@ void CTFPlayer::MVM_SetMinibossType(void)
 			case TF_CLASS_SOLDIER:
 			{
 				SetHealth(3800);
+				AddCustomAttribute("override footstep sound set",3,-1);
+				AddCustomAttribute("move speed bonus",0.5,-1);
 				AddCustomAttribute("max health additive bonus",3600,-1);
 				AddCustomAttribute("damage force reduction",0.4,-1);
 				AddCustomAttribute("airblast vulnerability multiplier",0.4,-1);
@@ -21033,6 +21049,8 @@ void CTFPlayer::MVM_SetMinibossType(void)
 			case TF_CLASS_DEMOMAN:
 			{
 				SetHealth(3000);
+				AddCustomAttribute("override footstep sound set",4,-1);
+				AddCustomAttribute("move speed bonus",0.5,-1);
 				AddCustomAttribute("max health additive bonus",2825,-1);
 				AddCustomAttribute("damage force reduction",0.5,-1);
 				AddCustomAttribute("airblast vulnerability multiplier",0.5,-1);
@@ -21041,6 +21059,8 @@ void CTFPlayer::MVM_SetMinibossType(void)
 			case TF_CLASS_SCOUT:
 			{
 				SetHealth(1600);
+				AddCustomAttribute("override footstep sound set",5,-1);
+				AddCustomAttribute("move speed bonus",2,-1);
 				AddCustomAttribute("max health additive bonus",1475,-1);
 				AddCustomAttribute("damage force reduction",0.7,-1);
 				AddCustomAttribute("airblast vulnerability multiplier",0.7,-1);
@@ -21049,6 +21069,8 @@ void CTFPlayer::MVM_SetMinibossType(void)
 			case TF_CLASS_PYRO:
 			{
 				SetHealth(3000);
+				AddCustomAttribute("override footstep sound set",6,-1);
+				AddCustomAttribute("move speed bonus",0.4,-1);
 				AddCustomAttribute("max health additive bonus",2825,-1);
 				AddCustomAttribute("damage force reduction",0.6,-1);
 				AddCustomAttribute("airblast vulnerability multiplier",0.6,-1);
@@ -21056,7 +21078,6 @@ void CTFPlayer::MVM_SetMinibossType(void)
 			}
 		}
 		SetModelScale(1.9,0);
-		AddCustomAttribute("override footstep sound set",2,-1);
 	}
 }
 //-----------------------------------------------------------------------------

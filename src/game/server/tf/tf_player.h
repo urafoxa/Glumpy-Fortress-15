@@ -643,6 +643,7 @@ public:
 	//MVM Versus - Ported bot exclusive stuff
 	void MVM_StartIdleSound(void);
 	void MVM_SetMinibossType(void);
+	void MVM_SetGatebot(void);
 	void MVM_StopIdleSound(void);
 	CSoundPatch* m_pGiantIdleSound;
 
