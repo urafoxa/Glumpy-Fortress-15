@@ -285,6 +285,7 @@ DocProject/Help/html
 # Click-Once directory
 publish/
 externalignore/
+game/betterfortress/download/
 
 # Publish Web Output
 *.[Pp]ublish.xml

@@ -1870,15 +1870,38 @@ void CTFPlayer::TFPlayerThink()
 */
 
 	SetContextThink( &CTFPlayer::TFPlayerThink, gpGlobals->curtime, "TFPlayerThink" );
+	//MVM Versus - Spawn Protection
+	if(TFGameRules()->IsMannVsMachineMode() && tf_mvm_forceversus.GetBool() && GetTeamNumber() == TF_TEAM_PVE_INVADERS && !IsBot() )
+	{
+		bool bInRespawnRoom = PointInRespawnRoom(this,WorldSpaceCenter(),true);
+		if(bInRespawnRoom)
+		{
+			m_Shared.AddCond(TF_COND_INVULNERABLE,0.5f);
+			m_Shared.AddCond(TF_COND_INVULNERABLE_HIDE_UNLESS_DAMAGED,0.5f);
+			m_Shared.AddCond(TF_COND_INVULNERABLE_WEARINGOFF,0.5f);
+			m_Shared.AddCond(TF_COND_IMMUNE_TO_PUSHBACK,1.0f);
+			AddCustomAttribute("no_attack",1,1.0f);
+		}
+	}
 	if( TFGameRules()->IsMannVsMachineMode() && tf_mvm_forceversus.GetBool() && GetTeamNumber() == TF_TEAM_PVE_INVADERS && !IsBot() && !TFGameRules()->InSetup() )
 	{
 		SetContextThink( &CTFPlayer::MvMDeployBombThink, gpGlobals->curtime, "MvMDeployBombThink" );
 	}
 	m_flLastThinkTime = gpGlobals->curtime;
 }
-
+// MVM Versus - Robot Think
 void CTFPlayer::MvMDeployBombThink()
 {
+
+	bool bInRespawnRoom = PointInRespawnRoom(this,WorldSpaceCenter(),true);
+	if(bInRespawnRoom)
+	{
+		m_Shared.AddCond(TF_COND_INVULNERABLE,0.5f);
+		m_Shared.AddCond(TF_COND_INVULNERABLE_HIDE_UNLESS_DAMAGED,0.5f);
+		m_Shared.AddCond(TF_COND_INVULNERABLE_WEARINGOFF,0.5f);
+		m_Shared.AddCond(TF_COND_IMMUNE_TO_PUSHBACK,1.0f);
+		AddCustomAttribute("no_attack",1,1.0f);
+	}
 
 	if( GetDeployingBombState() != TF_BOMB_DEPLOYING_NONE )
 	{
@@ -3940,6 +3963,7 @@ void CTFPlayer::Spawn()
 		{
 			if(GetTeamNumber() == TF_TEAM_PVE_INVADERS)
 			{
+				
 				//We Reset your tags if you were for example a Gatebot
 				ClearTags();
 				//Spawn the player as Gatebot | 50% chance
