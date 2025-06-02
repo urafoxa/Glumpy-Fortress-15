@@ -38,6 +38,7 @@ public:
 
 	void SetMannVsMachineNextWaveTime( float flTime ) { m_flMannVsMachineNextWaveTime = flTime; }
 	void SetMannVsMachineBetweenWaves( bool bVal ) { m_bMannVsMachineBetweenWaves = bVal; }
+	void SetEndlessEnabled( bool bEnabled ) { m_bEndlessOn = bEnabled; }
 	bool GetMannVsMachineIsBetweenWaves( void ) { return m_bMannVsMachineBetweenWaves; }
 
 	void SetMannVsMachineWaveClassCount( int nIndex, int nCount );
@@ -96,6 +97,7 @@ private:
 	CNetworkVar( int, m_iChallengeIndex );
 	CNetworkVar( string_t, m_iszMvMPopfileName ) ;
 	CNetworkVar( int, m_nMvMEventPopfileType );
+	CNetworkVar( bool, m_bEndlessOn );
 
 	string_t m_teleporterString;
 };
