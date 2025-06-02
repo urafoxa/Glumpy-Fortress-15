@@ -7848,6 +7848,10 @@ bool CTFGameRules::ClientCommand( CBaseEntity *pEdict, const CCommand &args )
 
 		if ( FStrEq( pcmd, "tournament_player_readystate" ) )
 		{
+			// MvM Versus - Robots don't ready up
+			if ( IsMannVsMachineMode() && pPlayer->GetTeamNumber() == TF_TEAM_PVE_INVADERS )
+				return false;
+
 			if ( State_Get() != GR_STATE_BETWEEN_RNDS )
 				return true;
 

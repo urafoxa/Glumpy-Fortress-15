@@ -174,7 +174,7 @@ CON_COMMAND( changeclass, "Choose a new class" )
 
 		if ( TFGameRules() && TFGameRules()->IsMannVsMachineMode() )
 		{
-			if ( !TFGameRules()->InSetup() )
+			if ( !TFGameRules()->InSetup() && g_pPopulationManager && !g_pPopulationManager->IsInEndlessWaves() && pPlayer->GetTeamNumber() != TF_TEAM_PVE_INVADERS )
 			{
 				CBaseHudChat *pHUDChat = (CBaseHudChat *)GET_HUDELEMENT( CHudChat );
 
