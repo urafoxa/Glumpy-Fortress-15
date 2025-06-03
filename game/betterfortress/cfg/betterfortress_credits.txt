@@ -14,6 +14,13 @@ DESCRIPTION INFO_OPTIONS
 		{ BOOL }
 		{ "1" }
 	}	
+	"credit1_2"
+	{
+		"Published by MixerRules"
+		"https://wiki.tf2sm.info"
+		{ BOOL }
+		{ "1" }
+	}	
 	"category2"
 	{
 		"Community Help/Contributions"

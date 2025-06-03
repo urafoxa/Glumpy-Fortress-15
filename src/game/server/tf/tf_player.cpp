@@ -3959,39 +3959,51 @@ void CTFPlayer::Spawn()
 
 		//MVM Versus
 		int nRobotClassIndex = (GetPlayerClass() ? GetPlayerClass()->GetClassIndex() : TF_CLASS_UNDEFINED);
-		if( TFGameRules()->IsMannVsMachineMode() && !IsFakeClient() )
+		if(TFGameRules()->IsMannVsMachineMode() && !IsFakeClient())
 		{
+			//We Reset your tags if you were for example a Gatebot
+			ClearTags();
 			if(GetTeamNumber() == TF_TEAM_PVE_INVADERS)
 			{
-				
-				//We Reset your tags if you were for example a Gatebot
-				ClearTags();
+
 				//Spawn the player as Gatebot | 50% chance
 				if(random->RandomInt(0,1) == 1)
 				{
-					MVM_SetGatebot();
+					AddTag("bot_gatebot");
+					const char *name = g_aRawPlayerClassNamesShort[nRobotClassIndex];
+					GiveItemString( CFmtStr( "MvM GateBot Light %s",name) );
 				}
 				//Spawn the player as Miniboss | 50% chance
-				if ( random->RandomInt(0,1) == 1)
+				if(random->RandomInt(0,1) == 1)
 				{
 					SetIsMiniBoss(true);
 					MVM_SetMinibossType();
 					MVM_StartIdleSound();
 					TFGameRules()->HaveAllPlayersSpeakConceptIfAllowed(MP_CONCEPT_MVM_GIANT_CALLOUT,TF_TEAM_PVE_DEFENDERS);
 				}
-				if(nRobotClassIndex >= TF_CLASS_SCOUT && nRobotClassIndex <= TF_CLASS_ENGINEER)
+				if( g_pPopulationManager->IsPopFileEventType(MVM_EVENT_POPFILE_HALLOWEEN) )
 				{
-					if((GetModelScale() >= tf_mvm_miniboss_scale.GetFloat() || IsMiniBoss()) && g_pFullFileSystem->FileExists(g_szBotBossModels[nRobotClassIndex]))
+					// zombies use the original player models
+					m_nSkin = 4;
+					const char *name = g_aRawPlayerClassNamesShort[nRobotClassIndex];
+					GiveItemString( CFmtStr( "Zombie %s",name) );
+				}
+				else
+				{
+					if(nRobotClassIndex >= TF_CLASS_SCOUT && nRobotClassIndex <= TF_CLASS_ENGINEER)
 					{
-						GetPlayerClass()->SetCustomModel(g_szBotBossModels[nRobotClassIndex],USE_CLASS_ANIMATIONS);
-						UpdateModel();
-						SetBloodColor(DONT_BLEED);
-					}
-					else if(g_pFullFileSystem->FileExists(g_szBotModels[nRobotClassIndex]))
-					{
-						GetPlayerClass()->SetCustomModel(g_szBotModels[nRobotClassIndex],USE_CLASS_ANIMATIONS);
-						UpdateModel();
-						SetBloodColor(DONT_BLEED);
+						if((GetModelScale() >= tf_mvm_miniboss_scale.GetFloat() || IsMiniBoss()) && g_pFullFileSystem->FileExists(g_szBotBossModels[nRobotClassIndex]))
+						{
+							GetPlayerClass()->SetCustomModel(g_szBotBossModels[nRobotClassIndex],USE_CLASS_ANIMATIONS);
+							UpdateModel();
+							SetBloodColor(DONT_BLEED);
+						}
+						else if(g_pFullFileSystem->FileExists(g_szBotModels[nRobotClassIndex]))
+						{
+							GetPlayerClass()->SetCustomModel(g_szBotModels[nRobotClassIndex],USE_CLASS_ANIMATIONS);
+							UpdateModel();
+							SetBloodColor(DONT_BLEED);
+						}
 					}
 				}
 			}
@@ -7271,8 +7283,8 @@ void CTFPlayer::HandleCommand_JoinClass( const char *pClassName, bool bAllowSpaw
 
 		gameeventmanager->FireEvent( event );
 	}
-	//MvM Versus
-	MVM_StartIdleSound();
+	//MvM Versus - Classswitch fix
+	MVM_StopIdleSound();
 
 	// are they TF_CLASS_RANDOM and trying to select the class they're currently playing as (so they can stay this class)?
 	if ( iClass == GetPlayerClass()->GetClassIndex() )
@@ -21032,13 +21044,6 @@ bool CTFPlayer::HasTag(const char* tag)
 
 	return false;
 }
-//-----------------------------------------------------------------------------
-// MVM Versus - Placeholder boss list
-// ----------------------------------------------------------------------------
-void CTFPlayer::MVM_SetGatebot(void)
-{
-	AddTag("bot_gatebot");
-}
 
 //-----------------------------------------------------------------------------
 // MVM Versus - Placeholder boss list
@@ -21367,6 +21372,76 @@ void CTFPlayer::GiveItem(int inputdata)
 		if (pBuilder)
 		{
 			pBuilder->SetSubType(pData->m_aBuildable[0]);
+		}
+	}
+}
+
+void CTFPlayer::GiveItemString( const char* pszItemName )
+{
+	CItemSelectionCriteria criteria;
+	criteria.SetQuality( AE_USE_SCRIPT_VALUE );
+	criteria.BAddCondition( "name", k_EOperator_String_EQ, pszItemName, true );
+
+	CBaseEntity *pItem = ItemGeneration()->GenerateRandomItem( &criteria, WorldSpaceCenter(), vec3_angle );
+	if ( pItem )
+	{
+		CEconItemView *pScriptItem = static_cast< CBaseCombatWeapon * >( pItem )->GetAttributeContainer()->GetItem();
+
+		// If we already have an item in that slot, remove it
+		int iClass = GetPlayerClass()->GetClassIndex();
+		int iSlot = pScriptItem->GetStaticData()->GetLoadoutSlot( iClass );
+		equip_region_mask_t unNewItemRegionMask = pScriptItem->GetItemDefinition() ? pScriptItem->GetItemDefinition()->GetEquipRegionConflictMask() : 0;
+
+		if ( IsWearableSlot( iSlot ) )
+		{
+			// Remove any wearable that has a conflicting equip_region
+			for ( int wbl = 0; wbl < GetNumWearables(); wbl++ )
+			{
+				CEconWearable *pWearable = GetWearable( wbl );
+				if ( !pWearable )
+					continue;
+
+				equip_region_mask_t unWearableRegionMask = 0;
+				if ( pWearable->GetAttributeContainer()->GetItem() )
+				{
+					unWearableRegionMask = pWearable->GetAttributeContainer()->GetItem()->GetItemDefinition()->GetEquipRegionConflictMask();
+				}
+
+				if ( unWearableRegionMask & unNewItemRegionMask )
+				{
+					RemoveWearable( pWearable );
+				}
+			}
+		}
+		else
+		{
+			CBaseEntity	*pEntity = GetEntityForLoadoutSlot( iSlot );
+			if ( pEntity )
+			{
+				CBaseCombatWeapon *pWpn = dynamic_cast< CBaseCombatWeapon * >( pEntity );
+				Weapon_Detach( pWpn );
+				UTIL_Remove( pEntity );
+			}
+		}
+
+		// Fake global id
+		pScriptItem->SetItemID( 1 );
+
+		DispatchSpawn( pItem );
+
+		CEconEntity *pNewItem = assert_cast<CEconEntity*>( pItem );
+		if ( pNewItem )
+		{
+			pNewItem->GiveTo( this );
+		}
+
+		PostInventoryApplication();
+	}
+	else
+	{
+		if ( pszItemName && pszItemName[0] )
+		{
+			DevMsg( "CTFBotSpawner::AddItemToBot: Invalid item %s.\n", pszItemName );
 		}
 	}
 }

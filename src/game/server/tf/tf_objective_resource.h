@@ -39,6 +39,7 @@ public:
 	void SetMannVsMachineNextWaveTime( float flTime ) { m_flMannVsMachineNextWaveTime = flTime; }
 	void SetMannVsMachineBetweenWaves( bool bVal ) { m_bMannVsMachineBetweenWaves = bVal; }
 	void SetEndlessEnabled( bool bEnabled ) { m_bEndlessOn = bEnabled; }
+	bool IsInEndlessWaves( void ) { return m_bEndlessOn; }
 	bool GetMannVsMachineIsBetweenWaves( void ) { return m_bMannVsMachineBetweenWaves; }
 
 	void SetMannVsMachineWaveClassCount( int nIndex, int nCount );
