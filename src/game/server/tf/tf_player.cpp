@@ -243,6 +243,10 @@ ConVar tf_powerup_max_charge_time( "tf_powerup_max_charge_time", "30", FCVAR_CHE
 extern ConVar tf_powerup_mode;
 extern ConVar tf_mvm_buybacks_method;
 extern ConVar tf_mvm_buybacks_per_wave;
+extern ConVar tf_mvm_bot_flag_carrier_interval_to_1st_upgrade;
+extern ConVar tf_mvm_bot_flag_carrier_interval_to_2nd_upgrade;
+extern ConVar tf_mvm_bot_flag_carrier_interval_to_3rd_upgrade;
+extern ConVar tf_mvm_bot_flag_carrier_health_regen;
 
 #define TF_CANNONBALL_FORCE_SCALE	80.f
 #define TF_CANNONBALL_FORCE_UPWARD	300.f
@@ -1870,17 +1874,18 @@ void CTFPlayer::TFPlayerThink()
 */
 
 	SetContextThink( &CTFPlayer::TFPlayerThink, gpGlobals->curtime, "TFPlayerThink" );
-	//MVM Versus - Spawn Protection
-	if(TFGameRules()->IsMannVsMachineMode() && tf_mvm_forceversus.GetBool() && GetTeamNumber() == TF_TEAM_PVE_INVADERS && !IsBot() )
+	//MVM Versus - Spawn Protection 
+	// TODO: why does this function get called effectively twice? (one here and in MvMDeployBombThink) - main_thing
+	if( TFGameRules()->IsMannVsMachineMode() && tf_mvm_forceversus.GetBool() && GetTeamNumber() == TF_TEAM_PVE_INVADERS && !IsBot() )
 	{
-		bool bInRespawnRoom = PointInRespawnRoom(this,WorldSpaceCenter(),true);
-		if(bInRespawnRoom)
+		bool bInRespawnRoom = PointInRespawnRoom(this, WorldSpaceCenter(), true);
+		if( bInRespawnRoom )
 		{
-			m_Shared.AddCond(TF_COND_INVULNERABLE,0.5f);
-			m_Shared.AddCond(TF_COND_INVULNERABLE_HIDE_UNLESS_DAMAGED,0.5f);
-			m_Shared.AddCond(TF_COND_INVULNERABLE_WEARINGOFF,0.5f);
-			m_Shared.AddCond(TF_COND_IMMUNE_TO_PUSHBACK,1.0f);
-			AddCustomAttribute("no_attack",1,1.0f);
+			m_Shared.AddCond( TF_COND_INVULNERABLE, 0.5f );
+			m_Shared.AddCond( TF_COND_INVULNERABLE_HIDE_UNLESS_DAMAGED, 0.5f );
+			m_Shared.AddCond( TF_COND_INVULNERABLE_WEARINGOFF, 0.5f );
+			m_Shared.AddCond( TF_COND_IMMUNE_TO_PUSHBACK, 1.0f );
+			AddCustomAttribute( "no_attack", 1, 1.0f );
 		}
 	}
 	if( TFGameRules()->IsMannVsMachineMode() && tf_mvm_forceversus.GetBool() && GetTeamNumber() == TF_TEAM_PVE_INVADERS && !IsBot() && !TFGameRules()->InSetup() )
@@ -1889,18 +1894,142 @@ void CTFPlayer::TFPlayerThink()
 	}
 	m_flLastThinkTime = gpGlobals->curtime;
 }
-// MVM Versus - Robot Think
+
+bool CTFPlayer::MvMDeployUpgradeOverTime()
+{
+	CCaptureFlag *pCaptureFlag = dynamic_cast<CCaptureFlag *>( GetItem() );
+	if ( TFGameRules()->IsMannVsMachineMode() && m_upgradeLevel != -1 && pCaptureFlag )
+	{
+		if ( PointInRespawnRoom( this, WorldSpaceCenter(), true ) )
+		{
+			// don't start counting down until we leave the spawn
+			m_upgradeTimer.Start( tf_mvm_bot_flag_carrier_interval_to_1st_upgrade.GetFloat() );
+			TFObjectiveResource()->SetBaseMvMBombUpgradeTime( gpGlobals->curtime );
+			TFObjectiveResource()->SetNextMvMBombUpgradeTime( gpGlobals->curtime + m_upgradeTimer.GetRemainingTime() );
+		}
+
+		// do defensive buff effect ourselves (since we're not a soldier)
+		if ( m_upgradeLevel > 0 && m_buffPulseTimer.IsElapsed() )
+		{
+			m_buffPulseTimer.Start( 1.0f );
+
+			CUtlVector< CTFPlayer * > playerVector;
+			CollectPlayers( &playerVector, GetTeamNumber(), COLLECT_ONLY_LIVING_PLAYERS );
+
+			const float buffRadius = 450.0f;
+
+			for( int i=0; i<playerVector.Count(); ++i )
+			{
+				Vector to = playerVector[i]->GetAbsOrigin() - GetAbsOrigin();
+				if( to.IsLengthLessThan( buffRadius ) )
+				{
+					playerVector[i]->m_Shared.AddCond( TF_COND_DEFENSEBUFF_NO_CRIT_BLOCK, 1.2f );
+				}
+			}
+		}
+
+		// the flag carrier gets stronger the longer he holds the flag
+		if ( m_upgradeTimer.IsElapsed() )
+		{
+			const int maxLevel = 3;
+
+			if ( m_upgradeLevel < maxLevel )
+			{
+				++m_upgradeLevel;
+
+				TFGameRules()->BroadcastSound( 255, "MVM.Warning" );
+
+				switch( m_upgradeLevel )
+				{
+					//---------------------------------------
+				case 1:
+					m_upgradeTimer.Start( tf_mvm_bot_flag_carrier_interval_to_2nd_upgrade.GetFloat() );
+
+					// permanent buff banner effect (handled above)
+
+					// update the objective resource so clients have the information
+					if ( TFObjectiveResource() )
+					{
+						TFObjectiveResource()->SetFlagCarrierUpgradeLevel( 1 );
+						TFObjectiveResource()->SetBaseMvMBombUpgradeTime( gpGlobals->curtime );
+						TFObjectiveResource()->SetNextMvMBombUpgradeTime( gpGlobals->curtime + m_upgradeTimer.GetRemainingTime() );
+						TFGameRules()->HaveAllPlayersSpeakConceptIfAllowed( MP_CONCEPT_MVM_BOMB_CARRIER_UPGRADE1, TF_TEAM_PVE_DEFENDERS );
+						DispatchParticleEffect( "mvm_levelup1", PATTACH_POINT_FOLLOW, this, "head" );
+					}
+					return true;
+
+					//---------------------------------------
+				case 2:
+					{
+					static CSchemaAttributeDefHandle pAttrDef_HealthRegen( "health regen" );
+
+					m_upgradeTimer.Start( tf_mvm_bot_flag_carrier_interval_to_3rd_upgrade.GetFloat() );
+
+					if ( !pAttrDef_HealthRegen )
+					{
+						Warning( "TFBotSpawner: Invalid attribute 'health regen'\n" );
+					}
+					else
+					{
+						CAttributeList *pAttrList = GetAttributeList();
+						if ( pAttrList )
+						{
+							pAttrList->SetRuntimeAttributeValue( pAttrDef_HealthRegen, tf_mvm_bot_flag_carrier_health_regen.GetFloat() );
+						}
+					}
+
+					// update the objective resource so clients have the information
+					if ( TFObjectiveResource() )
+					{
+						TFObjectiveResource()->SetFlagCarrierUpgradeLevel( 2 );
+						TFObjectiveResource()->SetBaseMvMBombUpgradeTime( gpGlobals->curtime );
+						TFObjectiveResource()->SetNextMvMBombUpgradeTime( gpGlobals->curtime + m_upgradeTimer.GetRemainingTime() );
+						TFGameRules()->HaveAllPlayersSpeakConceptIfAllowed( MP_CONCEPT_MVM_BOMB_CARRIER_UPGRADE2, TF_TEAM_PVE_DEFENDERS );
+						DispatchParticleEffect( "mvm_levelup2", PATTACH_POINT_FOLLOW, this, "head" );
+					}
+					return true;
+				}
+
+					//---------------------------------------
+				case 3:
+					// add critz
+					m_Shared.AddCond( TF_COND_CRITBOOSTED );
+
+					// update the objective resource so clients have the information
+					if ( TFObjectiveResource() )
+					{
+						TFObjectiveResource()->SetFlagCarrierUpgradeLevel( 3 );
+						TFObjectiveResource()->SetBaseMvMBombUpgradeTime( -1 );
+						TFObjectiveResource()->SetNextMvMBombUpgradeTime( -1 );
+						TFGameRules()->HaveAllPlayersSpeakConceptIfAllowed( MP_CONCEPT_MVM_BOMB_CARRIER_UPGRADE3, TF_TEAM_PVE_DEFENDERS );
+						DispatchParticleEffect( "mvm_levelup3", PATTACH_POINT_FOLLOW, this, "head" );
+					}
+					return true;
+				}
+			}
+		}
+	}
+
+	return false;
+}
+
+// MVM Versus - Robot Deploy code
 void CTFPlayer::MvMDeployBombThink()
 {
 
-	bool bInRespawnRoom = PointInRespawnRoom(this,WorldSpaceCenter(),true);
-	if(bInRespawnRoom)
+	bool bInRespawnRoom = PointInRespawnRoom( this, WorldSpaceCenter(), true );
+	if( bInRespawnRoom )
 	{
-		m_Shared.AddCond(TF_COND_INVULNERABLE,0.5f);
-		m_Shared.AddCond(TF_COND_INVULNERABLE_HIDE_UNLESS_DAMAGED,0.5f);
-		m_Shared.AddCond(TF_COND_INVULNERABLE_WEARINGOFF,0.5f);
-		m_Shared.AddCond(TF_COND_IMMUNE_TO_PUSHBACK,1.0f);
-		AddCustomAttribute("no_attack",1,1.0f);
+		m_Shared.AddCond( TF_COND_INVULNERABLE, 0.5f );
+		m_Shared.AddCond( TF_COND_INVULNERABLE_HIDE_UNLESS_DAMAGED, 0.5f );
+		m_Shared.AddCond( TF_COND_INVULNERABLE_WEARINGOFF, 0.5f );
+		m_Shared.AddCond( TF_COND_IMMUNE_TO_PUSHBACK, 1.0f );
+		AddCustomAttribute( "no_attack", 1, 1.0f );
+	}
+
+	if ( MvMDeployUpgradeOverTime() )
+	{
+		Taunt( TAUNT_BASE_WEAPON );
 	}
 
 	if( GetDeployingBombState() != TF_BOMB_DEPLOYING_NONE )

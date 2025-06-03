@@ -1155,6 +1155,7 @@ protected:
 	void				RuneRegenThink();
 	void				RegenAmmoInternal( int iAmmo, float flRegen );
 	void				ResetPlayerClass( void );
+	bool				MvMDeployUpgradeOverTime();
 	void				MvMDeployBombThink();
 	void				MvMDeployBombEnd();
 
@@ -1375,7 +1376,11 @@ public:
 	// Marking for death.
 	CHandle<CTFPlayer>	m_pMarkedForDeathTarget;
 
-	CountdownTimer m_playerMovementStuckTimer;			// for destroying stuck bots in MvM
+	CountdownTimer		m_playerMovementStuckTimer;			// for destroying stuck bots in MvM
+
+	CountdownTimer		m_upgradeTimer;
+
+	int					m_upgradeLevel;
 
 	QAngle				m_qPreviousChargeEyeAngle;		// Previous EyeAngles to compute deltas for legal mouse movement
 private:
@@ -1397,6 +1402,7 @@ private:
 
 	CountdownTimer		m_inCombatThrottleTimer;
 
+	CountdownTimer		m_buffPulseTimer;
 	CountdownTimer		m_deployBombTimer;
 	Vector				m_deployAnchorPos;
 
