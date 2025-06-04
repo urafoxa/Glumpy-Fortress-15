@@ -122,7 +122,8 @@ void CopySoundNameWithModifierToken( char *pchDest, const char *pchSource, int n
 		nDest++;
 		nSource++;
 
-		if ( !bFoundPeriod && pchSource[ nSource - 1 ] == bUseEngineerFix ? '_' : '.')
+		char ch = bUseEngineerFix ? '_' : '.';
+		if ( !bFoundPeriod && pchSource[ nSource - 1 ] == ch)
 		{
 			// Insert special token after the period
 			bFoundPeriod = true;
