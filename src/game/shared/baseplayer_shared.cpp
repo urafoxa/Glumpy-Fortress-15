@@ -108,7 +108,7 @@ bool UseHWMorphModels()
 	return false;
 }
 
-void CopySoundNameWithModifierToken( char *pchDest, const char *pchSource, int nMaxLenInChars, const char *pchToken )
+void CopySoundNameWithModifierToken( char *pchDest, const char *pchSource, int nMaxLenInChars, const char *pchToken, bool bUseEngineerFix = false )
 {
 	// Copy the sound name
 	int nSource = 0;
@@ -122,7 +122,7 @@ void CopySoundNameWithModifierToken( char *pchDest, const char *pchSource, int n
 		nDest++;
 		nSource++;
 
-		if ( !bFoundPeriod && pchSource[ nSource - 1 ] == '.' )
+		if ( !bFoundPeriod && pchSource[ nSource - 1 ] == bUseEngineerFix ? '_' : '.')
 		{
 			// Insert special token after the period
 			bFoundPeriod = true;
