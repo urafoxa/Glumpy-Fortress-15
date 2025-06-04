@@ -115,6 +115,7 @@ void CopySoundNameWithModifierToken( char *pchDest, const char *pchSource, int n
 	int nDest = 0;
 	bool bFoundPeriod = false;
 
+	// MVM Versus - Patch for robo engineer having Engineer_ instead of the dot
 	while ( pchSource[ nSource ] != '\0' && nDest < nMaxLenInChars - 2 )
 	{
 		pchDest[ nDest ] = pchSource[ nSource ];

@@ -1898,113 +1898,129 @@ void CTFPlayer::TFPlayerThink()
 bool CTFPlayer::MvMDeployUpgradeOverTime()
 {
 	CCaptureFlag *pCaptureFlag = dynamic_cast<CCaptureFlag *>( GetItem() );
-	if ( TFGameRules()->IsMannVsMachineMode() && m_upgradeLevel != -1 && pCaptureFlag )
-	{
-		if ( PointInRespawnRoom( this, WorldSpaceCenter(), true ) )
-		{
-			// don't start counting down until we leave the spawn
-			m_upgradeTimer.Start( tf_mvm_bot_flag_carrier_interval_to_1st_upgrade.GetFloat() );
-			TFObjectiveResource()->SetBaseMvMBombUpgradeTime( gpGlobals->curtime );
-			TFObjectiveResource()->SetNextMvMBombUpgradeTime( gpGlobals->curtime + m_upgradeTimer.GetRemainingTime() );
-		}
-
-		// do defensive buff effect ourselves (since we're not a soldier)
-		if ( m_upgradeLevel > 0 && m_buffPulseTimer.IsElapsed() )
-		{
-			m_buffPulseTimer.Start( 1.0f );
-
-			CUtlVector< CTFPlayer * > playerVector;
-			CollectPlayers( &playerVector, GetTeamNumber(), COLLECT_ONLY_LIVING_PLAYERS );
-
-			const float buffRadius = 450.0f;
-
-			for( int i=0; i<playerVector.Count(); ++i )
+	if ( TFGameRules()->IsMannVsMachineMode() )
+	{ 
+		if ( pCaptureFlag )
+		{ 
+			if ( IsMiniBoss() )
 			{
-				Vector to = playerVector[i]->GetAbsOrigin() - GetAbsOrigin();
-				if( to.IsLengthLessThan( buffRadius ) )
+				m_upgradeLevel = -1;
+				if ( TFObjectiveResource() )
 				{
-					playerVector[i]->m_Shared.AddCond( TF_COND_DEFENSEBUFF_NO_CRIT_BLOCK, 1.2f );
+					// Set threat level to max
+					TFObjectiveResource()->SetFlagCarrierUpgradeLevel( 4 );
+					TFObjectiveResource()->SetBaseMvMBombUpgradeTime( -1 );
+					TFObjectiveResource()->SetNextMvMBombUpgradeTime( -1 );
 				}
 			}
-		}
-
-		// the flag carrier gets stronger the longer he holds the flag
-		if ( m_upgradeTimer.IsElapsed() )
-		{
-			const int maxLevel = 3;
-
-			if ( m_upgradeLevel < maxLevel )
-			{
-				++m_upgradeLevel;
-
-				TFGameRules()->BroadcastSound( 255, "MVM.Warning" );
-
-				switch( m_upgradeLevel )
+			else if ( m_upgradeLevel != -1 )
+			{ 
+				if ( PointInRespawnRoom( this, WorldSpaceCenter(), true ) )
 				{
-					//---------------------------------------
-				case 1:
-					m_upgradeTimer.Start( tf_mvm_bot_flag_carrier_interval_to_2nd_upgrade.GetFloat() );
+					// don't start counting down until we leave the spawn
+					m_upgradeTimer.Start( tf_mvm_bot_flag_carrier_interval_to_1st_upgrade.GetFloat() );
+					TFObjectiveResource()->SetBaseMvMBombUpgradeTime( gpGlobals->curtime );
+					TFObjectiveResource()->SetNextMvMBombUpgradeTime( gpGlobals->curtime + m_upgradeTimer.GetRemainingTime() );
+				}
+				// do defensive buff effect ourselves (since we're not a soldier)
+				if ( m_upgradeLevel > 0 && m_buffPulseTimer.IsElapsed() )
+				{
+					m_buffPulseTimer.Start( 1.0f );
 
-					// permanent buff banner effect (handled above)
+					CUtlVector< CTFPlayer * > playerVector;
+					CollectPlayers( &playerVector, GetTeamNumber(), COLLECT_ONLY_LIVING_PLAYERS );
 
-					// update the objective resource so clients have the information
-					if ( TFObjectiveResource() )
+					const float buffRadius = 450.0f;
+
+					for( int i=0; i<playerVector.Count(); ++i )
 					{
-						TFObjectiveResource()->SetFlagCarrierUpgradeLevel( 1 );
-						TFObjectiveResource()->SetBaseMvMBombUpgradeTime( gpGlobals->curtime );
-						TFObjectiveResource()->SetNextMvMBombUpgradeTime( gpGlobals->curtime + m_upgradeTimer.GetRemainingTime() );
-						TFGameRules()->HaveAllPlayersSpeakConceptIfAllowed( MP_CONCEPT_MVM_BOMB_CARRIER_UPGRADE1, TF_TEAM_PVE_DEFENDERS );
-						DispatchParticleEffect( "mvm_levelup1", PATTACH_POINT_FOLLOW, this, "head" );
-					}
-					return true;
-
-					//---------------------------------------
-				case 2:
-					{
-					static CSchemaAttributeDefHandle pAttrDef_HealthRegen( "health regen" );
-
-					m_upgradeTimer.Start( tf_mvm_bot_flag_carrier_interval_to_3rd_upgrade.GetFloat() );
-
-					if ( !pAttrDef_HealthRegen )
-					{
-						Warning( "TFBotSpawner: Invalid attribute 'health regen'\n" );
-					}
-					else
-					{
-						CAttributeList *pAttrList = GetAttributeList();
-						if ( pAttrList )
+						Vector to = playerVector[i]->GetAbsOrigin() - GetAbsOrigin();
+						if( to.IsLengthLessThan( buffRadius ) )
 						{
-							pAttrList->SetRuntimeAttributeValue( pAttrDef_HealthRegen, tf_mvm_bot_flag_carrier_health_regen.GetFloat() );
+							playerVector[i]->m_Shared.AddCond( TF_COND_DEFENSEBUFF_NO_CRIT_BLOCK, 1.2f );
 						}
 					}
-
-					// update the objective resource so clients have the information
-					if ( TFObjectiveResource() )
-					{
-						TFObjectiveResource()->SetFlagCarrierUpgradeLevel( 2 );
-						TFObjectiveResource()->SetBaseMvMBombUpgradeTime( gpGlobals->curtime );
-						TFObjectiveResource()->SetNextMvMBombUpgradeTime( gpGlobals->curtime + m_upgradeTimer.GetRemainingTime() );
-						TFGameRules()->HaveAllPlayersSpeakConceptIfAllowed( MP_CONCEPT_MVM_BOMB_CARRIER_UPGRADE2, TF_TEAM_PVE_DEFENDERS );
-						DispatchParticleEffect( "mvm_levelup2", PATTACH_POINT_FOLLOW, this, "head" );
-					}
-					return true;
 				}
 
-					//---------------------------------------
-				case 3:
-					// add critz
-					m_Shared.AddCond( TF_COND_CRITBOOSTED );
+				// the flag carrier gets stronger the longer he holds the flag
+				if ( m_upgradeTimer.IsElapsed() )
+				{
+					const int maxLevel = 3;
 
-					// update the objective resource so clients have the information
-					if ( TFObjectiveResource() )
+					if ( m_upgradeLevel < maxLevel )
 					{
-						TFObjectiveResource()->SetFlagCarrierUpgradeLevel( 3 );
-						TFObjectiveResource()->SetBaseMvMBombUpgradeTime( -1 );
-						TFObjectiveResource()->SetNextMvMBombUpgradeTime( -1 );
-						TFGameRules()->HaveAllPlayersSpeakConceptIfAllowed( MP_CONCEPT_MVM_BOMB_CARRIER_UPGRADE3, TF_TEAM_PVE_DEFENDERS );
-						DispatchParticleEffect( "mvm_levelup3", PATTACH_POINT_FOLLOW, this, "head" );
+						++m_upgradeLevel;
+
+						TFGameRules()->BroadcastSound( 255, "MVM.Warning" );
+
+						switch( m_upgradeLevel )
+						{
+							//---------------------------------------
+						case 1:
+							m_upgradeTimer.Start( tf_mvm_bot_flag_carrier_interval_to_2nd_upgrade.GetFloat() );
+
+							// permanent buff banner effect (handled above)
+
+							// update the objective resource so clients have the information
+							if ( TFObjectiveResource() )
+							{
+								TFObjectiveResource()->SetFlagCarrierUpgradeLevel( 1 );
+								TFObjectiveResource()->SetBaseMvMBombUpgradeTime( gpGlobals->curtime );
+								TFObjectiveResource()->SetNextMvMBombUpgradeTime( gpGlobals->curtime + m_upgradeTimer.GetRemainingTime() );
+								TFGameRules()->HaveAllPlayersSpeakConceptIfAllowed( MP_CONCEPT_MVM_BOMB_CARRIER_UPGRADE1, TF_TEAM_PVE_DEFENDERS );
+								DispatchParticleEffect( "mvm_levelup1", PATTACH_POINT_FOLLOW, this, "head" );
+							}
+							return true;
+
+							//---------------------------------------
+						case 2:
+							{
+							static CSchemaAttributeDefHandle pAttrDef_HealthRegen( "health regen" );
+
+							m_upgradeTimer.Start( tf_mvm_bot_flag_carrier_interval_to_3rd_upgrade.GetFloat() );
+
+							if ( !pAttrDef_HealthRegen )
+							{
+								Warning( "TFBotSpawner: Invalid attribute 'health regen'\n" );
+							}
+							else
+							{
+								CAttributeList *pAttrList = GetAttributeList();
+								if ( pAttrList )
+								{
+									pAttrList->SetRuntimeAttributeValue( pAttrDef_HealthRegen, tf_mvm_bot_flag_carrier_health_regen.GetFloat() );
+								}
+							}
+
+							// update the objective resource so clients have the information
+							if ( TFObjectiveResource() )
+							{
+								TFObjectiveResource()->SetFlagCarrierUpgradeLevel( 2 );
+								TFObjectiveResource()->SetBaseMvMBombUpgradeTime( gpGlobals->curtime );
+								TFObjectiveResource()->SetNextMvMBombUpgradeTime( gpGlobals->curtime + m_upgradeTimer.GetRemainingTime() );
+								TFGameRules()->HaveAllPlayersSpeakConceptIfAllowed( MP_CONCEPT_MVM_BOMB_CARRIER_UPGRADE2, TF_TEAM_PVE_DEFENDERS );
+								DispatchParticleEffect( "mvm_levelup2", PATTACH_POINT_FOLLOW, this, "head" );
+							}
+							return true;
+						}
+
+							//---------------------------------------
+						case 3:
+							// add critz
+							m_Shared.AddCond( TF_COND_CRITBOOSTED );
+
+							// update the objective resource so clients have the information
+							if ( TFObjectiveResource() )
+							{
+								TFObjectiveResource()->SetFlagCarrierUpgradeLevel( 3 );
+								TFObjectiveResource()->SetBaseMvMBombUpgradeTime( -1 );
+								TFObjectiveResource()->SetNextMvMBombUpgradeTime( -1 );
+								TFGameRules()->HaveAllPlayersSpeakConceptIfAllowed( MP_CONCEPT_MVM_BOMB_CARRIER_UPGRADE3, TF_TEAM_PVE_DEFENDERS );
+								DispatchParticleEffect( "mvm_levelup3", PATTACH_POINT_FOLLOW, this, "head" );
+							}
+							return true;
+						}
 					}
-					return true;
 				}
 			}
 		}
@@ -15807,6 +15823,7 @@ const char* CTFPlayer::GetSceneSoundToken( void )
 
 	if (iOverrideVoiceSoundSet == kVoiceSoundSet_Default)
 	{
+		//Engineer bot has some "special" voice clips that VALVe ruined
 		if (TFGameRules() && TFGameRules()->IsMannVsMachineMode() && GetTeamNumber() == TF_TEAM_PVE_INVADERS)
 		{
 			if (IsMiniBoss())

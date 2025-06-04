@@ -5148,7 +5148,7 @@ void CTFPlayerShared::OnRemoveFireImmune( void )
 }
 
 //-----------------------------------------------------------------------------
-// Purpose: 
+// Purpose: MVM Versus Compatible now
 //-----------------------------------------------------------------------------
 void CTFPlayerShared::OnAddMVMBotRadiowave( void )
 {
@@ -5169,7 +5169,7 @@ void CTFPlayerShared::OnAddMVMBotRadiowave( void )
 }
 
 //-----------------------------------------------------------------------------
-// Purpose: 
+// Purpose: MVM Versus Compatible now
 //-----------------------------------------------------------------------------
 void CTFPlayerShared::OnRemoveMVMBotRadiowave( void )
 {
