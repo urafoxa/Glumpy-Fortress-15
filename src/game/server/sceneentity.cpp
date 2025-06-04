@@ -1719,7 +1719,7 @@ bool CSceneEntity::GetSoundNameForPlayer( CChoreoEvent *event, CBasePlayer *play
 
 	// Copy the sound name
 	// MVM Versus: Fix Engineer bot "special" lines
-	CopySoundNameWithModifierToken( buf, event->GetParameters(), buflen, pchToken );
+	CopySoundNameWithModifierToken( buf, event->GetParameters(), buflen, pchToken, bIsEngineer );
 
 	// If there was a modifier token, don't change the sound based on CC
 	if ( pchToken[0] != 0 )

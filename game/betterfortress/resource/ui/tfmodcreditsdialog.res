@@ -30,7 +30,7 @@
 		"ControlName"	"CExLabel"
 		"fieldName"		"TitleLabel"
 		"font"			"HudFontMediumBold"
-		"labelText"		"#TF_ModCredits_Title"
+		"labelText"		"#TF_ModGameTitle"
 		"textAlignment"	"center"
 		"xpos"			"0"
 		"ypos"			"0"

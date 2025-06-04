@@ -4,7 +4,7 @@ DESCRIPTION INFO_OPTIONS
 {
 	"category1"
 	{
-		"Better Fortress"
+		"Dev Team"
 		{ CATEGORY }
 	}
 	"credit1_1"
@@ -15,6 +15,12 @@ DESCRIPTION INFO_OPTIONS
 		{ "1" }
 	}	
 	"credit1_2"
+	{
+		"PracticeMedicine - Discord RPC rewrite, misc. Fixes"
+		{ BOOL }
+		{ "1" }
+	}	
+	"credit1_3"
 	{
 		"Published by MixerRules"
 		"https://wiki.tf2sm.info"
