@@ -108,7 +108,7 @@ bool UseHWMorphModels()
 	return false;
 }
 
-void CopySoundNameWithModifierToken( char *pchDest, const char *pchSource, int nMaxLenInChars, const char *pchToken, bool bUseEngineerFix = false )
+void CopySoundNameWithModifierToken( char *pchDest, const char *pchSource, int nMaxLenInChars, const char *pchToken, bool bUseEngineerFix /*= false*/ )
 {
 	// Copy the sound name
 	int nSource = 0;
