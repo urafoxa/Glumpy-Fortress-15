@@ -30,6 +30,7 @@
 		{
 			"prefab"		"base_misc"
 			"item_class"	"tf_wearable"
+			"moditem" "1"
 			"capabilities"
 			{
 				"nameable"			"1"
@@ -47,11 +48,6 @@
 			"equip_region"	"zombie_body"
 			"attributes"
 			{
-				"player skin override"
-				{
-					"attribute_class" "player_skin_override"
-					"value"		  "1"
-				}
 				"robotrobotrobotrobot"
 				{
 					"attribute_class"	"robotrobotrobotrobot"
@@ -794,7 +790,7 @@
 		}
 		//COSMETICS
 		//MVM SKIN
-		"31100"
+		"35100"
 		{
 			"name"		"Metallic Soul (Armory)"
 			"prefab"	"mvm_robotskin"
@@ -815,11 +811,10 @@
 			"item_description"	"#TF_Item_Zombie_Armory_Desc"
 			"image_inventory"	"backpack/player/items/engineer/engineer_zombie"
 		}
-		"31101"
+		"35101"
 		{
 			"name"		"MVM Robot Scout"
 			"prefab"	"mvm_robotskin"
-			"moditem" "1"
 			"item_name"	"#TF_Item_MVMBotScout"
 			"model_player"	"models/player/items/scout/scout_zombie.mdl"
 			"equip_regions"
@@ -833,6 +828,24 @@
 			}
 			"item_description"	"#TF_Item_MVMBotScout_Desc"
 			"image_inventory"	"backpack/player/items/scout/scout_zombie"
+		}
+		"35106"
+		{
+			"name"		"MVM Robot Engineer"
+			"prefab"	"mvm_robotskin"
+			"item_name"	"#TF_Item_MVMBotEngineer"
+			"model_player"	"models/player/items/engineer/engineer_zombie.mdl"
+			"equip_regions"
+			{
+				"zombie_body"			"1"
+				"feet"					"1"
+			}
+			"used_by_classes"
+			{
+				"engineer"	"1"
+			}
+			"item_description"	"#TF_Item_MVMBotEngineer_Desc"
+			"image_inventory"	"backpack/player/items/engineer/engineer_zombie"
 		}
 		//SWORDFISH
 		"32000"

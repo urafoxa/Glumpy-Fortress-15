@@ -1713,7 +1713,7 @@ bool CSceneEntity::GetSoundNameForPlayer( CChoreoEvent *event, CBasePlayer *play
 		pchToken = dynamic_cast< CBasePlayer* >( pActor )->GetSceneSoundToken();
 #ifdef TF_DLL
 		CTFPlayer *pPlayer = ToTFPlayer( pActor );
-		bIsEngineer = pPlayer->GetPlayerClass()->GetClassIndex() == TF_CLASS_ENGINEER && !V_stricmp( event->GetParameters(), "engineer_" );
+		bIsEngineer = pPlayer->GetPlayerClass()->GetClassIndex() == TF_CLASS_ENGINEER && !V_strnicmp( event->GetParameters(), "engineer_", 9 );
 #endif
 	}
 

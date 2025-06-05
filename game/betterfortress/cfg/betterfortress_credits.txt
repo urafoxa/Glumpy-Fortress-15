@@ -16,13 +16,14 @@ DESCRIPTION INFO_OPTIONS
 	}	
 	"credit1_2"
 	{
-		"PracticeMedicine - Discord RPC rewrite, misc. Fixes"
+		"PracticeMedicine - Discord RPC rewrite, misc. Fixes
+		Vvis - Give_econ command"
 		{ BOOL }
 		{ "1" }
 	}	
 	"credit1_3"
 	{
-		"Published by MixerRules"
+		"Published by MIXERRULES"
 		"https://wiki.tf2sm.info"
 		{ BOOL }
 		{ "1" }

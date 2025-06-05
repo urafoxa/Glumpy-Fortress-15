@@ -33,6 +33,7 @@
 #include "tf_weapon_passtime_gun.h"
 #include "tf_weapon_rocketpack.h"
 #include <functional>
+#include "tf_weapon_pda.h"
 
 // Client specific.
 #ifdef CLIENT_DLL
@@ -11438,6 +11439,13 @@ int CTFPlayerShared::CalculateObjectCost( CTFPlayer* pBuilder, int iObjectType )
 	if ( pWrench && pWrench->IsPDQ() && ( iObjectType == OBJ_SENTRYGUN ) )
 	{
 		nCost -= 30;
+	}
+
+	// Mini Dispensers are 30 metal cheaper - Vvis :3 
+	CTFWeaponPDA* pPDA = dynamic_cast<CTFWeaponPDA*>( pBuilder->Weapon_OwnsThisID ( TF_WEAPON_PDA_ENGINEER_BUILD ) );
+	if(pPDA && pPDA->IsMiniPDA() && (iObjectType == OBJ_DISPENSER))
+	{
+		nCost -= 25;
 	}
 	
 
