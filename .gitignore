@@ -286,6 +286,7 @@ DocProject/Help/html
 publish/
 externalignore/
 game/betterfortress/download/
+game/betterfortress/maps/graphs/
 
 # Publish Web Output
 *.[Pp]ublish.xml
@@ -986,3 +987,4 @@ externalignore/logo/Discord.psd
 externalignore/logo/Discord.png
 game/betterfortress/scripts/vscripts/mvmgiant.nut
 game/betterfortress/maps/ctf_2fort.nav
+game/betterfortress/maps/graphs/ctf_applejack.ain

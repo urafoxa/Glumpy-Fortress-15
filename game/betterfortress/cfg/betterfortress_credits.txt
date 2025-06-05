@@ -17,7 +17,7 @@ DESCRIPTION INFO_OPTIONS
 	"credit1_2"
 	{
 		"PracticeMedicine - Discord RPC rewrite, misc. Fixes
-		Vvis - Give_econ command"
+		Vvis - Give_econ command, Mini-Dispenser cost"
 		{ BOOL }
 		{ "1" }
 	}	

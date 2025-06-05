@@ -37,7 +37,7 @@
 			}
 			"item_type_name"	"#TF_VoodooCursedSoul_Type"
 			"show_in_armory"	"0"
-			"armory_remap"		"Voodoo-Cursed Soul (Armory)"
+			"armory_remap"		"Metallic Soul (Armory)"
 			"image_inventory_size_w"		"128"
 			"image_inventory_size_h"		"82"
 			"item_quality"	"unique"
@@ -53,6 +53,11 @@
 					"attribute_class"	"robotrobotrobotrobot"
 					"value"		"1"
 				}		
+				"override footstep sound set"
+				{
+					"attribute_class" "override_footstep_sound_set"
+					"value" 		"10"
+				}
 			}
 		}
 		
@@ -794,8 +799,8 @@
 		{
 			"name"		"Metallic Soul (Armory)"
 			"prefab"	"mvm_robotskin"
-			"item_name"	"#TF_Item_Zombie_Armory"
-			"show_in_armory"	"1"
+			"item_name"	"#TF_Item_MVMRobot_Armory"
+			//"show_in_armory"	"1" why VALVe?
 			"used_by_classes"
 			{
 				"scout"	"1"
@@ -816,7 +821,6 @@
 			"name"		"MVM Robot Scout"
 			"prefab"	"mvm_robotskin"
 			"item_name"	"#TF_Item_MVMBotScout"
-			"model_player"	"models/player/items/scout/scout_zombie.mdl"
 			"equip_regions"
 			{
 				"zombie_body"			"1"
@@ -826,15 +830,77 @@
 			{
 				"scout"	"1"
 			}
-			"item_description"	"#TF_Item_MVMBotScout_Desc"
 			"image_inventory"	"backpack/player/items/scout/scout_zombie"
+		}
+		"35102"
+		{
+			"name"		"MVM Robot Soldier"
+			"prefab"	"mvm_robotskin"
+			"item_name"	"#TF_Item_MVMBotSoldier"
+			"equip_regions"
+			{
+				"zombie_body"			"1"
+				"feet"					"1"
+			}
+			"used_by_classes"
+			{
+				"soldier"	"1"
+			}
+			"image_inventory"	"backpack/player/items/soldier/soldier_zombie"
+		}
+		"35103"
+		{
+			"name"		"MVM Robot Pyro"
+			"prefab"	"mvm_robotskin"
+			"item_name"	"#TF_Item_MVMBotPyro"
+			"equip_regions"
+			{
+				"zombie_body"			"1"
+				"feet"					"1"
+			}
+			"used_by_classes"
+			{
+				"pyro"	"1"
+			}
+			"image_inventory"	"backpack/player/items/pyro/pyro_zombie"
+		}
+		"35104"
+		{
+			"name"		"MVM Robot Demoman"
+			"prefab"	"mvm_robotskin"
+			"item_name"	"#TF_Item_MVMBotDemo"
+			"equip_regions"
+			{
+				"zombie_body"			"1"
+				"feet"					"1"
+			}
+			"used_by_classes"
+			{
+				"demoman"	"1"
+			}
+			"image_inventory"	"backpack/player/items/demo/demo_zombie"
+		}
+		"35105"
+		{
+			"name"		"MVM Robot Heavy"
+			"prefab"	"mvm_robotskin"
+			"item_name"	"#TF_Item_MVMBotHeavy"
+			"equip_regions"
+			{
+				"zombie_body"			"1"
+				"feet"					"1"
+			}
+			"used_by_classes"
+			{
+				"heavy"	"1"
+			}
+			"image_inventory"	"backpack/player/items/heavy/heavy_zombie"
 		}
 		"35106"
 		{
 			"name"		"MVM Robot Engineer"
 			"prefab"	"mvm_robotskin"
 			"item_name"	"#TF_Item_MVMBotEngineer"
-			"model_player"	"models/player/items/engineer/engineer_zombie.mdl"
 			"equip_regions"
 			{
 				"zombie_body"			"1"
@@ -844,8 +910,55 @@
 			{
 				"engineer"	"1"
 			}
-			"item_description"	"#TF_Item_MVMBotEngineer_Desc"
 			"image_inventory"	"backpack/player/items/engineer/engineer_zombie"
+		}
+		"35107"
+		{
+			"name"		"MVM Robot Medic"
+			"prefab"	"mvm_robotskin"
+			"item_name"	"#TF_Item_MVMBotMedic"
+			"equip_regions"
+			{
+				"zombie_body"			"1"
+				"feet"					"1"
+			}
+			"used_by_classes"
+			{
+				"medic"	"1"
+			}
+			"image_inventory"	"backpack/player/items/medic/medic_zombie"
+		}
+		"35108"
+		{
+			"name"		"MVM Robot Sniper"
+			"prefab"	"mvm_robotskin"
+			"item_name"	"#TF_Item_MVMBotSniper"
+			"equip_regions"
+			{
+				"zombie_body"			"1"
+				"feet"					"1"
+			}
+			"used_by_classes"
+			{
+				"sniper"	"1"
+			}
+			"image_inventory"	"backpack/player/items/sniper/sniper_zombie"
+		}
+		"35109"
+		{
+			"name"		"MVM Robot Spy"
+			"prefab"	"mvm_robotskin"
+			"item_name"	"#TF_Item_MVMBotSpy"
+			"equip_regions"
+			{
+				"zombie_body"			"1"
+				"feet"					"1"
+			}
+			"used_by_classes"
+			{
+				"spy"	"1"
+			}
+			"image_inventory"	"backpack/player/items/spy/spy_zombie"
 		}
 		//SWORDFISH
 		"32000"
