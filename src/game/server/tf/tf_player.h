@@ -621,6 +621,7 @@ public:
 	bool IsYetiHeavy(void) const;
 	bool IsFairyHeavy( void ) const;
 	bool IsZombieCostumeEquipped( void ) const;
+	bool IsMVMRobot ( void ) const;
 	bool HasWearablesEquipped( const CSchemaItemDefHandle *ppItemDefs, int nWearables ) const;
 
 	//BetaM - Fixes custom taunts/action items to be "valid" for loadouts

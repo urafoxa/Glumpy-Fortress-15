@@ -26,6 +26,40 @@
 	}
 	"prefabs"
 	{
+		"mvm_robotskin"
+		{
+			"prefab"		"base_misc"
+			"item_class"	"tf_wearable"
+			"capabilities"
+			{
+				"nameable"			"1"
+			}
+			"item_type_name"	"#TF_VoodooCursedSoul_Type"
+			"show_in_armory"	"0"
+			"armory_remap"		"Voodoo-Cursed Soul (Armory)"
+			"image_inventory_size_w"		"128"
+			"image_inventory_size_h"		"82"
+			"item_quality"	"unique"
+			"propername" "0"
+			"min_ilevel"	"1"
+			"max_ilevel"	"1"
+			"item_slot"	"misc"
+			"equip_region"	"zombie_body"
+			"attributes"
+			{
+				"player skin override"
+				{
+					"attribute_class" "player_skin_override"
+					"value"		  "1"
+				}
+				"robotrobotrobotrobot"
+				{
+					"attribute_class"	"robotrobotrobotrobot"
+					"value"		"1"
+				}		
+			}
+		}
+		
 		"weapon_reserve_shooter"
 		{
 			"enabled"	"1"
@@ -409,6 +443,15 @@
 			"effect_type"	"positive"
 			"stored_as_integer"	"0"
 		}
+		"4006"
+		{
+			"name"	"robotrobotrobotrobot"
+			"attribute_class"	"robotrobotrobotrobot"
+			"description_format"	"value_is_additive"
+			"hidden"	"1"
+			"effect_type"	"neutral"
+			"stored_as_integer"	"0"
+		}
 	}
 	"items"
 	{
@@ -748,6 +791,48 @@
 					"heavy"	"scenes/player/heavy/low/betterfortress/tauntkill_trustfall.vcd"
 				}
 			}
+		}
+		//COSMETICS
+		//MVM SKIN
+		"31100"
+		{
+			"name"		"Metallic Soul (Armory)"
+			"prefab"	"mvm_robotskin"
+			"item_name"	"#TF_Item_Zombie_Armory"
+			"show_in_armory"	"1"
+			"used_by_classes"
+			{
+				"scout"	"1"
+				"sniper"	"1"
+				"soldier"	"1"
+				"demoman"	"1"
+				"medic"	"1"
+				"heavy"	"1"
+				"spy" "1"
+				"engineer" "1"
+				"pyro" "1"
+			}
+			"item_description"	"#TF_Item_Zombie_Armory_Desc"
+			"image_inventory"	"backpack/player/items/engineer/engineer_zombie"
+		}
+		"31101"
+		{
+			"name"		"MVM Robot Scout"
+			"prefab"	"mvm_robotskin"
+			"moditem" "1"
+			"item_name"	"#TF_Item_MVMBotScout"
+			"model_player"	"models/player/items/scout/scout_zombie.mdl"
+			"equip_regions"
+			{
+				"zombie_body"			"1"
+				"feet"					"1"
+			}
+			"used_by_classes"
+			{
+				"scout"	"1"
+			}
+			"item_description"	"#TF_Item_MVMBotScout_Desc"
+			"image_inventory"	"backpack/player/items/scout/scout_zombie"
 		}
 		//SWORDFISH
 		"32000"

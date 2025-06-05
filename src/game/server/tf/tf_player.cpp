@@ -15824,7 +15824,7 @@ const char* CTFPlayer::GetSceneSoundToken( void )
 	if (iOverrideVoiceSoundSet == kVoiceSoundSet_Default)
 	{
 		//Engineer bot has some "special" voice clips that VALVe ruined
-		if (TFGameRules() && TFGameRules()->IsMannVsMachineMode() && GetTeamNumber() == TF_TEAM_PVE_INVADERS)
+		if (TFGameRules() && TFGameRules()->IsMannVsMachineMode() && GetTeamNumber() == TF_TEAM_PVE_INVADERS || IsMVMRobot() )
 		{
 			if (IsMiniBoss())
 			{
@@ -17835,6 +17835,16 @@ bool CTFPlayer::IsZombieCostumeEquipped( void ) const
 	int iZombie = 0;
 	CALL_ATTRIB_HOOK_INT( iZombie, zombiezombiezombiezombie );
 	return iZombie != 0;
+}
+
+//-----------------------------------------------------------------------------
+// Purpose: 
+//-----------------------------------------------------------------------------
+bool CTFPlayer::IsMVMRobot( void ) const
+{
+	int iRobot = 0;
+	CALL_ATTRIB_HOOK_INT( iRobot, robotrobotrobotrobot );
+	return iRobot != 0;
 }
 
 //-----------------------------------------------------------------------------
@@ -21095,31 +21105,39 @@ void CTFPlayer::MVM_StartIdleSound(void)
 		int iClass = GetPlayerClass()->GetClassIndex();
 		switch (iClass)
 		{
-		case TF_CLASS_HEAVYWEAPONS:
-		{
-			pszSoundName = "MVM.GiantHeavyLoop";
-			break;
-		}
-		case TF_CLASS_SOLDIER:
-		{
-			pszSoundName = "MVM.GiantSoldierLoop";
-			break;
-		}
-		case TF_CLASS_DEMOMAN:
-		{
-			pszSoundName = "MVM.GiantDemomanLoop";
-			break;
-		}
-		case TF_CLASS_SCOUT:
-		{
-			pszSoundName = "MVM.GiantScoutLoop";
-			break;
-		}
-		case TF_CLASS_PYRO:
-		{
-			pszSoundName = "MVM.GiantPyroLoop";
-			break;
-		}
+			case TF_CLASS_HEAVYWEAPONS:
+			{
+				pszSoundName = "MVM.GiantHeavyLoop";
+				break;
+			}
+			case TF_CLASS_SOLDIER:
+			{
+				pszSoundName = "MVM.GiantSoldierLoop";
+				break;
+			}
+			case TF_CLASS_DEMOMAN:
+			{
+				pszSoundName = "MVM.GiantDemomanLoop";
+				break;
+			}
+			case TF_CLASS_SCOUT:
+			{
+				pszSoundName = "MVM.GiantScoutLoop";
+				break;
+			}
+			case TF_CLASS_PYRO:
+			{
+				pszSoundName = "MVM.GiantPyroLoop";
+				break;
+			}
+			case TF_CLASS_MEDIC:
+			case TF_CLASS_ENGINEER:
+			case TF_CLASS_SNIPER:
+			case TF_CLASS_SPY:
+			{
+				return;
+				break;
+			}
 		}
 
 		if (pszSoundName)
@@ -21250,6 +21268,14 @@ void CTFPlayer::MVM_SetMinibossType(void)
 				AddCustomAttribute("max health additive bonus",2825,-1);
 				AddCustomAttribute("damage force reduction",0.6,-1);
 				AddCustomAttribute("airblast vulnerability multiplier",0.6,-1);
+				break;
+			}
+			case TF_CLASS_MEDIC:
+			case TF_CLASS_ENGINEER:
+			case TF_CLASS_SNIPER:
+			case TF_CLASS_SPY:
+			{
+				return;
 				break;
 			}
 		}
