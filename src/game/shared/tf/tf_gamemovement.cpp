@@ -28,7 +28,7 @@
 	#include "c_world.h"
 	#include "c_team.h"
 	#include "prediction.h"
-
+	#include "c_prop_vehicle.h"
 	#define CTeam C_Team
 
 #else
@@ -36,6 +36,7 @@
 	#include "team.h"
 	#include "bot/tf_bot.h"
 	#include "tf_fx.h"
+	#include "vehicle_base.h"
 #endif
 
 
@@ -83,6 +84,7 @@ extern ConVar cl_sidespeed;
 extern ConVar mp_tournament_readymode_countdown;
 
 ConVar  tf_max_speed( "tf_max_speed", "520", FCVAR_REPLICATED, "Max movement speed players are allowed to move at");	// 400 is Scout max speed, and we allow up to 3% movement bonus.
+ConVar tf_allow_ladders("tf_allow_ladders", "0", FCVAR_NOTIFY, "Allow players to climb Ladders.");
 
 #define TF_WATERJUMP_FORWARD	30
 #define TF_WATERJUMP_UP			300
@@ -2930,7 +2932,9 @@ void CTFGameMovement::StepMove( Vector &vecDestination, trace_t &trace )
 //-----------------------------------------------------------------------------
 bool CTFGameMovement::GameHasLadders() const
 {
-	return false;
+	if ( !tf_allow_ladders.GetBool() )
+		return false;
+	return true;
 }
 
 //-----------------------------------------------------------------------------

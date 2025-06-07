@@ -49,7 +49,7 @@ DESCRIPTION INFO_OPTIONS
 	}	
 	"credit2_3"
 	{
-		"Gidi30 - 3D Custom model portrait"
+		"Gidi30 - 3D Custommodel portrait, Prop_vehicle fix"
 		"https://steamcommunity.com/profiles/76561198363234129"
 		{ BOOL }
 		{ "1" }

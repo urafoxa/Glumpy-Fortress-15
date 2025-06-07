@@ -131,6 +131,7 @@
 #include "tf_weapon_bonesaw.h"
 #include "pointhurt.h"
 #include "info_camera_link.h"
+#include "vehicle_base.h"
 
 // NVNT haptic utils
 #include "haptics/haptic_utils.h"
@@ -1225,6 +1226,7 @@ CTFPlayer::CTFPlayer()
 	m_bRespawning = false;
 
 	m_bAlreadyUsedExtendFreezeThisDeath = false;
+	m_hOwnedVehicle = NULL;
 }
 
 //-----------------------------------------------------------------------------
@@ -6301,6 +6303,25 @@ CBaseEntity* CTFPlayer::EntSelectSpawnPoint()
 } 
 
 //-----------------------------------------------------------------------------
+// Purpose: HL2 Style Vehicle fix by Gidi30
+//-----------------------------------------------------------------------------
+
+bool CTFPlayer::GetInVehicle(IServerVehicle* pVehicle, int nRole)
+{
+	if (BaseClass::GetInVehicle(pVehicle, nRole))
+	{
+		// Feign death if we have the right equipment mod.
+		CTFWeaponInvis* pInvisWatch = static_cast<CTFWeaponInvis*>(Weapon_OwnsThisID(TF_WEAPON_INVIS));
+		if (pInvisWatch && (m_Shared.InCond(TF_COND_STEALTHED) || m_Shared.IsFeignDeathReady()))
+		{
+			pInvisWatch->ActivateInvisibilityWatch();
+		}
+		return true;
+	}
+	return false;
+}
+
+//-----------------------------------------------------------------------------
 // Purpose:
 //-----------------------------------------------------------------------------
 bool CTFPlayer::SelectSpawnSpotByType( const char *pEntClassName, CBaseEntity* &pSpot )
@@ -9325,6 +9346,16 @@ int CTFPlayer::OnTakeDamage( const CTakeDamageInfo &inputInfo )
 			m_iHealth = 1;
 			return 0;
 		}
+	}
+
+	if (info.GetInflictor() && info.GetInflictor()->IsWorld() && info.GetDamageType() & DMG_CRUSH )
+		return 0;
+
+	if (info.GetInflictor() && info.GetInflictor()->GetServerVehicle())
+	{
+		CPropVehicleDriveable* pVehicle = dynamic_cast<CPropVehicleDriveable*>(info.GetInflictor());
+		if (pVehicle && !pVehicle->TouchedGroundSinceTeleport())
+			return 0;
 	}
 
 	if ( !IsAlive() )
@@ -13862,6 +13893,9 @@ void CTFPlayer::TeamFortress_ClientDisconnected( void )
 	TFGameRules()->PlayerHistory_AddPlayer( this );
 
 	DuelMiniGame_NotifyPlayerDisconnect( this );
+
+	if (m_hOwnedVehicle)
+		UTIL_Remove(m_hOwnedVehicle);
 
 	// notify the vote controller
 	if ( g_voteControllerGlobal )
@@ -21372,6 +21406,8 @@ void CTFPlayer::PlayerUse ( void )
 			return;
 		}
 	}
+	if ( IsInAVehicle() )
+		return;
 
 	BaseClass::PlayerUse();
 }
