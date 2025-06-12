@@ -35,7 +35,7 @@
 			{
 				"nameable"			"1"
 			}
-			"item_type_name"	"#TF_VoodooCursedSoul_Type"
+			"item_type_name"	"#TF_MVMRobotSkin_Type"
 			"show_in_armory"	"0"
 			"armory_remap"		"Metallic Soul (Armory)"
 			"image_inventory_size_w"		"128"
@@ -952,8 +952,7 @@
 		{
 			"name"		"Metallic Soul (Armory)"
 			"prefab"	"mvm_robotskin"
-			"item_name"	"#TF_Item_MVMRobot_Armory"
-			//"show_in_armory"	"1" why VALVe?
+			"moditem" "0"
 			"used_by_classes"
 			{
 				"scout"	"1"

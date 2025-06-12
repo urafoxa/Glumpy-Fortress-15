@@ -5006,6 +5006,20 @@ bool CTFPlayer::ItemIsAllowed( CEconItemView *pItem )
 			}
 		}
 	}
+	//MVM Versus - Robots don't need to wear themselves twice!
+	if ( TFGameRules()->IsMannVsMachineMode() )
+	{
+		static CSchemaAttributeDefHandle pAttrib_RobotSkin("robotrobotrobotrobot" );
+		static CSchemaAttributeDefHandle pAttrib_ZombieSkin("zombiezombiezombiezombie" );
+		if ( GetTeamNumber() == TF_TEAM_PVE_INVADERS )
+		{
+			//If you are wearing the Cursed Soul, or the Robot Armor == Delete
+			if ( pItem->FindAttribute(pAttrib_RobotSkin) || ( pItem->FindAttribute(pAttrib_ZombieSkin) && g_pPopulationManager->IsPopFileEventType(MVM_EVENT_POPFILE_HALLOWEEN) ) )
+			{
+				return false;
+			}
+		}
+	}
 
 	return true;
 }
