@@ -1257,7 +1257,7 @@ void CTFPlayerModelPanel::UpdatePreviewVisuals()
 			SetMDL( hModel );
 			break;
 		}
-		Assert( fSkinOverride == 0.0f );
+		Assert( fRobotModel == 0.0f );
 	}
 
 	// Set the player model skin.
