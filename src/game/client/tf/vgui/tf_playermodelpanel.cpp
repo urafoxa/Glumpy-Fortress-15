@@ -1242,7 +1242,10 @@ void CTFPlayerModelPanel::UpdatePreviewVisuals()
 	}
 
 
-	// HACK: Just set the models here if they have this attribute.
+	// HACK: Just set the models here so they override in the loadout menu when swapping cosmetics
+	TFPlayerClassData_t *pData = GetPlayerClassData( m_iCurrentClassIndex );
+	SetMDL( pData->GetModelName() );
+
 	static CSchemaAttributeDefHandle pAttrDef_RobotSkin( "robotrobotrobotrobot" );
 	Assert( pAttrDef_RobotSkin );
 	FOR_EACH_VEC( m_ItemsToCarry, i )
@@ -1253,8 +1256,7 @@ void CTFPlayerModelPanel::UpdatePreviewVisuals()
 		float fRobotModel = 0.0f;
 		if ( FindAttribute_UnsafeBitwiseCast<attrib_value_t>( pItem, pAttrDef_RobotSkin, &fRobotModel ) && fRobotModel == 1.0f )
 		{
-			MDLHandle_t hModel = mdlcache->FindMDL( g_szBotModels[GetPlayerClass()] );
-			SetMDL( hModel );
+			SetMDL( g_szBotModels[ GetPlayerClass() ] );
 			break;
 		}
 		Assert( fRobotModel == 0.0f );
