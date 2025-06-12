@@ -1241,6 +1241,25 @@ void CTFPlayerModelPanel::UpdatePreviewVisuals()
 		Assert( fSkinOverride == 0.0f );
 	}
 
+
+	// HACK: Just set the models here if they have this attribute.
+	static CSchemaAttributeDefHandle pAttrDef_RobotSkin( "robotrobotrobotrobot" );
+	Assert( pAttrDef_RobotSkin );
+	FOR_EACH_VEC( m_ItemsToCarry, i )
+	{
+		CEconItemView *pItem = m_ItemsToCarry[i];
+		if ( !pItem )
+			continue;
+		float fRobotModel = 0.0f;
+		if ( FindAttribute_UnsafeBitwiseCast<attrib_value_t>( pItem, pAttrDef_RobotSkin, &fRobotModel ) && fRobotModel == 1.0f )
+		{
+			MDLHandle_t hModel = mdlcache->FindMDL( g_szBotModels[GetPlayerClass()] );
+			SetMDL( hModel );
+			break;
+		}
+		Assert( fSkinOverride == 0.0f );
+	}
+
 	// Set the player model skin.
 	SetSkin( iSkin );
 
