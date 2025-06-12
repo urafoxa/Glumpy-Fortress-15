@@ -213,3 +213,106 @@
 		"wave"			"vo\heavy_jeers02.mp3"
 	}
 }
+"Taunt.Engineer_Fishing_Reelbig"
+{
+	"channel"		"CHAN_STATIC"
+	"volume"		"1"
+	"pitch"			"90,105"
+	"soundlevel"	"SNDLVL_74dB"
+	
+	"wave"	")player/taunt_fishing_reel_big.wav"
+
+}
+"Taunt.Engineer_Fishing_Appear"
+{
+	"channel"		"CHAN_STATIC"
+	"volume"		"1"
+	"pitch"			"90"
+	"soundlevel"	"SNDLVL_74dB"
+	
+	"wave"	")weapons/teleporter_receive.wav"
+
+}
+"Taunt.Engineer_Fishing_Fail"
+{
+	"channel" 			"CHAN_VOICE"
+	"volume" 			"VOL_NORM"
+	"pitch" 			"PITCH_NORM"
+	"soundlevel" 		"SNDLVL_95dB"
+	"rndwave"
+	{ 
+		"wave"	"vo/engineer_dominationsoldier02.mp3"
+		"wave"	"vo/engineer_negativevocalization08.mp3"
+		"wave"	"vo/engineer_autodejectedtie01.mp3"
+		"wave"	"vo/engineer_jeers02.mp3"
+		"wave"	"vo/engineer_dominationspy06.mp3"
+	}
+}
+"Taunt.Engineer_Fishing_Struggle"
+{
+	"channel" 			"CHAN_VOICE"
+	"volume" 			"VOL_NORM"
+	"pitch" 			"PITCH_NORM"
+	"soundlevel" 		"SNDLVL_95dB"
+	"rndwave"
+	{ 
+		"wave"	"vo/taunts/engy/eng_taunt_flip_exert_24.mp3"
+		"wave"	"vo/taunts/engy/eng_taunt_flip_exert_26.mp3"
+	}
+}
+"Taunt.Engineer_Fishing_Waiting"
+{
+	"channel" 			"CHAN_VOICE"
+	"volume" 			"VOL_NORM"
+	"pitch" 			"PITCH_NORM"
+	"soundlevel" 		"SNDLVL_95dB"
+	"rndwave"
+	{ 
+		"wave"	"vo/taunts/engy/eng_taunt_head_end_13.mp3"
+		"wave"	"vo/taunts/engy/eng_taunt_head_end_08.mp3"
+		"wave"	"vo/taunts/engy/eng_taunt_head_end_07.mp3"
+	}
+}
+"Taunt.Engineer_Fishing_Start"
+{
+	"channel" 			"CHAN_VOICE"
+	"volume" 			"VOL_NORM"
+	"pitch" 			"PITCH_NORM"
+	"soundlevel" 		"SNDLVL_95dB"
+	"rndwave"
+	{ 
+		"wave"	"vo/taunts/engy/eng_guzzle_05.mp3"
+		"wave"	"vo/taunts/engy/eng_taunt_cong_fun_14.mp3"
+		"wave"	"vo/taunts/engy/eng_taunt_cong_fun_30.mp3"
+		"wave"  "vo/taunts/engy/eng_taunt_int_13.mp3"
+		"wave"  "vo/taunts/engy/eng_taunt_int_22.mp3"
+	}
+}
+"Taunt.Engineer_Fishing_Catch"
+{
+	"channel" 			"CHAN_VOICE"
+	"volume" 			"VOL_NORM"
+	"pitch" 			"PITCH_NORM"
+	"soundlevel" 		"SNDLVL_95dB"
+	"rndwave"
+	{ 
+		"wave"	"vo/engineer_painsharp01.mp3"
+		"wave"	"vo/engineer_painsharp02.mp3"
+		"wave"	"vo/engineer_painsharp03.mp3"
+	}
+}
+"Taunt.Engineer_Fishing_Success"
+{
+	"channel" 			"CHAN_VOICE"
+	"volume" 			"VOL_NORM"
+	"pitch" 			"PITCH_NORM"
+	"soundlevel" 		"SNDLVL_95dB"
+	"rndwave"
+	{ 
+		"wave"	"vo/engineer_dominationheavy06.mp3"
+		"wave"	"vo/engineer_specialcompleted05.mp3"
+		"wave"	"vo/engineer_mvm_loot_godlike03.mp3"
+		"wave"	"vo/engineer_cheers06.mp3"
+		"wave"	"vo/engineer_yes02.mp3"
+	}
+}

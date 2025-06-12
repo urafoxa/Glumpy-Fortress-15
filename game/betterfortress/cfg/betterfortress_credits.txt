@@ -54,22 +54,33 @@ DESCRIPTION INFO_OPTIONS
 		{ BOOL }
 		{ "1" }
 	}	
-	"category3"
+	"category4"
 	{
 		"UPDATE: OFFSHORE"
 		{ CATEGORY }
 	}	
-	"credit3_1"
+	"credit4_1"
 	{
 		"Haau - The Hell Beneath Stickybomb launcher
 		Altranade - The Holy Merlin"
 		{ BOOL }
 		{ "1" }
 	}
-	"credit3_2"
+	"credit4_2"
 	{
 		"TheHypedScoot - Scout Sandkick taunt
 		Dansky - Crate and key models"
+		{ BOOL }
+		{ "1" }
+	}
+	"category5"
+	{
+		"WORKSHOP COMMUNITY ITEMS"
+		{ CATEGORY }
+	}	
+	"credit5_1"
+	{
+		"Soviet Unit - Heavy Facewear"
 		{ BOOL }
 		{ "1" }
 	}

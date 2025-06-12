@@ -377,6 +377,25 @@
 	"attributes"
 	{
 		//RESTORED ONES
+		"342"
+		{
+			"name"	"see cash through walls"
+			"attribute_class"	"see_cash_through_walls"
+			"description_string"	"#Attrib_CashXray"
+			"description_format"	"value_is_additive"
+			"hidden"	"0"
+			"effect_type"	"positive"
+		}
+		"480"
+		{
+			"name"	"radius stealth"
+			"attribute_class"	"radius_stealth"
+			"description_string"	"#Attrib_Radius_Stealth"
+			"description_format"	"value_is_percentage"
+			"hidden"	"0"
+			"effect_type"	"negative"
+			"stored_as_integer"	"0"
+		}
 		"483"
 		{
 			"name"	"medigun heals buildings"
@@ -386,6 +405,16 @@
 			"hidden"	"1"
 			"effect_type"	"negative"
 			"stored_as_integer"	"0"
+		}
+		"523"
+		{
+			"name"	"arrow mastery"
+			"attribute_class"	"arrow_mastery"
+			"description_string"	"#Attrib_Arrow_Mastery"
+			"description_format"	"value_is_additive"
+			"hidden"	"1"
+			"effect_type"	"negative"
+			"stored_as_integer"	"0"		
 		}
 		//CUSTOM ONES
 		"4000"
@@ -798,9 +827,9 @@
 			"name"	"Taunt: Texan Angler"
 			"prefab"	"no_craft taunt"
 			"first_sale_date"		"2014/06/17"
-			"item_name"			"#TF_TauntEngineerRancho"
-			"item_description"	"#TF_TauntEngineerRancho_Desc"
-			"image_inventory"	"backpack/player/items/all_class/taunt_rancho_relaxo"
+			"item_name"			"#OFFSHORE_TauntFishing"
+			"item_description"	"#OFFSHORE_TauntFishing_Desc"
+			"image_inventory"	"backpack/player/taunts/taunt_texanangler"
 			"image_inventory_size_w"	"128"
 			"image_inventory_size_h"	"82"
 			"item_quality"		"unique"
@@ -876,6 +905,48 @@
 			}
 		}
 		//COSMETICS
+		"35099"
+		{
+			"name"		"The Soviet Unit"
+			"prefab"		"misc"
+			"propername"		"1"
+			"valid_for_shuffle"		"1"
+			"moditem" "1"
+			"item_name"				"#TFCWC_Heavy_SovietUnit"
+			"item_description"		"#TFCWC_Heavy_SovietUnit_desc"
+			"item_type_name"		"#TF_Wearable_Chin"
+			"equip_region"		"beard"
+			"image_inventory"		"backpack/workshop/player/items/heavy/heavy_unmoderatedchin_neckbeard/heavy_unmoderatedchin_neckbeard"
+			"min_ilevel"		"3"
+			"max_ilevel"		"3"
+			"capabilities"
+			{
+				"can_craft_count"		"1"
+			}
+			"model_player"		"models/workshop/player/items/heavy/heavy_unmoderatedchin_neckbeard/heavy_unmoderatedchin_neckbeard.mdl"
+			"used_by_classes"
+			{
+				"heavy"		"1"
+			}
+			"visuals"
+			{
+				"styles"
+				{
+					"0"
+					{
+						"model_player"	"models/workshop/player/items/heavy/heavy_unmoderatedchin_neckbeard/heavy_unmoderatedchin_neckbeard.mdl"
+						"name"	"#TFCWC_Heavy_SovietUnit_S1"
+					}
+					"1"
+					{
+						"model_player"	"models/workshop/player/items/heavy/heavy_unmoderatedchin_beard/heavy_unmoderatedchin_beard.mdl"
+						"name"	"#TFCWC_Heavy_SovietUnit_S2"
+					}
+				}
+			}
+			"mouse_pressed_sound"		"ui/item_gooey_pickup.wav"
+			"drop_sound"		"ui/item_gooey_pickup.wav"
+		}
 		//MVM SKIN
 		"35100"
 		{
@@ -912,7 +983,7 @@
 			{
 				"scout"	"1"
 			}
-			"image_inventory"	"backpack/player/items/scout/scout_zombie"
+			"image_inventory"	"backpack/player/mvm/robot_scout"
 		}
 		"35102"
 		{
@@ -928,7 +999,7 @@
 			{
 				"soldier"	"1"
 			}
-			"image_inventory"	"backpack/player/items/soldier/soldier_zombie"
+			"image_inventory"	"backpack/player/mvm/robot_soldier"
 		}
 		"35103"
 		{
@@ -944,7 +1015,7 @@
 			{
 				"pyro"	"1"
 			}
-			"image_inventory"	"backpack/player/items/pyro/pyro_zombie"
+			"image_inventory"	"backpack/player/mvm/robot_pyro"
 		}
 		"35104"
 		{
@@ -960,7 +1031,7 @@
 			{
 				"demoman"	"1"
 			}
-			"image_inventory"	"backpack/player/items/demo/demo_zombie"
+			"image_inventory"	"backpack/player/mvm/robot_demo"
 		}
 		"35105"
 		{
@@ -976,7 +1047,7 @@
 			{
 				"heavy"	"1"
 			}
-			"image_inventory"	"backpack/player/items/heavy/heavy_zombie"
+			"image_inventory"	"backpack/player/mvm/robot_heavy"
 		}
 		"35106"
 		{
@@ -992,7 +1063,7 @@
 			{
 				"engineer"	"1"
 			}
-			"image_inventory"	"backpack/player/items/engineer/engineer_zombie"
+			"image_inventory"	"backpack/player/mvm/robot_engineer"
 		}
 		"35107"
 		{
@@ -1008,7 +1079,7 @@
 			{
 				"medic"	"1"
 			}
-			"image_inventory"	"backpack/player/items/medic/medic_zombie"
+			"image_inventory"	"backpack/player/mvm/robot_medic"
 		}
 		"35108"
 		{
@@ -1024,7 +1095,7 @@
 			{
 				"sniper"	"1"
 			}
-			"image_inventory"	"backpack/player/items/sniper/sniper_zombie"
+			"image_inventory"	"backpack/player/mvm/robot_sniper"
 		}
 		"35109"
 		{
@@ -1040,7 +1111,7 @@
 			{
 				"spy"	"1"
 			}
-			"image_inventory"	"backpack/player/items/spy/spy_zombie"
+			"image_inventory"	"backpack/player/mvm/robot_spy"
 		}
 		//SWORDFISH
 		"32000"
