@@ -255,16 +255,27 @@ void CTFInventoryManager::GenerateBaseItems( void )
 	iStart = 0;
 	for (int it = iStart; it != mapItemsMod.InvalidIndex(); it = mapItemsMod.NextInorder(it))
 	{
-		CEconItemView* pItemView = new CEconItemView;
-		CEconItem* pItem = new CEconItem;
-		pItem->m_ulID = mapItemsMod[it]->GetDefinitionIndex();
-		pItem->m_unAccountID = 0;
-		pItem->m_unDefIndex = mapItemsMod[it]->GetDefinitionIndex();
-		pItemView->Init(mapItemsMod[it]->GetDefinitionIndex(), AE_USE_SCRIPT_VALUE, AE_USE_SCRIPT_VALUE, false);
-		pItemView->SetItemID(mapItemsMod[it]->GetDefinitionIndex());
-		pItemView->SetNonSOEconItem(pItem);
-		m_pModLoadoutItems.AddToTail(pItemView);
+		AddModItem( mapItemsMod[it]->GetDefinitionIndex() );
 	}
+}
+
+CEconItemView* CTFInventoryManager::AddModItem( int id )
+{
+	CEconItemView* pItemView = new CEconItemView;
+	CEconItem* pItem = new CEconItem;
+	pItem->m_ulID = id;
+	pItem->m_unAccountID = 0;
+	pItem->m_unDefIndex = id;
+	pItem->m_unLevel = 1;
+	pItem->m_nQuality = 0;
+
+	pItemView->Init( id, AE_USE_SCRIPT_VALUE, AE_USE_SCRIPT_VALUE, false );
+	pItemView->SetItemID( id );
+#if CLIENT_DLL
+	pItemView->SetNonSOEconItem( pItem );
+#endif
+	m_pModLoadoutItems.AddToTail( pItemView );
+	return pItemView;
 }
 
 #ifdef CLIENT_DLL
@@ -1118,6 +1129,7 @@ void CTFPlayerInventory::EquipLocal(uint64 ulItemID, equipped_class_t unClass, e
 	if (ulItemID < 100000)
 	{
 		int count = TFInventoryManager()->GetModItemCount();
+		CEconItemView* pItem;
 		for (int i = 0; i < count; i++)
 		{
 			CEconItemView* pItem = TFInventoryManager()->GetModItem(i);
@@ -1126,11 +1138,19 @@ void CTFPlayerInventory::EquipLocal(uint64 ulItemID, equipped_class_t unClass, e
 				pItem->GetSOCData()->Equip(unClass, unSlot);
 			}
 		}
+		m_LoadoutItems[unClass][unSlot] = ulItemID;
+
+#ifdef CLIENT_DLL
+		int activePreset = m_ActivePreset[unClass];
+		m_PresetItems[activePreset][unClass][unSlot] = ulItemID;
+
+		GTFGCClientSystem()->LocalInventoryChanged();
+#endif
 	}
 	else
 	{
 		CEconItemView* pItem = GetInventoryItemByItemID(ulItemID);
-		if (pItem)
+		if (pItem && pItem->GetSOCData())
 		{
 			pItem->GetSOCData()->Equip(unClass, unSlot);
 		}
@@ -1549,6 +1569,7 @@ CEconItemView *CTFPlayerInventory::GetItemInLoadout( int iClass, int iSlot )
 							return pItem;
 					}
 				}
+				return TFInventoryManager()->AddModItem( m_LoadoutItems[iClass][iSlot] );
 			}
 		}
 	}
