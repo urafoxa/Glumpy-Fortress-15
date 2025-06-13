@@ -8,7 +8,9 @@ $Configuration
 {
 	$Compiler
 	{
-		$PreprocessorDefinitions	"$BASE;MOD_APPID=3768450" // Replace with your appid if you ship on Steam.
+		// uncomment when planning to release on Steam publicly or privately
+		//$PreprocessorDefinitions	"$BASE;MOD_APPID=3768450"
+		$PreprocessorDefinitions	"$BASE;MOD_APPID=243750"
 	}
 }
 
