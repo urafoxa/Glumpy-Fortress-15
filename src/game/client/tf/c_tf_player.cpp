@@ -5919,6 +5919,7 @@ void C_TFPlayer::ClientThink()
 		( m_Shared.InCond( TF_COND_DISGUISED ) && IsEnemyPlayer() && ( GetPercentInvisible() > 0 ) ) )
 	{
 		StopSaveMeEffect( true );
+		ParticleProp()->StopParticlesNamed( "bot_eye_glow", true );
 	}
 
 	if ( ShouldTauntHintIconBeVisible() )
