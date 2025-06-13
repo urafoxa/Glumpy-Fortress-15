@@ -12,6 +12,30 @@ actor "Engineer"
   }
   channel "face"
   {
+    event speak "Taunt.Engineer_Fishing_Catch"
+    {
+      time 0.15 2.25
+      param "Taunt.Engineer_Fishing_Catch"
+      fixedlength
+      cctype "cc_master"
+      cctoken ""
+    }
+    event speak "Taunt.Engineer_Fishing_Fail"
+	{
+      time 6.0 -1.000000
+	  param "Taunt.Engineer_Fishing_Fail"
+	  fixedlength
+	  cctype "cc_master"
+	  cctoken ""
+	}
+    event speak "Taunt.Engineer_Fishing_Struggle"
+    {
+      time 4.677778 -1.000000
+      param "Taunt.Engineer_Fishing_Struggle"
+      fixedlength
+      cctype "cc_master"
+      cctoken ""
+    }
   }
 }
 

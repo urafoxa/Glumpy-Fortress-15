@@ -4409,6 +4409,17 @@ void CTFPlayerShared::OnRemoveSapped( void )
 //-----------------------------------------------------------------------------
 void CTFPlayerShared::OnAddReprogrammed( void )
 {
+#ifdef GAME_DLL
+	//Repogrammed Restoration
+	CTFBot* pBot = ToTFBot( m_pOuter );
+	if ( pBot )
+	{
+		pBot->ChangeTeam( GetEnemyTeam( pBot->GetTeamNumber() ), false, true) ;
+		pBot->SetMission( CTFBot::MISSION_REPROGRAMMED );
+		pBot->Update();
+		pBot->MarkAsMissionEnemy();
+	}
+#endif
 }
 
 //-----------------------------------------------------------------------------
@@ -11009,6 +11020,11 @@ float CTFPlayer::TeamFortress_CalculateMaxSpeed( bool bIgnoreSpecialAbility /*= 
 		}
 	}
 
+	// Overloaded circuits!
+	if ( m_Shared.InCond( TF_COND_REPROGRAMMED ) )
+	{
+		maxfbspeed *= 2.f;
+	}
 	
 	if ( m_Shared.GetCarryingRuneType() == RUNE_HASTE )
 	{
@@ -12003,13 +12019,13 @@ const char *CTFPlayer::GetOverrideStepSound( const char *pszBaseStepSoundName )
 			{ kFootstepSoundSet_HeavyGiant,		"",  MVMUnusedFootsteps  ? "MVM.GiantHeavyStep" : "MVM.BotGiantStep"  },
 
 			//
-			{ kFootstepSoundSet_SoldierGiant,	"", MVMUnusedFootsteps  ? "MVM.GiantSoldierStep" : "MVM.BotGiantStep" },
+			{ kFootstepSoundSet_SoldierGiant,	"",  MVMUnusedFootsteps  ? "MVM.GiantSoldierStep" : "MVM.BotGiantStep" },
 
 			//
-			{ kFootstepSoundSet_DemoGiant,		"", MVMUnusedFootsteps  ? "MVM.GiantDemomanStep" : "MVM.BotGiantStep" },
+			{ kFootstepSoundSet_DemoGiant,		"",  MVMUnusedFootsteps  ? "MVM.GiantDemomanStep" : "MVM.BotGiantStep" },
 
 			//
-			{ kFootstepSoundSet_ScoutGiant,		"", MVMUnusedFootsteps ? "MVM.GiantScoutStep" : "MVM.BotGiantStep" },
+			{ kFootstepSoundSet_ScoutGiant,		"",  MVMUnusedFootsteps ? "MVM.GiantScoutStep" : "MVM.BotGiantStep" },
 
 			//
 			{ kFootstepSoundSet_PyroGiant,		"",  MVMUnusedFootsteps ? "MVM.GiantPyroStep" : "MVM.BotGiantStep" },

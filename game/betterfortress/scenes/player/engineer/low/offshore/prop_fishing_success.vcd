@@ -10,7 +10,7 @@ actor "Engineer"
       fixedlength
     }
   }
-  channel "face"
+  channel "Audio"
   {
   }
 }

@@ -449,6 +449,32 @@
 			"cap"		"0.1"
 			"cost"		"100"
 		}
+		"51"
+		{
+			"attribute"	"see cash through walls"
+			"icon"		"achievements/tf_mvm_pickup_money_about_to_expire"
+			"increment"	"1"				// binary on/off
+			"cap"		"1"				// 
+			"cost"		"75"
+			"ui_group"	"2"				// 2 = power up bottle
+		}
+		"52"
+		{
+			"attribute"	"arrow mastery"
+			"icon"		"achievements/tf_sniper_bow_pincushion"
+			"increment"	"1"				// binary on/off
+			"cap"		"1"				// 
+			"cost"		"150"
+		}
+		"53"
+		{
+			"attribute"	"radius stealth"
+			"icon"		"achievements/tf_spy_camp_position"
+			"increment"	"1"				// binary on/off
+			"cap"		"1"				// 
+			"cost"		"125"
+			"ui_group"	"2"				// 2 = power up bottle
+		}
 		"54"
 		{
 			"attribute"	"falling_impact_radius_stun"

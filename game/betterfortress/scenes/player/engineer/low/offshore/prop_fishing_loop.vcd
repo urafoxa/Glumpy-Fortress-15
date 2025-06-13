@@ -1,8 +1,8 @@
 // Choreo version 1
 event loop "tauntrussian_rubdown_prop_loop"
 {
-  time 14.650000 -1.000000
-  param "4.110000"
+  time 14.666666 -1.000000
+  param "3.566667"
   loopcount "255"
 }
 actor "Engineer"
@@ -11,13 +11,10 @@ actor "Engineer"
   {
     event sequence "intro"
     {
-      time 0.000000 14.65
+      time 0.000000 14.66
       param "intro"
       fixedlength
     }
-  }
-  channel "face"
-  {
   }
 }
 
