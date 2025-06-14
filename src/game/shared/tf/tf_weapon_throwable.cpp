@@ -348,9 +348,10 @@ CTFProjectile_Throwable *CTFThrowable::FireProjectileInternal( void )
 		pGrenade->SetPipebombMode();
 		pGrenade->SetLauncher( this );
 		pGrenade->SetCritical( IsCurrentAttackACrit() );
-		pGrenade->SetModel( g_pszBreadModels[nBreadTossables] );
 
 		DispatchSpawn( pGrenade );
+		pGrenade->SetModel( g_pszBreadModels[ nBreadTossables ] );
+		pGrenade->VPhysicsInitNormal( SOLID_VPHYSICS, 0, false );
 
 		// Calculate a charge percentage
 		// For now Charge just effects exit velocity
