@@ -1527,7 +1527,11 @@ void CObjectTeleporter::SpawnBread( const CTFPlayer* pTeleportingPlayer )
 				criteria.SetQuality( AE_USE_SCRIPT_VALUE );
 				criteria.BAddCondition( "name", k_EOperator_String_EQ, "Throwable Bread", true );
 				CBaseEntity *pDummyWeapon = ItemGeneration()->GenerateRandomItem( &criteria, WorldSpaceCenter(), vec3_angle );
-				CEconItemView *pItem = static_cast< CBaseCombatWeapon * >( pDummyWeapon )->GetAttributeContainer()->GetItem();
+				CBaseCombatWeapon *pWeapon = static_cast< CBaseCombatWeapon * >( pDummyWeapon );
+
+				pWeapon->AddAttribute( "item style override" , RandomInt( 0, TF_LAST_NORMAL_CLASS - TF_FIRST_NORMAL_CLASS - 1 ), -1);
+
+				CEconItemView *pItem = pWeapon->GetAttributeContainer()->GetItem();
 				CTFDroppedWeapon *pDroppedWeapon = CTFDroppedWeapon::Create( NULL, vecSpawn, qSpawnAngles, pszModelName, pItem );
 				if ( pDroppedWeapon )
 				{

@@ -343,14 +343,12 @@ CTFProjectile_Throwable *CTFThrowable::FireProjectileInternal( void )
 	if ( pGrenade )
 	{
 		// Set the pipebomb mode before calling spawn, so the model & associated vphysics get setup properly.
-		int nBreadTossables = (pPlayer->GetPlayerClass() ? pPlayer->GetPlayerClass()->GetClassIndex() : TF_CLASS_UNDEFINED);
-
 		pGrenade->SetPipebombMode();
 		pGrenade->SetLauncher( this );
 		pGrenade->SetCritical( IsCurrentAttackACrit() );
 
 		DispatchSpawn( pGrenade );
-		pGrenade->SetModel( g_pszBreadModels[ nBreadTossables ] );
+		pGrenade->SetModel( GetWorldModel() );
 		pGrenade->VPhysicsInitNormal( SOLID_VPHYSICS, 0, false );
 
 		// Calculate a charge percentage
