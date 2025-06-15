@@ -15830,10 +15830,12 @@ void CTFPlayer::DeathSound( const CTakeDamageInfo &info )
 		nDeathSoundOffset = IsMiniBoss() ? DEATH_SOUND_GIANT_MVM_FIRST : DEATH_SOUND_MVM_FIRST;
 	}
 	
+	//MVM Versus - Robots don't need to hear this
 	if ( TFGameRules() && TFGameRules()->IsMannVsMachineMode() && 
 		 GetTeamNumber() != TF_TEAM_PVE_INVADERS && !m_bGoingFeignDeath )
 	{
-		EmitSound( "MVM.PlayerDied" );
+		CTeamRecipientFilter filterRED( TF_TEAM_PVE_DEFENDERS, true );
+		EmitSound( filterRED, entindex(), "MVM.PlayerDied" );
 		return;
 	}
 

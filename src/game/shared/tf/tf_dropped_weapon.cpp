@@ -553,7 +553,7 @@ void CTFDroppedWeapon::InitDroppedWeapon( CTFPlayer *pPlayer, CTFWeaponBase *pWe
 	m_nSkin = pWeapon->GetSkin();
 	
 	m_nClip = pWeapon->IsEnergyWeapon() ? pWeapon->GetMaxClip1() : pWeapon->Clip1();
-	m_nAmmo = pPlayer->GetAmmoCount( pWeapon->GetPrimaryAmmoType() );
+	m_nAmmo = pPlayer ? pPlayer->GetAmmoCount( pWeapon->GetPrimaryAmmoType() ) : pWeapon->GetDefaultClip1();
 	m_flEnergy = pWeapon->Energy_GetEnergy();
 	m_flNextPrimaryAttack = pWeapon->m_flNextPrimaryAttack;
 	m_flNextSecondaryAttack = pWeapon->m_flNextSecondaryAttack;
@@ -567,8 +567,16 @@ void CTFDroppedWeapon::InitDroppedWeapon( CTFPlayer *pPlayer, CTFWeaponBase *pWe
 		CTFItemDefinition *pItemDef = pEconItemView->GetStaticData();
 		if ( pItemDef )
 		{
-			loadout_positions_t eLoadoutPosition = ( loadout_positions_t )( pItemDef->GetLoadoutSlot( pPlayer->GetPlayerClass()->GetClassIndex() ) );
-			m_flMeter = pPlayer->m_Shared.GetItemChargeMeter( eLoadoutPosition );
+			//Tossable Bread - Unowned itemws, like spawned bread, don't have the player
+			if (pPlayer)
+			{ 
+				loadout_positions_t eLoadoutPosition = ( loadout_positions_t )( pItemDef->GetLoadoutSlot( pPlayer->GetPlayerClass()->GetClassIndex() ) );
+				m_flMeter = pPlayer->m_Shared.GetItemChargeMeter( eLoadoutPosition );
+			}
+			else
+			{
+				m_flMeter = 100;
+			}
 		}
 	}
 

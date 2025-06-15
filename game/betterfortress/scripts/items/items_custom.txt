@@ -898,9 +898,9 @@
 		}
 		"29004"
 		{
-			"name"	"Taunt: Texan Angler"
+			"name"	"Taunt: Texan Tacklin"
 			"prefab"	"no_craft taunt"
-			"first_sale_date"		"2014/06/17"
+			"first_sale_date"		"2025/06/15"
 			"item_name"			"#OFFSHORE_TauntFishing"
 			"item_description"	"#OFFSHORE_TauntFishing_Desc"
 			"image_inventory"	"backpack/player/taunts/taunt_texanangler"
@@ -975,6 +975,88 @@
 				"custom_taunt_prop_per_class"
 				{
 					"engineer"	"models/workshop/player/items/taunts/engi_fishing/engi_fishing.mdl"
+				}
+			}
+		}
+		"29005"
+		{
+			"name"	"Taunt: Texan Tacklin (Box)"
+			"prefab"	"no_craft taunt"
+			"first_sale_date"		"2025/06/15"
+			"item_name"			"#OFFSHORE_TauntFishing"
+			"item_description"	"#OFFSHORE_TauntFishing_Desc"
+			"image_inventory"	"backpack/player/taunts/taunt_texanangler"
+			"image_inventory_size_w"	"128"
+			"image_inventory_size_h"	"82"
+			"item_quality"		"unique"
+			"moditem" 	"1"
+			"used_by_classes"
+			{
+				"engineer"	"1"
+			}
+			"attributes"
+			{
+				"taunt is press and hold"
+				{
+					"attribute_class"	"enable_misc2_holdtaunt"
+					"value"				"1"
+				}
+			}
+			"taunt"
+			{
+				"custom_taunt_scene_per_class"
+				{
+					"engineer"	"scenes/player/engineer/low/offshore/taunt_fishing_v2.vcd"
+				}
+				"custom_taunt_outro_scene_per_class"
+				{
+					"engineer"	"scenes/player/engineer/low/offshore/taunt_fishing_outro_v2.vcd"
+				}
+				"custom_taunt_prop_scene_per_class"
+				{
+					"engineer"	"scenes/player/engineer/low/offshore/prop_fishing_loop_v2.vcd"
+				}
+				"custom_taunt_prop_outro_scene_per_class"
+				{
+					"engineer"	"scenes/player/engineer/low/offshore/prop_fishing_outro_v2.vcd"
+				}
+				"custom_taunt_input_remap"
+				{
+					"IN_ATTACK"
+					{
+						"pressed"
+						{
+							"engineer"		"scenes/player/engineer/low/offshore/taunt_fishing_success_v2.vcd"
+						}
+					}
+					"IN_ATTACK2"
+					{
+						"pressed"
+						{
+							"engineer"		"scenes/player/engineer/low/offshore/taunt_fishing_fail_v2.vcd"
+						}
+					}
+				}
+				"custom_taunt_prop_input_remap"
+				{
+					"IN_ATTACK"
+					{
+						"pressed"
+						{
+							"engineer"		"scenes/player/engineer/low/offshore/prop_fishing_success_v2.vcd"
+						}
+					}
+					"IN_ATTACK2"
+					{
+						"pressed"
+						{
+							"engineer"		"scenes/player/engineer/low/offshore/prop_fishing_fail_v2.vcd"
+						}
+					}
+				}
+				"custom_taunt_prop_per_class"
+				{
+					"engineer"	"models/workshop/player/items/taunts/engi_fishing_v2/engi_fishing_v2.mdl"
 				}
 			}
 		}
@@ -1203,7 +1285,7 @@
 		// Throwable Bread
 		"32001"
 		{
-			"name"	"Bread"
+			"name"	"Throwable Bread"
 			"moditem" "1"
 			"prefab"	"weapon_throwable"
 			"attributes"
@@ -1214,17 +1296,47 @@
 					"value"				"tf_projectile_throwable_brick" 
 				}
 			}
-			"model_player_per_class"
+			"visuals"
 			{
-				"spy"	"models/weapons/c_models/c_bread/c_bread_baguette.mdl"
-				"pyro"	"models/weapons/c_models/c_bread/c_bread_burnt.mdl"
-				"demoman"	"models/weapons/c_models/c_bread/c_bread_cinnamon.mdl"
-				"engineer"	"models/weapons/c_models/c_bread/c_bread_cornbread.mdl"
-				"sniper"	"models/weapons/c_models/c_bread/c_bread_crumpet.mdl"
-				"scout"	"models/weapons/c_models/c_bread/c_bread_plainloaf.mdl"
-				"medic"	"models/weapons/c_models/c_bread/c_bread_pretzel.mdl"
-				"soldier"	"models/weapons/c_models/c_bread/c_bread_ration.mdl"
-				"heavy"	"models/weapons/c_models/c_bread/c_bread_russianblack.mdl"
+				"styles"
+				{
+					"0"
+					{
+						"model_player" "models/weapons/c_models/c_bread/c_bread_plainloaf.mdl"
+					}
+					"1"
+					{
+						"model_player" "models/weapons/c_models/c_bread/c_bread_ration.mdl"
+					}
+					"2"
+					{
+						"model_player" "models/weapons/c_models/c_bread/c_bread_burnt.mdl"
+					}
+					"3"
+					{
+						"model_player" "models/weapons/c_models/c_bread/c_bread_cinnamon.mdl"
+					}
+					"4"
+					{
+						"model_player" "models/weapons/c_models/c_bread/c_bread_russianblack.mdl"
+					}
+					"5"
+					{
+						"model_player" "models/weapons/c_models/c_bread/c_bread_cornbread.mdl"
+					}
+					"6"
+					{
+						"model_player" "models/weapons/c_models/c_bread/c_bread_pretzel.mdl"
+					}
+					"7"
+					{
+						"model_player" "models/weapons/c_models/c_bread/c_bread_crumpet.mdl"
+					}
+					"8"
+					{
+						"model_player" "models/weapons/c_models/c_bread/c_bread_baguette.mdl"
+					}
+				}
 			}
 		}
 		//PDA TEST
