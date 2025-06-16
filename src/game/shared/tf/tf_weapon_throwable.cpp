@@ -22,6 +22,7 @@
 #include "te_effect_dispatch.h"
 #include "bone_setup.h"
 #include "tf_target_dummy.h"
+#include "tf_gamestats.h"
 #endif
 
 
@@ -426,6 +427,8 @@ void CTFProjectile_Throwable::OnHit( CBaseEntity *pOther )
 	}
 
 	m_bHit = true;
+
+	CTF_GameStats.Event_PlayerThrowableHit( ToTFPlayer( GetThrower() ) );
 }
 //-----------------------------------------------------------------------------
 void CTFProjectile_Throwable::Explode()

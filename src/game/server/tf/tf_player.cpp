@@ -10318,20 +10318,20 @@ int CTFPlayer::OnTakeDamage( const CTakeDamageInfo &inputInfo )
 	}
 
 	// Add humilation Obituary here for throwable hits
-	//if ( info.GetDamageCustom() == TF_DMG_CUSTOM_THROWABLE )
-	//{
-	//	bool bDisguised = m_Shared.InCond( TF_COND_DISGUISED ) && (m_Shared.GetDisguiseTeam() == pTFAttacker->GetTeamNumber());
+	if ( info.GetDamageCustom() == TF_DMG_CUSTOM_THROWABLE )
+	{
+		bool bDisguised = m_Shared.InCond( TF_COND_DISGUISED ) && (m_Shared.GetDisguiseTeam() == pTFAttacker->GetTeamNumber());
 
-	//	if( m_iHealth <= 0 )
-	//	{
-	//		info.SetDamageCustom( TF_DMG_CUSTOM_THROWABLE_KILL );
-	//	}
+		if( m_iHealth <= 0 )
+		{
+			info.SetDamageCustom( TF_DMG_CUSTOM_THROWABLE_KILL );
+		}
 
-	//	if ( m_iHealth <= 0 || !bDisguised )
-	//	{
-	//		TFGameRules()->DeathNotice( this, info, "throwable_hit" );
-	//	}
-	//}
+		if ( m_iHealth <= 0 || !bDisguised )
+		{
+			TFGameRules()->DeathNotice( this, info, "throwable_hit" );
+		}
+	}
 
 	// Let attacker react to the damage they dealt
 	if ( pTFAttacker )

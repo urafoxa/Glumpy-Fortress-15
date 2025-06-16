@@ -1286,6 +1286,8 @@
 		"32001"
 		{
 			"name"	"Throwable Bread"
+			"item_name" "#TF_Throwable_Bread"
+			"item_type_name" "#TF_Throwable_Type_Bread"
 			"moditem" "1"
 			"prefab"	"weapon_throwable"
 			"attributes"
@@ -1335,6 +1337,14 @@
 					"8"
 					{
 						"model_player" "models/weapons/c_models/c_bread/c_bread_baguette.mdl"
+						"player_poseparam"
+						{
+							"r_hand_grip"		"13"
+						}
+						"item_poseparam"
+						{
+							"r_hand_grip"		"13"
+						}
 					}
 				}
 			}

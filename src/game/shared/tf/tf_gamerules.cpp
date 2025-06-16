@@ -13006,17 +13006,17 @@ void CTFGameRules::DeathNotice( CBasePlayer *pVictim, const CTakeDamageInfo &inf
 
 	IGameEvent * event = gameeventmanager->CreateEvent( eventName /* "player_death" */ );
 
-	//if ( event && FStrEq( eventName, "throwable_hit" ) )
-	//{
-	//	int iHitCount = 1;
-	//	PlayerStats_t *pStats = CTF_GameStats.FindPlayerStats( pScorer );
-	//	if ( pStats )
-	//	{
-	//		iHitCount = pStats->statsAccumulated.Get( TFSTAT_THROWABLEHIT );
-	//	}
+	if ( event && FStrEq( eventName, "throwable_hit" ) )
+	{
+		int iHitCount = 1;
+		PlayerStats_t *pStats = CTF_GameStats.FindPlayerStats( pScorer );
+		if ( pStats )
+		{
+			iHitCount = pStats->statsAccumulated.Get( TFSTAT_THROWABLEHIT );
+		}
 
-	//	event->SetInt( "totalhits", iHitCount );
-	//}
+		event->SetInt( "totalhits", iHitCount );
+	}
 
 	if ( event )
 	{
