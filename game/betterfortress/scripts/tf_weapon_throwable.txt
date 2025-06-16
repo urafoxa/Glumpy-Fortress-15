@@ -4,9 +4,8 @@ WeaponData
 	"printname"			"#TF_Weapon_Throwable"
 	"BuiltRightHanded"		"0"
 	"MeleeWeapon"			"1"
+	"WeaponType"			"throwable"
 	"weight"			"5"
-	"WeaponType"			"utility"
-	"ITEM_FLAG_NOITEMPICKUP" 	"1"
 	"DontDrop" "1"
 	
 	// Attributes TF.
@@ -25,8 +24,8 @@ WeaponData
 	default_clip			"1"
 
 	// Buckets.	
-	"bucket"			"5"
-	"bucket_position"		"0"
+	"bucket"			"6"
+	"bucket_position"		"1"
 
 	// Model & Animation
 	"viewmodel"			"models/workshop/weapons/c_models/c_madmilk/c_madmilk.mdl"

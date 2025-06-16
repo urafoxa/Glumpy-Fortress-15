@@ -464,7 +464,7 @@
 			"icon"		"achievements/tf_sniper_bow_pincushion"
 			"increment"	"1"				// binary on/off
 			"cap"		"1"				// 
-			"cost"		"150"
+			"cost"		"450"
 		}
 		"53"
 		{

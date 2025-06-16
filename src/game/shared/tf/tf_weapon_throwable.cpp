@@ -529,7 +529,7 @@ void CTFProjectile_ThrowableBrick::OnHit( CBaseEntity *pOther )
 
 	CTFPlayer *pPlayer = dynamic_cast< CTFPlayer*>( pOther );
 
-	if ( pPlayer && !pPlayer->InSameTeam( GetThrower() ) )
+	if ( pPlayer && ( !pPlayer->InSameTeam( GetThrower() ) && !friendlyfire.GetBool() || friendlyfire.GetBool() ) )
 	{
 		CTraceFilterIgnoreTeammates tracefilter( this, COLLISION_GROUP_NONE, GetTeamNumber() );
 		trace_t trace;

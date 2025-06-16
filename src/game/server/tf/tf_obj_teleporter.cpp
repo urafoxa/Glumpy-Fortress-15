@@ -1541,11 +1541,11 @@ void CObjectTeleporter::SpawnBread( const CTFPlayer* pTeleportingPlayer )
 					Q_snprintf( buf, sizeof(buf), "%.10f %.10f %.10f", qSpawnAngles.x, qSpawnAngles.y, qSpawnAngles.z );
 					pDroppedWeapon->KeyValue( "angles", buf );
 					pDroppedWeapon->InitDroppedWeapon( NULL, static_cast< CTFWeaponBase* >( pDummyWeapon ) ,  false, false );
-					// TODO: Set velocity to the bread like the physic
 					AngularImpulse angImpulse( RandomFloat( -100, 100 ), RandomFloat( -100, 100 ), RandomFloat( -100, 100 ) );
 					Vector vForward;
 					AngleVectors( qSpawnAngles, &vForward );
 					Vector vecVel = ( vForward * 100 ) + Vector( 0, 0, 200 ) + RandomVector( -50, 50 );
+					pDroppedWeapon->VPhysicsGetObject()->SetVelocityInstantaneous( &vecVel, &angImpulse );
 				}
 			}
 		}

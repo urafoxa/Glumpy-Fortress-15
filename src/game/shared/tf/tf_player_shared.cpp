@@ -14662,14 +14662,24 @@ bool CTFPlayer::CanPickupDroppedWeapon( const CTFDroppedWeapon *pWeapon )
 
 	// There's a rare case that the player doesn't have an active weapon. This shouldn't happen. 
 	// If you hit this assert, figure out and fix WHY the player doesn't have a weapon.
+	// Tossable Bread - Allow picking up world Throwables, since you are not meant to equip them normally!
+	int iItemSlot = pWeapon->GetItem()->GetStaticData()->GetLoadoutSlot( iClass );
+	int IsThrowable = IsThrowableWeaponSlot( iItemSlot );
+
 	Assert( GetActiveTFWeapon() );
 	if ( !GetActiveTFWeapon() || !GetActiveTFWeapon()->CanPickupOtherWeapon() )
 		return false;
 
-	int iItemSlot = pWeapon->GetItem()->GetStaticData()->GetLoadoutSlot( iClass );
-	CBaseEntity *pOwnedWeaponToDrop = GetEntityForLoadoutSlot( iItemSlot );
 
-	return pOwnedWeaponToDrop && pWeapon->GetItem()->GetStaticData()->CanBeUsedByClass( iClass ) && IsValidPickupWeaponSlot( iItemSlot );
+	CBaseEntity *pOwnedWeaponToDrop = GetEntityForLoadoutSlot( iItemSlot );
+	if ( !IsThrowable )
+	{ 
+		return pOwnedWeaponToDrop && pWeapon->GetItem()->GetStaticData()->CanBeUsedByClass( iClass ) && IsValidPickupWeaponSlot( iItemSlot );
+	}
+	else
+	{ 
+		return pWeapon->GetItem()->GetStaticData()->CanBeUsedByClass( iClass ) && IsValidPickupWeaponSlot( iItemSlot );
+	}
 }
 
 
