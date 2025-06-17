@@ -22,8 +22,9 @@
 #include "te_effect_dispatch.h"
 #include "bone_setup.h"
 #include "tf_target_dummy.h"
-#include "tf_gamestats.h"
 #endif
+
+extern ConVar sv_infinite_ammo;
 
 
 // Base
@@ -351,6 +352,17 @@ CTFProjectile_Throwable *CTFThrowable::FireProjectileInternal( void )
 		DispatchSpawn( pGrenade );
 		pGrenade->SetModel( GetWorldModel() );
 		pGrenade->VPhysicsInitNormal( SOLID_VPHYSICS, 0, false );
+		//This fixes the bread interacting with triggers
+		pGrenade->AddSolidFlags( FSOLID_TRIGGER );
+		pGrenade->SetCollisionGroup( COLLISION_GROUP_PROJECTILE );
+
+		//Switch to an attribute, Remove on ran out of ammo? or upon fire
+		if ( pPlayer->GetAmmoCount( m_iPrimaryAmmoType ) >= 1 && gpGlobals->curtime + SequenceDuration() && !sv_infinite_ammo.GetBool() )
+		{
+			pPlayer->Weapon_Detach( this );
+			UTIL_Remove( this );
+			pPlayer->Weapon_Switch( pPlayer->GetLastWeapon() );
+		}
 
 		// Calculate a charge percentage
 		// For now Charge just effects exit velocity
@@ -428,7 +440,6 @@ void CTFProjectile_Throwable::OnHit( CBaseEntity *pOther )
 
 	m_bHit = true;
 
-	CTF_GameStats.Event_PlayerThrowableHit( ToTFPlayer( GetThrower() ) );
 }
 //-----------------------------------------------------------------------------
 void CTFProjectile_Throwable::Explode()
@@ -547,7 +558,12 @@ void CTFProjectile_ThrowableBrick::OnHit( CBaseEntity *pOther )
 		info.SetDamage( GetDamage() );
 		info.SetDamageCustom( GetCustomDamageType() );
 		info.SetDamagePosition( GetAbsOrigin() );
-		info.SetDamageType( DMG_CLUB );
+		int iDamageType = DMG_CLUB;
+		if ( IsCritical() )
+		{
+			iDamageType |= DMG_CRITICAL;
+		}
+		info.SetDamageType( iDamageType );
 
 		pPlayer->DispatchTraceAttack( info, vecToTarget, &trace );
 		pPlayer->ApplyPunchImpulseX( RandomInt( 15, 20 ) );

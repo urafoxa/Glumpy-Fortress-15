@@ -1532,7 +1532,7 @@ void CObjectTeleporter::SpawnBread( const CTFPlayer* pTeleportingPlayer )
 				pWeapon->AddAttribute( "item style override" , RandomInt( 0, TF_LAST_NORMAL_CLASS - TF_FIRST_NORMAL_CLASS - 1 ), -1);
 
 				CEconItemView *pItem = pWeapon->GetAttributeContainer()->GetItem();
-				CTFDroppedWeapon *pDroppedWeapon = CTFDroppedWeapon::Create( NULL, vecSpawn, qSpawnAngles, pszModelName, pItem );
+				CTFDroppedWeapon *pDroppedWeapon = CTFDroppedWeapon::Create( NULL, vecSpawn, qSpawnAngles, pWeapon->GetWorldModel(), pItem);
 				if ( pDroppedWeapon )
 				{
 					char buf[512];

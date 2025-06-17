@@ -114,20 +114,13 @@
 			{
 				"animation_replacement"
 				{
-					"ACT_VM_DRAW"						"ACT_THROWABLE_VM_DRAW"
-					"ACT_VM_IDLE"						"ACT_THROWABLE_VM_IDLE"
-					"ACT_VM_PRIMARYATTACK"				"ACT_THROWABLE_VM_FIRE"
-					"ACT_SECONDARY_VM_INSPECT_START"	"ACT_ITEM1_VM_INSPECT_START"
-					"ACT_SECONDARY_VM_INSPECT_IDLE"		"ACT_ITEM1_VM_INSPECT_IDLE"
-					"ACT_SECONDARY_VM_INSPECT_END"		"ACT_ITEM1_VM_INSPECT_END"
-				}
-				"player_poseparam"
-				{
-					"r_hand_grip"		"13"
-				}
-				"item_poseparam"
-				{
-					"r_hand_grip"		"13"
+					"ACT_MP_ATTACK_STAND_MELEE_ALLCLASS"	"ACT_MP_THROW"
+					"ACT_VM_DRAW"							"ACT_THROWABLE_VM_DRAW"
+					"ACT_VM_IDLE"							"ACT_THROWABLE_VM_IDLE"
+					"ACT_VM_PRIMARYATTACK"					"ACT_THROWABLE_VM_FIRE"
+					"ACT_SECONDARY_VM_INSPECT_START"		"ACT_ITEM1_VM_INSPECT_START"
+					"ACT_SECONDARY_VM_INSPECT_IDLE"			"ACT_ITEM1_VM_INSPECT_IDLE"
+					"ACT_SECONDARY_VM_INSPECT_END"			"ACT_ITEM1_VM_INSPECT_END"
 				}
 			}
 			"xifier_class_remap"	"jarate"
@@ -1320,32 +1313,67 @@
 					"4"
 					{
 						"model_player" "models/weapons/c_models/c_bread/c_bread_russianblack.mdl"
+						"player_poseparam"
+						{
+							"r_hand_grip"		"10"
+						}
+						"item_poseparam"
+						{
+							"r_hand_grip"		"10"
+						}
 					}
 					"5"
 					{
 						"model_player" "models/weapons/c_models/c_bread/c_bread_cornbread.mdl"
+						"player_poseparam"
+						{
+							"r_hand_grip"		"5"
+						}
+						"item_poseparam"
+						{
+							"r_hand_grip"		"5"
+						}
 					}
 					"6"
 					{
 						"model_player" "models/weapons/c_models/c_bread/c_bread_pretzel.mdl"
+						"player_poseparam"
+						{
+							"r_hand_grip"		"6"
+						}
+						"item_poseparam"
+						{
+							"r_hand_grip"		"6"
+						}
 					}
 					"7"
 					{
 						"model_player" "models/weapons/c_models/c_bread/c_bread_crumpet.mdl"
+						"player_poseparam"
+						{
+							"r_hand_grip"		"7"
+						}
+						"item_poseparam"
+						{
+							"r_hand_grip"		"7"
+						}
 					}
 					"8"
 					{
 						"model_player" "models/weapons/c_models/c_bread/c_bread_baguette.mdl"
 						"player_poseparam"
 						{
-							"r_hand_grip"		"13"
+							"r_hand_grip"		"2"
 						}
 						"item_poseparam"
 						{
-							"r_hand_grip"		"13"
+							"r_hand_grip"		"2"
 						}
 					}
 				}
+				"sound_deploy"	"Weapon_ToolBox.Draw"
+				"sound_single_shot"	"Passtime.Throw"
+				"sound_special1"		"Carpet.Impact"  
 			}
 		}
 		//PDA TEST

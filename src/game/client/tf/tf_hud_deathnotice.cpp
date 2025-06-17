@@ -1337,7 +1337,7 @@ void CTFHudDeathNotice::OnGameEvent( IGameEvent *event, int iDeathNoticeMsg )
 		else
 		{
 			wchar_t wzCount[10];
-			_snwprintf( wzCount, ARRAYSIZE( wzCount ), L"%d", event->GetInt( "totalhits" ) );
+			_snwprintf( wzCount, ARRAYSIZE( wzCount ), L"%d", ++msg.iCount );
 			g_pVGuiLocalize->ConstructString_safe( msg.wzInfoText, g_pVGuiLocalize->Find("#Humiliation_Count"), 1, wzCount );
 		}
 
