@@ -1382,8 +1382,6 @@ enum ObjectType_t
 	//
 
 
-	OBJ_CATAPULT,
-	OBJ_SPY_TRAP,
 
 
 	OBJ_LAST,
