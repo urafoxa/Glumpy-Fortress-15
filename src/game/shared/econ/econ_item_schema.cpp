@@ -2877,6 +2877,7 @@ void CEconStyleInfo::BInitFromKV( KeyValues *pKVStyle, CUtlVector<CUtlString> *p
 	}
 
 	// Tossable Bread - Styles can now change pose parameters!
+	//TODO: Make this actually work please
 	perteamvisuals_t *pVisData = new perteamvisuals_t();
 	KeyValues *pKVPose_Player = pKVStyle->FindKey( "player_poseparam" );
 	if ( pKVPose_Player )

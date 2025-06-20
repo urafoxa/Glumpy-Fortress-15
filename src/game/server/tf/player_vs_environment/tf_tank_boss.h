@@ -32,9 +32,14 @@ public:
 
 	virtual void Event_Killed( const CTakeDamageInfo &info );
 
+	void DeployBomb( void );
 	void TankBossThink( void );
 
 	void SetStartingPathTrackNode( char *name );
+
+	void InputSetPath( inputdata_t &inputdata );
+	void InputCanDeploy( inputdata_t &inputdata );
+	void InputForceDeploy( inputdata_t &inputdata );
 
 	void DefineOnKilledOutput( EventInfo *eventInfo );
 	void DefineOnBombDroppedOutput( EventInfo *eventInfo );
@@ -73,6 +78,7 @@ private:
 
 	int m_exhaustAttachment;
 	bool m_isSmoking;
+	bool m_bCanDeploy;
 
 	bool m_bIsPlayerKilled;
 	bool m_bPlayedHalfwayAlert;
