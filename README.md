@@ -4,6 +4,7 @@
 > - Feel free to use my code for your own mods! i just wanted to improve TF2 a little, and add custom stuff.
 
 ![new_tf2_logo](https://i.imgur.com/nySjQod.png)
+what happened to the other 14 glumpy fortresses? I eated them oops
 # FEATURES:
 - I dunno
 
