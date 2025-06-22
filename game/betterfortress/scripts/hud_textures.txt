@@ -33,5 +33,14 @@
 				"width"		"84"
 				"height"	"32"
 		}
+		"boss_tank"
+		{
+				"dfile"	"HUD/d_images_mod"
+				"dnegfile"	"HUD/dneg_images_mod"
+				"x"		"0"
+				"y"		"980"
+				"width"		"56"
+				"height"	"44"
+		}
 	}	
 }

@@ -552,6 +552,44 @@
 	}
 	"items"
 	{
+		//------------------------
+		// OVERRIDES
+		//------------------------
+		"792"
+		{
+			"name"			"Silver Botkiller Sniper Rifle Mk.I"
+			"prefab"		"weapon_sniperrifle"
+			"craft_class"	""
+			"baseitem"		"0"
+			"item_quality"	"unique"
+			"item_name"			"#TF_Weapon_SniperRifle_AdvancedMVMLoot"
+			"image_inventory"	"backpack/player/items/mvm_loot/sniper/fob_h_sniperrifle"
+			"extra_wearable" "models/player/items/mvm_loot/sniper/fob_h_sniperrifle.mdl"
+			"extra_wearable_vm" "models/player/items/mvm_loot/sniper/fob_h_sniperrifle.mdl"
+			"attributes"
+			{
+				"disable fancy class select anim"
+				{
+					"attribute_class"	"disable_fancy_class_select_anim"
+					"value"	"1"
+				}
+			}
+			"tags"
+			{
+				"can_be_festivized"		"1"
+			}
+			"visuals"
+			{
+				"attached_models_festive"
+				{
+					"0"
+					{
+						"model"	"models/weapons/c_models/c_sniperrifle/c_sniperrifle_festivizer.mdl"
+					}
+				}
+			}
+			"xifier_class_remap"	"sniper_rifle"
+		}
 		"1179"
 		{
 			"name"	"The Thermal Thruster"
@@ -723,7 +761,9 @@
 			"mouse_pressed_sound"	"ui/item_light_gun_pickup.wav"
 			"drop_sound"		"ui/item_light_gun_drop.wav"
 		}
-		//TAUNTS
+		//------------------------
+		// CUSTOM TAUNTS
+		//------------------------
 		"29000"
 		{
 			"name"	"Taunt: Gangnam Mercs"

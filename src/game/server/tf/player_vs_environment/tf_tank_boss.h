@@ -10,6 +10,8 @@
 //----------------------------------------------------------------------------
 class CTFTankBoss : public CTFBaseBoss
 {
+	#define SF_TANK_NOGLOW 2
+
 public:
 	DECLARE_CLASS( CTFTankBoss, CTFBaseBoss );
 	DECLARE_SERVERCLASS();
@@ -45,6 +47,7 @@ public:
 	void DefineOnBombDroppedOutput( EventInfo *eventInfo );
 
 	void SetWaveSpawnPopulator( CWaveSpawnPopulator *pWave ){ m_pWaveSpawnPopulator = pWave; }
+	virtual int GetDamageCustom( void ) {return TF_DMG_CUSTOM_MVM_BOSS_TANK; }
 
 	virtual int GetCurrencyValue( void );
 

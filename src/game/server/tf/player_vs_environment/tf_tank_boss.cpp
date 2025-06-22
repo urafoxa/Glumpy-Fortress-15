@@ -344,7 +344,10 @@ void CTFTankBoss::Spawn( void )
 	SetModelIndexOverride( VISION_MODE_ROME, modelinfo->GetModelIndex( s_TankModelRome[ m_damageModelIndex ] ) );
 	m_lastHealth = GetMaxHealth();
 
-	AddGlowEffect();
+	if ( !HasSpawnFlags(SF_TANK_NOGLOW) )
+	{ 
+		AddGlowEffect();
+	}
 
 	m_leftTracks = (CBaseAnimating *)CreateEntityByName( "prop_dynamic" );
 	if ( m_leftTracks )
@@ -947,7 +950,7 @@ void CTFTankBoss::TankBossThink( void )
 
 			int damage = MAX( victim->GetMaxHealth(), victim->GetHealth() );
 
-			CTakeDamageInfo info( this, this, 4 * damage, DMG_CRUSH, TF_DMG_CUSTOM_NONE );
+			CTakeDamageInfo info( this, this, 4 * damage, DMG_CRUSH, GetDamageCustom() );
 			victim->TakeDamage( info );
 		}
 	}
