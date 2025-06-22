@@ -23,6 +23,7 @@
 #include "tf_logic_player_destruction.h"
 
 //Tossable bread
+#include "tf_weapon_throwable.h"
 #include "tf_dropped_weapon.h"
 #include "econ_entity_creation.h"
 
@@ -1535,12 +1536,7 @@ void CObjectTeleporter::SpawnBread( const CTFPlayer* pTeleportingPlayer )
 				CTFDroppedWeapon *pDroppedWeapon = CTFDroppedWeapon::Create( NULL, vecSpawn, qSpawnAngles, pWeapon->GetWorldModel(), pItem);
 				if ( pDroppedWeapon )
 				{
-					char buf[512];
-					Q_snprintf( buf, sizeof(buf), "%.10f %.10f %.10f", vecSpawn.x, vecSpawn.y, vecSpawn.z );
-					pDroppedWeapon->KeyValue( "origin", buf );
-					Q_snprintf( buf, sizeof(buf), "%.10f %.10f %.10f", qSpawnAngles.x, qSpawnAngles.y, qSpawnAngles.z );
-					pDroppedWeapon->KeyValue( "angles", buf );
-					pDroppedWeapon->InitDroppedWeapon( NULL, static_cast< CTFWeaponBase* >( pDummyWeapon ) ,  false, false );
+					pDroppedWeapon->InitDroppedWeapon( NULL, static_cast< CTFThrowable* >( pDummyWeapon ) ,  false, false );
 					AngularImpulse angImpulse( RandomFloat( -100, 100 ), RandomFloat( -100, 100 ), RandomFloat( -100, 100 ) );
 					Vector vForward;
 					AngleVectors( qSpawnAngles, &vForward );

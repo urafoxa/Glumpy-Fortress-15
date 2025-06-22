@@ -59,6 +59,8 @@ public:
 	virtual float GetChargeBeginTime( void );
 	virtual float GetChargeMaxTime( void );			// Same as Det time
 
+	virtual int		GetDefaultClip1( void ) const { return 1; };
+
 #ifdef GAME_DLL
 	//virtual bool		ShouldSpeakWhenFiring( void )				{ return false; }
 

@@ -560,8 +560,10 @@ void CTFDroppedWeapon::InitDroppedWeapon( CTFPlayer *pPlayer, CTFWeaponBase *pWe
 
 	m_nSkin = pWeapon->GetSkin();
 	
+	Msg( "Clip: %i\n", pWeapon->GetDefaultClip1() );
+
 	m_nClip = pWeapon->IsEnergyWeapon() ? pWeapon->GetMaxClip1() : pWeapon->Clip1();
-	m_nAmmo = pPlayer ? pPlayer->GetAmmoCount( pWeapon->GetPrimaryAmmoType() ) : pWeapon->GetPrimaryAmmoType();
+	m_nAmmo = pPlayer ? pPlayer->GetAmmoCount( pWeapon->GetPrimaryAmmoType() ) : pWeapon->GetDefaultClip1();
 	m_flEnergy = pWeapon->Energy_GetEnergy();
 	m_flNextPrimaryAttack = pWeapon->m_flNextPrimaryAttack;
 	m_flNextSecondaryAttack = pWeapon->m_flNextSecondaryAttack;
