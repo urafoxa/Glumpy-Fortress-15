@@ -47,6 +47,14 @@ BEGIN_NETWORK_TABLE( CTFDroppedWeapon, DT_TFDroppedWeapon )
 #endif
 END_NETWORK_TABLE()
 
+#ifdef GAME_DLL
+BEGIN_ENT_SCRIPTDESC( CTFDroppedWeapon, CBaseAnimating, "Dropped Weapon" )
+DEFINE_SCRIPTFUNC_NAMED( ScriptAddAttribute, "AddAttribute", "Add an attribute to the entity" )
+DEFINE_SCRIPTFUNC_NAMED( ScriptRemoveAttribute, "RemoveAttribute", "Remove an attribute to the entity" )
+DEFINE_SCRIPTFUNC_NAMED( ScriptGetAttribute, "GetAttribute", "Get an attribute float from the entity" )
+END_SCRIPTDESC()
+#endif
+
 IMPLEMENT_AUTO_LIST( IDroppedWeaponAutoList );
 
 //-----------------------------------------------------------------------------
@@ -568,7 +576,7 @@ void CTFDroppedWeapon::InitDroppedWeapon( CTFPlayer *pPlayer, CTFWeaponBase *pWe
 		if ( pItemDef )
 		{
 			//Tossable Bread - Unowned itemws, like spawned bread, don't have the player
-			if (pPlayer)
+			if ( pPlayer )
 			{ 
 				loadout_positions_t eLoadoutPosition = ( loadout_positions_t )( pItemDef->GetLoadoutSlot( pPlayer->GetPlayerClass()->GetClassIndex() ) );
 				m_flMeter = pPlayer->m_Shared.GetItemChargeMeter( eLoadoutPosition );
@@ -687,3 +695,49 @@ void CTFDroppedWeapon::SetItem( const CEconItemView *pItem )
 		m_Item.CopyFrom( *pItem );
 }
 #endif // GAME_DLL
+
+//-----------------------------------------------------------------------------
+// Purpose: 
+//-----------------------------------------------------------------------------
+float CTFDroppedWeapon::ScriptGetAttribute( const char *pszAttributeName, float flFallbackValue )
+{
+	CEconItemView *pItem = GetItem();
+	if ( pItem )
+	{
+		CEconItemAttributeDefinition *pDef = GetItemSchema()->GetAttributeDefinitionByName( pszAttributeName );
+		if ( pDef )
+		{
+			CEconGetAttributeIterator it( pDef->GetDefinitionIndex(), flFallbackValue );
+			pItem->IterateAttributes( &it );
+			return it.m_flValue;
+		}
+	}
+
+	return flFallbackValue;
+}
+
+//-----------------------------------------------------------------------------
+// Purpose: 
+//-----------------------------------------------------------------------------
+void CTFDroppedWeapon::ScriptAddAttribute( const char *pszAttributeName, float flVal, float flDuration )
+{
+	CEconItemView *pItem = GetItem();
+	const CEconItemAttributeDefinition *pDef = GetItemSchema()->GetAttributeDefinitionByName( pszAttributeName );
+	if ( !pDef )
+		return;
+
+	GetItem()->GetAttributeList()->SetRuntimeAttributeValue( pDef, flVal );
+}
+
+//-----------------------------------------------------------------------------
+// Purpose: 
+//-----------------------------------------------------------------------------
+void CTFDroppedWeapon::ScriptRemoveAttribute( const char *pszAttributeName )
+{
+	CEconItemView *pItem = GetItem();
+	const CEconItemAttributeDefinition *pDef = GetItemSchema()->GetAttributeDefinitionByName( pszAttributeName );
+	if ( !pDef )
+		return;
+
+	GetItem()->GetAttributeList()->RemoveAttribute( pDef );
+}
