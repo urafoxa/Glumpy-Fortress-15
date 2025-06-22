@@ -757,6 +757,15 @@
 			{
 				"sound_single_shot"		"Weapon_PickPocket_Pistol.Single"
 				"sound_burst"			"Weapon_PickPocket_Pistol.SingleCrit"
+				"styles"
+				{
+					"0"
+					{
+						"skin_red"	"0"
+						"skin_blu"	"1"
+						"selectable"	"0"
+					}
+				}
 			}
 			"mouse_pressed_sound"	"ui/item_light_gun_pickup.wav"
 			"drop_sound"		"ui/item_light_gun_drop.wav"
@@ -1336,22 +1345,32 @@
 				{
 					"0"
 					{
+						"skin_red" "0"
+						"skin_blu" "1"
 						"model_player" "models/weapons/c_models/c_bread/c_bread_plainloaf.mdl"
 					}
 					"1"
 					{
+						"skin_red" "0"
+						"skin_blu" "1"
 						"model_player" "models/weapons/c_models/c_bread/c_bread_ration.mdl"
 					}
 					"2"
 					{
+						"skin_red" "0"
+						"skin_blu" "1"
 						"model_player" "models/weapons/c_models/c_bread/c_bread_burnt.mdl"
 					}
 					"3"
 					{
+						"skin_red" "0"
+						"skin_blu" "1"
 						"model_player" "models/weapons/c_models/c_bread/c_bread_cinnamon.mdl"
 					}
 					"4"
 					{
+						"skin_red" "0"
+						"skin_blu" "1"
 						"model_player" "models/weapons/c_models/c_bread/c_bread_russianblack.mdl"
 						"player_poseparam"
 						{
@@ -1364,6 +1383,8 @@
 					}
 					"5"
 					{
+						"skin_red" "0"
+						"skin_blu" "1"
 						"model_player" "models/weapons/c_models/c_bread/c_bread_cornbread.mdl"
 						"player_poseparam"
 						{
@@ -1376,6 +1397,8 @@
 					}
 					"6"
 					{
+						"skin_red" "0"
+						"skin_blu" "1"
 						"model_player" "models/weapons/c_models/c_bread/c_bread_pretzel.mdl"
 						"player_poseparam"
 						{
@@ -1388,6 +1411,8 @@
 					}
 					"7"
 					{
+						"skin_red" "0"
+						"skin_blu" "1"
 						"model_player" "models/weapons/c_models/c_bread/c_bread_crumpet.mdl"
 						"player_poseparam"
 						{
@@ -1400,6 +1425,8 @@
 					}
 					"8"
 					{
+						"skin_red" "0"
+						"skin_blu" "1"
 						"model_player" "models/weapons/c_models/c_bread/c_bread_baguette.mdl"
 						"player_poseparam"
 						{
