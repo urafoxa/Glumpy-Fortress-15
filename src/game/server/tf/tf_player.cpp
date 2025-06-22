@@ -21221,7 +21221,7 @@ void CTFPlayer::MVM_StartIdleSound(void)
 
 		if (pszSoundName)
 		{
-			CReliableBroadcastRecipientFilter filter;
+			CBroadcastNonOwnerRecipientFilter filter( this );
 			CSoundEnvelopeController& controller = CSoundEnvelopeController::GetController();
 			m_pGiantIdleSound = controller.SoundCreate(filter, entindex(), pszSoundName);
 			controller.Play(m_pGiantIdleSound, 1.0, 100);

@@ -123,7 +123,7 @@ ConVar tf_invuln_time( "tf_invuln_time", "1.0", FCVAR_DEVELOPMENTONLY | FCVAR_RE
 extern ConVar tf_player_movement_restart_freeze;
 extern ConVar mp_tournament_readymode_countdown;
 extern ConVar tf_max_charge_speed;
-static ConVar tf_mvm_footstep_sounds("tf_mvm_footstep_sounds","1",FCVAR_NONE,"Replaces the Giants footsteps with Unique unused ones");
+ConVar tf_mvm_footstep_sounds( "tf_mvm_footstep_sounds", "1", FCVAR_REPLICATED, "Replaces the Giants footsteps with Unique unused ones" );
 
 ConVar tf_always_loser( "tf_always_loser", "0", FCVAR_CHEAT | FCVAR_REPLICATED, "Force loserstate to true." );
 
@@ -11996,6 +11996,26 @@ const char *CTFPlayer::GetOverrideStepSound( const char *pszBaseStepSoundName )
 	CALL_ATTRIB_HOOK_INT( iOverrideFootstepSoundSet, override_footstep_sound_set );
 	bool MVMUnusedFootsteps = tf_mvm_footstep_sounds.GetBool();
 
+	// we need to do this here or it does not function otherwise.
+	switch( iOverrideFootstepSoundSet )
+	{
+		case kFootstepSoundSet_HeavyGiant:
+			return MVMUnusedFootsteps ? "MVM.GiantHeavyStep" : "MVM.BotGiantStep";
+		break;
+		case kFootstepSoundSet_SoldierGiant:
+			return MVMUnusedFootsteps ? "MVM.GiantSoldierStep" : "MVM.BotGiantStep";
+		break;
+		case kFootstepSoundSet_DemoGiant:
+			return MVMUnusedFootsteps ? "MVM.GiantDemomanStep" : "MVM.BotGiantStep";
+		break;
+		case kFootstepSoundSet_ScoutGiant:
+			return MVMUnusedFootsteps ? "MVM.GiantScoutStep" : "MVM.BotGiantStep";
+		break;
+		case kFootstepSoundSet_PyroGiant:
+			return MVMUnusedFootsteps ? "MVM.GiantPyroStep" : "MVM.BotGiantStep";
+		break;
+	}
+
 	if ( iOverrideFootstepSoundSet != kFootstepSoundSet_Default )
 	{
 		static const override_sound_entry_t s_ReplacementSounds[] =
@@ -12016,19 +12036,19 @@ const char *CTFPlayer::GetOverrideStepSound( const char *pszBaseStepSoundName )
 			{ kFootstepSoundSet_Octopus,	"Concrete.StepRight",	"Octopus.StepCommon" },
 
 			//
-			{ kFootstepSoundSet_HeavyGiant,		"",  MVMUnusedFootsteps  ? "MVM.GiantHeavyStep" : "MVM.BotGiantStep"  },
+			{ kFootstepSoundSet_HeavyGiant,		"",		"MVM.BotGiantStep" },
 
 			//
-			{ kFootstepSoundSet_SoldierGiant,	"",  MVMUnusedFootsteps  ? "MVM.GiantSoldierStep" : "MVM.BotGiantStep" },
+			{ kFootstepSoundSet_SoldierGiant,	"",		"MVM.BotGiantStep" },
 
 			//
-			{ kFootstepSoundSet_DemoGiant,		"",  MVMUnusedFootsteps  ? "MVM.GiantDemomanStep" : "MVM.BotGiantStep" },
+			{ kFootstepSoundSet_DemoGiant,		"",		"MVM.BotGiantStep" },
 
 			//
-			{ kFootstepSoundSet_ScoutGiant,		"",  MVMUnusedFootsteps ? "MVM.GiantScoutStep" : "MVM.BotGiantStep" },
+			{ kFootstepSoundSet_ScoutGiant,		"",		"MVM.BotGiantStep" },
 
 			//
-			{ kFootstepSoundSet_PyroGiant,		"",  MVMUnusedFootsteps ? "MVM.GiantPyroStep" : "MVM.BotGiantStep" },
+			{ kFootstepSoundSet_PyroGiant,		"",		"MVM.BotGiantStep" },
 
 			//
 			{ kFootstepSoundSet_SentryBuster,	"",		"MVM.SentryBusterStep" },
