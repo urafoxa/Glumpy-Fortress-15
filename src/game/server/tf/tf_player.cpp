@@ -23750,6 +23750,10 @@ bool CTFPlayer::PickupWeaponFromOther( CTFDroppedWeapon *pDroppedWeapon )
 				// try next best thing we can use
 				SwitchToNextBestWeapon( pNewItem );
 			}
+			else if( IsThrowable )
+			{
+				Weapon_Switch( pNewItem );
+			}
 
 			// delay pickup weapon message
 			m_flSendPickupWeaponMessageTime = gpGlobals->curtime + 0.1f;
