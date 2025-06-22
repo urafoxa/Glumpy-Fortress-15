@@ -241,7 +241,7 @@ ConVar tf_halloween_giant_health_scale( "tf_halloween_giant_health_scale", "10",
 ConVar tf_grapplinghook_los_force_detach_time( "tf_grapplinghook_los_force_detach_time", "1", FCVAR_CHEAT );
 ConVar tf_powerup_max_charge_time( "tf_powerup_max_charge_time", "30", FCVAR_CHEAT );
 
-ConVar tf_spawn_with_throwable( "tf_spawn_with_throwable", "1", FCVAR_CHEAT );
+ConVar tf_spawn_with_throwable( "tf_spawn_with_throwable", "0", FCVAR_CHEAT );
 
 extern ConVar tf_powerup_mode;
 extern ConVar tf_mvm_buybacks_method;
@@ -23676,9 +23676,11 @@ bool CTFPlayer::PickupWeaponFromOther( CTFDroppedWeapon *pDroppedWeapon )
 	{
 		int iClass = GetPlayerClass()->GetClassIndex();
 		int iItemSlot = pItem->GetStaticData()->GetLoadoutSlot( iClass );
+		// Tossable Bread - Allow picking up world Throwables, since you are not meant to equip them normally!
+		int IsThrowable = IsThrowableWeaponSlot( iItemSlot );
 		CTFWeaponBase *pWeapon = dynamic_cast< CTFWeaponBase* >( GetEntityForLoadoutSlot( iItemSlot ) );
 
-		if ( !pWeapon )
+		if ( !pWeapon && !IsThrowable )
 		{
 			AssertMsg( false, "No weapon to put down when picking up a dropped weapon!" );
 			return false;
