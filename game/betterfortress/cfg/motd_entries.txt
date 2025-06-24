@@ -5,8 +5,8 @@
 	"119"
 	{
 		"post_time"		"2025-05-31 03:05:18"
-		"title_english"		"Welcome to Better Fortress 2!"
-		"text_english"		"WARNING: This build was NOT meant to relase, this is a BETA Playtest! "
+		"title_english"		"Welcome to Glumpy Fortress 15!"
+		"text_english"		"See the other ones!!"
 		"url"		"https://github.com/ALIEN31ITA/Better-Fortress-2"
 		"image"		"../logo/new_tf2_logo"
 		"header_type"		"0"
