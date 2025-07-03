@@ -1100,7 +1100,7 @@ void CTFPlayerShared::AddCond( ETFCond eCond, float flDuration /* = PERMANENT_CO
 		return;
 	}
 
-#ifdef CLEINT_DLL
+#ifdef CLEINT_DLL //real typo
 	if ( m_pOuter->IsDormant() )
 	{
 		return;
@@ -1108,11 +1108,13 @@ void CTFPlayerShared::AddCond( ETFCond eCond, float flDuration /* = PERMANENT_CO
 #endif
 
 	// sanity check to prevent servers from adding these conditions when they shouldn't
+	/* Except, we're insane here.
 	if ( ( eCond == TF_COND_COMPETITIVE_WINNER ) || ( eCond == TF_COND_COMPETITIVE_LOSER ) )
 	{
 		if ( TFGameRules() && !TFGameRules()->ShowMatchSummary() )
 			return;
 	}
+	*/
 
 	// Which bitfield are we tracking this condition variable in? Which bit within
 	// that variable will we track it as?
@@ -1145,6 +1147,11 @@ void CTFPlayerShared::AddCond( ETFCond eCond, float flDuration /* = PERMANENT_CO
 
 		OnConditionAdded( eCond );
 	}
+
+#ifdef GAME_DLL
+	m_pOuter->ApplyGravityMultiplierFromItems();
+#endif
+
 }
 
 //-----------------------------------------------------------------------------
@@ -1187,6 +1194,10 @@ void CTFPlayerShared::RemoveCond( ETFCond eCond, bool ignore_duration )
 	m_ConditionData[eCond].m_flExpireTime = 0;
 	m_ConditionData[eCond].m_pProvider = NULL;
 	m_ConditionData[eCond].m_bPrevActive = false;
+
+#ifdef GAME_DLL
+	m_pOuter->ApplyGravityMultiplierFromItems();
+#endif
 
 }
 
@@ -5588,8 +5599,9 @@ void CTFPlayerShared::OnAddBalloonHead( void )
 	ApplyAttributeToPlayer( "head scale", 4.f );
 	ApplyAttributeToPlayer( "increased jump height", 0.8f );
 	ApplyAttributeToPlayer( "increased air control", 0.2f );
+	m_pOuter->ApplyGravityMultiplierFromItems();
 #endif // GAME_DLL
-	m_pOuter->SetGravity( 0.3f );
+	//m_pOuter->SetGravity( 0.3f );
 }
 
 //-----------------------------------------------------------------------------
@@ -5602,8 +5614,9 @@ void CTFPlayerShared::OnRemoveBalloonHead( void )
 	RemoveAttributeFromPlayer( "head scale" );
 	RemoveAttributeFromPlayer( "increased jump height" );
 	RemoveAttributeFromPlayer( "increased air control" );
+	m_pOuter->ApplyGravityMultiplierFromItems();
 #endif // GAME_DLL
-	m_pOuter->SetGravity( 0.f );
+	//m_pOuter->SetGravity( 0.f );
 }
 
 //-----------------------------------------------------------------------------
@@ -7885,6 +7898,7 @@ bool CTFPlayerShared::CanFallStomp( void )
 
 	int iHeadStomp = 0;
 	CALL_ATTRIB_HOOK_INT_ON_OTHER( m_pOuter, iHeadStomp, boots_falling_stomp );
+	CALL_ATTRIB_HOOK_INT_ON_OTHER(m_pOuter, iHeadStomp, boots_falling_stomp_custom_mult);
 
 	return iHeadStomp != 0;
 }
@@ -11820,6 +11834,9 @@ bool CTFPlayer::Weapon_Switch( CBaseCombatWeapon *pWeapon, int viewmodelindex )
 	m_Shared.UpdateCritBoostEffect();
 #endif
 
+#ifdef GAME_DLL
+	ApplyGravityMultiplierFromItems();
+#endif
 	return bSwitched;
 }
 
@@ -14746,4 +14763,3 @@ bool CTFPlayer::IsHelpmeButtonPressed() const
 {
 	return m_flHelpmeButtonPressTime != 0.f;
 }
-

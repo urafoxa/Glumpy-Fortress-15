@@ -1642,6 +1642,12 @@ public:
 
 	virtual bool BCanCallVote() OVERRIDE;
 	bool m_bFirstSpawnAndCanCallVote = false;
+
+	//glumptacular
+	float CTFPlayer::CalculateGravityMultiplier(void);
+	void CTFPlayer::ApplyGravityMultiplierFromItems(void);
+	float m_flGravityModifierFromAttributes = 1;
+
 };
 
 //-----------------------------------------------------------------------------

@@ -2536,6 +2536,7 @@ void CTFPlayer::UpdateTimers( void )
 //-----------------------------------------------------------------------------
 void CTFPlayer::PostSpawnThink( void )
 {
+
 	if ( IsPlayerClass( TF_CLASS_MEDIC ) )
 	{
 		CWeaponMedigun *pMedigun = dynamic_cast<CWeaponMedigun*>( Weapon_OwnsThisID( TF_WEAPON_MEDIGUN ) );
@@ -4452,6 +4453,8 @@ void CTFPlayer::Spawn()
 		ResetMaxHealthDrain();
 		SetHealth( GetMaxHealth() );
 	}
+
+	ApplyGravityMultiplierFromItems();
 
 	SetContextThink( &CTFPlayer::PostSpawnThink, gpGlobals->curtime + 0.1f, "PostSpawnThink" );
 }
@@ -9513,8 +9516,15 @@ int CTFPlayer::OnTakeDamage( const CTakeDamageInfo &inputInfo )
 			CTFPlayer *pOther = ToTFPlayer( GetGroundEntity() );
 			if ( pOther && pOther->GetTeamNumber() != GetTeamNumber() )
 			{
-				float flStompDamage = 10.0f + info.GetDamage() * 3.f;
-
+				float flStompDamage = 1.f;
+				float flcustomStompDamageMultiplierFromAttribute = 1.f;
+				CALL_ATTRIB_HOOK_FLOAT(flcustomStompDamageMultiplierFromAttribute, boots_falling_stomp_custom_mult);
+				if (flcustomStompDamageMultiplierFromAttribute != NULL) {
+					flStompDamage = 10.0f + info.GetDamage() * flcustomStompDamageMultiplierFromAttribute;
+				}
+				else {
+					flStompDamage = 10.0f + info.GetDamage() * 3.f;
+				}
 				CTakeDamageInfo infoInner( this, this, GetEquippedWearableForLoadoutSlot( LOADOUT_POSITION_SECONDARY ), flStompDamage, DMG_FALL, TF_DMG_CUSTOM_BOOTS_STOMP );
 				pOther->TakeDamage( infoInner );
 				m_Local.m_flFallVelocity = 0;
@@ -24120,4 +24130,59 @@ bool CTFPlayer::ScriptPlayGesture(const char* pGestureName)
 bool CTFPlayer::ScriptPlaySpecificSequence(const char* pAnimationName)
 {
 	return this->PlaySpecificSequence(pAnimationName);
+}
+
+//glumptacular
+
+//---------------------------------------------------------------------------------//
+// Purpose: Calculate gravity mod we should be using based on conditions and items //
+//---------------------------------------------------------------------------------//
+
+float CTFPlayer::CalculateGravityMultiplier(void)
+{
+	float m_flGravityModifierFromAttributes = 1.f;
+
+	// Attribute for worn item
+	CALL_ATTRIB_HOOK_FLOAT(m_flGravityModifierFromAttributes, gravity_mod_wearer);
+
+	// Attribute for active weapon
+	CTFWeaponBase* pWpn = GetActiveTFWeapon();
+	if (pWpn)
+	{
+		CALL_ATTRIB_HOOK_FLOAT_ON_OTHER(pWpn, m_flGravityModifierFromAttributes, gravity_mod_active);
+	}
+	// Special case for balloon head because that's the only other place SetGravity is used for players
+	if (m_Shared.InCond(TF_COND_BALLOON_HEAD)) {
+		m_flGravityModifierFromAttributes *= 0.3f;
+	}
+
+	//ghosts and karters and hookers need not apply.
+	if (m_Shared.InCond(TF_COND_HALLOWEEN_GHOST_MODE)||
+		m_Shared.InCond(TF_COND_HALLOWEEN_KART)||
+		m_Shared.InCond(TF_COND_GRAPPLINGHOOK)
+		)
+	{
+		m_flGravityModifierFromAttributes = 1.f;
+	}
+
+	//these conds shouldnt have low grav but high would be funny so its fine
+	if (m_Shared.InCond(TF_COND_GRAPPLINGHOOK_LATCHED) ||
+		m_Shared.InCond(TF_COND_HALLOWEEN_GIANT)||
+		m_Shared.InCond(TF_COND_HALLOWEEN_TINY)||
+		m_Shared.InCond(TF_COND_SWIMMING_CURSE)
+		)
+	{
+		if (m_flGravityModifierFromAttributes < 1) {
+			m_flGravityModifierFromAttributes = 1.f;
+		}
+	}
+
+	m_flGravityModifierFromAttributes *= m_TFGravityTriggerSpecificMultiplier;
+
+	return m_flGravityModifierFromAttributes;
+}
+
+void CTFPlayer::ApplyGravityMultiplierFromItems(void)
+{
+	SetGravity(CalculateGravityMultiplier());
 }

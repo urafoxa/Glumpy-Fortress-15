@@ -1280,6 +1280,12 @@ private:
 
 	CNetworkVar( float, m_flHolsterAnimTime );
 	CNetworkHandle( CBaseCombatWeapon, m_hSwitchTo );
+/*public:
+	//glumpy network var for gravity
+	CNetworkVar(float, m_flGravityModifierFromAttributes);
+	float CTFPlayerShared::CalculateGravityMultiplier(void);
+	void CTFPlayerShared::ApplyGravityMultiplierFromItems(void);
+	float m_flGravityModifierFromAttributes;*/
 };
 
 extern const char *g_pszBDayGibs[22];
@@ -1319,3 +1325,6 @@ public:
 };
 
 #endif // TF_PLAYER_SHARED_H
+
+
+

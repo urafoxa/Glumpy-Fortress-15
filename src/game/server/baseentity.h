@@ -2042,6 +2042,9 @@ private:
 	CThreadFastMutex m_CalcAbsolutePositionMutex;
 
 	bool	m_bTruceValidForEnt;
+public:
+	//glumptacular gravity shenanigan thing
+	float m_TFGravityTriggerSpecificMultiplier = 1.f;
 };
 
 // Send tables exposed in this module.

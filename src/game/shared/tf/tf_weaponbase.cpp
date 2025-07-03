@@ -1391,6 +1391,10 @@ void CTFWeaponBase::OnActiveStateChanged( int iOldState )
 	if ( pPlayer )
 	{
 		pPlayer->TeamFortress_SetSpeed();
+#ifdef GAME_DLL
+		pPlayer->ApplyGravityMultiplierFromItems();
+#endif // GAME_DLL
+
 	}
 
 	CEconItemView *pScriptItem = GetAttributeContainer()->GetItem();

@@ -35,6 +35,8 @@
 #include "gameinterface.h"
 #include "ilagcompensationmanager.h"
 #include "vehicle_base.h"
+//glumptacular gravity helping
+#include "tf_player.h"
 
 #ifdef HL2_DLL
 #include "hl2_player.h"
@@ -2694,8 +2696,22 @@ void CTriggerGravity::GravityTouch( CBaseEntity *pOther )
 	// Only save on clients
 	if ( !pOther->IsPlayer() )
 		return;
+	m_TFGravityTriggerSpecificMultiplier = GetGravity();
+	//pOther->SetGravity( GetGravity() );
 
-	pOther->SetGravity( GetGravity() );
+	CTFPlayer* pTFPlayer = dynamic_cast<CTFPlayer*>(pOther);
+
+	if (pTFPlayer)
+	{
+		// pOther is indeed a CTFPlayer, so you can now access CTFPlayer specific methods/members
+		pTFPlayer->ApplyGravityMultiplierFromItems();
+		// You might have other CTFPlayer specific actions here
+	}
+	else
+	{
+		// pOther is a player, but not specifically a CTFPlayer (e.g., a CBasePlayer, but not TF-specific)
+		pOther->SetGravity(GetGravity());
+	}
 }
 
 
