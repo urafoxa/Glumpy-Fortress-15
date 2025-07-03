@@ -738,7 +738,7 @@ enum ETFCond
 	TF_COND_DEFENSEBUFF_HIGH                 = 45, // 75% defense! Still damaged by crits.
 	TF_COND_SNIPERCHARGE_RAGE_BUFF           = 46, // Sniper Rage - Charge time speed up
 	TF_COND_DISGUISE_WEARINGOFF              = 47, // Applied for half-second post-disguise
-	TF_COND_MARKEDFORDEATH_SILENT            = 48, // Sans sound
+	TF_COND_MARKEDFORDEATH_SILENT            = 48, // Sans sound. just like undertale
 	TF_COND_DISGUISED_AS_DISPENSER           = 49,
 	TF_COND_SAPPED                           = 50, // =50. Bots only
 	TF_COND_INVULNERABLE_HIDE_UNLESS_DAMAGED = 51,
