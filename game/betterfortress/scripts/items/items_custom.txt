@@ -549,6 +549,76 @@
 			"effect_type"	"neutral"
 			"stored_as_integer"	"0"
 		}
+		"6907"
+		{
+			"name"	"gravity mod wearer increased"
+			"attribute_class"	"gravity_mod_wearer"
+			"description_string"	"#Attrib_Gravity_Wearer_Increased"
+			"description_format"	"value_is_percentage"
+			"hidden"	"0"
+			"effect_type"	"negative"
+			"stored_as_integer"	"0"
+		}
+		"6908"
+		{
+			"name"	"gravity mod wearer reduced"
+			"attribute_class"	"gravity_mod_wearer"
+			"description_string"	"#Attrib_Gravity_Wearer_Reduced"
+			"description_format"	"value_is_inverted_percentage"
+			"hidden"	"0"
+			"effect_type"	"positive"
+			"stored_as_integer"	"0"
+		}
+		"6909"
+		{
+			"name"	"gravity mod active increased"
+			"attribute_class"	"gravity_mod_active"
+			"description_string"	"#Attrib_Gravity_Active_Increased"
+			"description_format"	"value_is_percentage"
+			"hidden"	"0"
+			"effect_type"	"negative"
+			"stored_as_integer"	"0"
+		}
+		"6910"
+		{
+			"name"	"gravity mod active reduced"
+			"attribute_class"	"gravity_mod_active"
+			"description_string"	"#Attrib_Gravity_Active_Reduced"
+			"description_format"	"value_is_inverted_percentage"
+			"hidden"	"0"
+			"effect_type"	"positive"
+			"stored_as_integer"	"0"
+		}
+		"6911"
+		{
+			"name"	"compare to revolver DISPLAYONLY"
+			"attribute_class"	"compare_to_revolver"
+			"description_string"	"As compared to the Revolver"
+			"description_format"	"value_is_additive"
+			"hidden"	"0"
+			"effect_type"	"neutral"
+			"stored_as_integer"	"0"
+		}	
+		"6912"
+		{
+			"name"	"revolver use hit locations generic"
+			"attribute_class"	"set_weapon_mode"
+			"description_string"	"Can headshot"
+			"description_format"	"value_is_additive"
+			"hidden"	"0"
+			"effect_type"	"positive"
+			"stored_as_integer"	"0"
+		}
+		"6913"
+		{
+			"name"	"boots falling stomp custom mult"
+			"attribute_class"	"boots_falling_stomp_custom_mult"
+			"description_string"	"Deals %s1 x falling damage to the player you land on"
+			"description_format"	"value_is_additive"
+			"hidden"	"0"
+			"effect_type"	"positive"
+			"stored_as_integer"	"0"
+		}
 	}
 	"items"
 	{
@@ -1778,6 +1848,160 @@
 					"decodable"	"1"
 				}
 				"restriction"	"offshore2025"
+			}
+		}
+		//GLUMPTACULAR
+		"32901"
+		{
+			"name"			"Cinderblock Clodhoppers"
+			"first_sale_date"	"2009/10/21"
+			"item_class"		"tf_wearable"
+			"show_in_armory"	"1"
+			"moditem" "1"
+			"item_type_name" 	"Failed Murder Plot"
+			"item_name"		"Cinderblock Clodhoppers"
+			"item_description"	"Y'know, the mob isn't *too* good at their job, after all..."
+			"item_slot"		"secondary"
+			"equip_region"	"feet"
+			"anim_slot"		"FORCE_NOT_USED"
+			"item_quality"	"rarity3"
+			"propername"	"0"
+			"min_ilevel"		"216"
+			"max_ilevel"		"216"
+			"image_inventory"	"backpack/weapons/c_models/c_rocketboots_soldier"
+			"image_inventory_size_w"		"128"
+			"image_inventory_size_h"		"82"
+			"model_player"		"models/weapons/c_models/c_rocketboots_soldier.mdl"
+			"act_as_wearable" "1"
+			
+			"item_logname"	"cinderblock_clodhoppers"
+			"item_iconname"	"cinderblock_clodhoppers"
+			
+			"used_by_classes"
+			{
+				"soldier"	"1"
+				"demoman"	"1"
+			}
+			"tags"
+			{
+				"can_deal_damage"			"1"
+				"can_be_equipped_by_soldier_or_demo"	"1"
+				"cannot_damage_tanks"		"1"
+			}
+			"attributes"
+
+			{
+				"gravity mod wearer increased"
+				{
+					"attribute_class"	"gravity_mod_wearer"
+					"value" "2"
+				}
+				"self dmg push force decreased"
+				{
+					"attribute_class" 	"mult_dmgself_push_force"
+					"value" "0.66"
+				}
+				
+					"rocket jump damage reduction"
+				{
+					"attribute_class"	"rocket_jump_dmg_reduction"
+					"value" "0.25"
+				}
+				
+				"boots falling stomp custom mult"
+				{
+					"attribute_class"	"boots_falling_stomp_custom_mult"
+					"value" "7"
+				}
+				"kill eater score type"
+				{
+					"attribute_class"	"kill_eater_score_type"
+					"value"	"26"		
+				}
+				"kill eater kill type"
+				{
+					"attribute_class"	"kill_eater_kill_type"
+					"value"	"26"		
+				}
+				
+				"max health additive bonus"
+				{
+					"attribute_class"	"add_maxhealth"
+					"value" "40"
+				}
+				"allowed in medieval mode"
+				{
+					"attribute_class"	"allowed_in_medieval_mode"
+					"value"	"1"
+				}
+			}
+			"mouse_pressed_sound"	"ui/item_metal_weapon_pickup.wav"
+			"drop_sound"		"ui/item_metal_weapon_drop.wav"
+		}
+		
+		"32902"
+		{
+			"name"			"Runabout Roundrifle"
+			"first_sale_date"	"2009/10/21"
+			"item_class"	"tf_weapon_revolver"
+			"show_in_armory"	"1"
+			"moditem" 			"1"
+			"item_type_name" 	"Revolver Sniper"
+			"item_name"		"Runabout Roundrifle"
+			"item_description"	"For the seasoned outdoorsman who prefers hiking more than camping. Features a six-round cylinder but lacks a scope or laser. ...What do you mean this is the Ambassador? It's a completely new concept!"
+		
+			"base_item_name"	"TF_WEAPON_REVOLVER"
+			"item_slot"		"secondary"
+			"anim_slot"		"primary"
+			"item_quality"	"rarity3"
+			"min_ilevel"	"216"
+			"max_ilevel"	"216"
+			"image_inventory"	"backpack/weapons/w_models/w_revolver"
+			"model_player"	"models/weapons/c_models/c_revolver/c_revolver.mdl"
+			"attach_to_hands"	"1"
+			"inspect_panel_dist" "44"
+			//"particle_suffix"	"sniperrifle"
+		
+				"used_by_classes"
+				{
+				"sniper"	"1"
+				"spy"		"1"
+				}
+				
+				"tags"
+				{
+					"can_deal_damage"			"1"
+					"can_deal_critical_damage"	"1"
+					"can_deal_mvm_penetration_damage"	"1"
+					"can_deal_long_distance_damage"	"1"
+				}
+			"attributes"
+			{
+				"compare to revolver DISPLAYONLY"
+				{
+					"attribute_class" "compare_to_revolver"
+					"value" "1"
+				}
+				"revolver use hit locations generic"
+				{
+					"attribute_class"	"set_weapon_mode"
+					"value"	"1"
+				}
+				"headshot damage increase"
+				{
+				"attribute_class"	"headshot_damage_modify"
+				"value" "2"
+				}
+				"fire rate penalty"
+				{
+					"attribute_class"	"mult_postfiredelay"
+					"value"	"1.2"
+				}
+				"crit mod disabled"
+				{
+					"attribute_class"	"mult_crit_chance"
+					"value"	"0"
+				}
 			}
 		}
 	}
