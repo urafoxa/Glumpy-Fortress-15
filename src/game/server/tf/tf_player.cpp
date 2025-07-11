@@ -3266,7 +3266,7 @@ void CTFPlayer::PrecacheKart()
 //-----------------------------------------------------------------------------
 // Purpose: Precache the player models and player model gibs.
 //-----------------------------------------------------------------------------
-void CTFPlayer::PrecachePlayerModels( void )
+void CTFPlayer::PrecachePlayerModels( void ) //precache viewmodels
 {
 	int i;
 	for ( i = 0; i < TF_CLASS_COUNT_ALL; i++ )
@@ -3307,6 +3307,13 @@ void CTFPlayer::PrecachePlayerModels( void )
 		iModelIndex = PrecacheModel( g_szBotBossViewmodels[ i ] );
 		PrecacheGibsForModel( iModelIndex );
 	}
+
+	for ( i = 0; i < ARRAYSIZE(g_szGlumptacularCustomViewmodels); ++i) //this was annoying
+	{
+		PrecacheModel(g_szGlumptacularCustomViewmodels[i]);
+	}
+
+
 	
 	// Always precache the silly gibs.
 	for ( i = 4; i < ARRAYSIZE( g_pszBDayGibs ); ++i )
@@ -8886,6 +8893,12 @@ void CTFPlayer::TraceAttack( const CTakeDamageInfo &info, const Vector &vecDir, 
 				}
 			}
 
+			int iNoCritsOnHeadshot = 0;
+			CALL_ATTRIB_HOOK_INT(iNoCritsOnHeadshot, headshot_no_crit);
+			if (iNoCritsOnHeadshot != 0) {
+				bCritical = false;
+			}
+
 			// Check for headshot damage modifiers
 			float flHeadshotModifier = 1.0f;
 			CALL_ATTRIB_HOOK_FLOAT_ON_OTHER ( pAttacker, flHeadshotModifier, headshot_damage_modify);
@@ -9799,7 +9812,7 @@ int CTFPlayer::OnTakeDamage( const CTakeDamageInfo &inputInfo )
 	}
 
 	// If player has Reflect Powerup, reflect damage to attacker. 
-	// We do this here, after damage modify rules to ensure distance falloff calculations have already been made before we pass that damage back to the attacker
+	// We do this here, after damage modify rules to ensure distance x calculations have already been made before we pass that damage back to the attacker
 	if ( pTFAttacker && m_Shared.GetCarryingRuneType() == RUNE_REFLECT && pTFAttacker != this && !pTFAttacker->m_Shared.IsInvulnerable() && pTFAttacker->IsAlive() )
 	{
 		CTakeDamageInfo dmg = info;
@@ -11150,9 +11163,9 @@ int CTFPlayer::OnTakeDamage_Alive( const CTakeDamageInfo &info )
 		{
 			int iNoDeathFromHeadshots = 0;
 			CALL_ATTRIB_HOOK_INT( iNoDeathFromHeadshots, no_death_from_headshots );
-			if ( iNoDeathFromHeadshots == 1 )
+			if ( iNoDeathFromHeadshots != 0 )
 			{
-				m_iHealth = 1;
+				m_iHealth = iNoDeathFromHeadshots;
 			}
 		}
 

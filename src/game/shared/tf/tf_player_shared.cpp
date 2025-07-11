@@ -976,6 +976,9 @@ void CTFPlayerShared::ResetRageBuffs( void )
 //-----------------------------------------------------------------------------
 void CTFPlayerShared::Spawn( void )
 {
+
+
+
 #ifdef GAME_DLL
 	m_hPeeAttacker = NULL;
 

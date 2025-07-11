@@ -593,8 +593,8 @@
 		{
 			"name"	"compare to revolver DISPLAYONLY"
 			"attribute_class"	"compare_to_revolver"
-			"description_string"	"As compared to the Revolver"
-			"description_format"	"value_is_additive"
+			"description_string"	"#Attrib_Compare_To_Revolver"
+			"description_format"	"value_is_inverted_percentage"
 			"hidden"	"0"
 			"effect_type"	"neutral"
 			"stored_as_integer"	"0"
@@ -603,7 +603,7 @@
 		{
 			"name"	"revolver use hit locations generic"
 			"attribute_class"	"set_weapon_mode"
-			"description_string"	"Can headshot"
+			"description_string"	"#Attrib_Revolver_Hit_Locations_Generic"
 			"description_format"	"value_is_additive"
 			"hidden"	"0"
 			"effect_type"	"positive"
@@ -615,6 +615,136 @@
 			"attribute_class"	"boots_falling_stomp_custom_mult"
 			"description_string"	"Deals %s1 x falling damage to the player you land on"
 			"description_format"	"value_is_additive"
+			"hidden"	"0"
+			"effect_type"	"positive"
+			"stored_as_integer"	"0"
+		}
+		"6914"
+		{
+			"name"	"can headshot anyway without weaponmode attribute revolver"
+			"attribute_class"	"can_headshot_anyway"
+			"description_string"	"#can_headshot_anyway"
+			"description_format"	"value_is_additive"
+			"hidden"	"1"
+			"effect_type"	"positive"
+			"stored_as_integer"	"0"
+		}
+		"6915"
+		{
+			"name"	"headshot but no crit from it (use with headshot dmg mult)"
+			"attribute_class"	"headshot_no_crit"
+			"description_string"	"#Attrib_Headshot_No_Crit"
+			"description_format"	"value_is_additive"
+			"hidden"	"1"
+			"effect_type"	"neutral"
+			"stored_as_integer"	"1"
+		}
+		"6916"
+		{
+			"name"	"normalize sentry pitch to 100"
+			"attribute_class"	"normalize_sentry_pitch_to_100"
+			"description_string"	"#Attrib_normalize_sentry_pitch_to_100"
+			"description_format"	"value_is_additive"
+			"hidden"	"1"
+			"effect_type"	"neutral"
+			"stored_as_integer"	"1"
+		}
+		"6917"
+		{
+			"name"	"mult sentry pitch"
+			"attribute_class"	"mult_sentry_pitch"
+			"description_string"	"#Attrib_mult_sentry_pitch"
+			"description_format"	"value_is_percentage"
+			"hidden"	"1"
+			"effect_type"	"neutral"
+			"stored_as_integer"	"0"
+		}
+		"6918"
+		{
+			"name"	"mult sentry turn rate"
+			"attribute_class"	"mult_sentry_turn_rate"
+			"description_string"	"#Attrib_mult_sentry_turn_rate"
+			"description_format"	"value_is_percentage"
+			"hidden"	"0"
+			"effect_type"	"neutral"
+			"stored_as_integer"	"0"
+		}
+		"6919"
+		{
+			"name"	"mult sentry scale"
+			"attribute_class"	"mult_sentry_scale"
+			"description_string"	"#Attrib_mult_sentry_turn_rate"
+			"description_format"	"value_is_percentage"
+			"hidden"	"0"
+			"effect_type"	"neutral"
+			"stored_as_integer"	"0"
+		}
+		"6920"
+		{
+			"name"	"mult engy sentry_damage rocket specific"
+			"attribute_class"	"mult_engy_sentry_damage_rocket_specific"
+			"description_string"	"#Attrib_mult_engy_sentry_damage_rocket_specific"
+			"description_format"	"value_is_percentage"
+			"hidden"	"0"
+			"effect_type"	"neutral"
+			"stored_as_integer"	"0"
+		}
+		"6921"
+		{
+			"name"	"mult sentry rocket firerate glumpy"
+			"attribute_class"	"mult_sentry_rocket_firerate_glumpy"
+			"description_string"	"#Attrib_mult_sentry_rocket_firerate_glumpy"
+			"description_format"	"value_is_percentage"
+			"hidden"	"0"
+			"effect_type"	"neutral"
+			"stored_as_integer"	"0"
+		}
+		"6922"
+		{
+			"name"	"engy sentry damage penalty"
+			"attribute_class"	"mult_engy_sentry_damage"
+			"description_string"	"#Attrib_EngySentryDamagePenalty"
+			"description_format"	"value_is_inverted_percentage"
+			"hidden"	"0"
+			"effect_type"	"negative"
+			"stored_as_integer"	"0"
+		}
+		"6923"
+		{
+			"name"	"mult sentry volume"
+			"attribute_class"	"mult_sentry_volume"
+			"description_string"	"#Attrib_mult_sentry_volume"
+			"description_format"	"value_is_percentage"
+			"hidden"	"1"
+			"effect_type"	"neutral"
+			"stored_as_integer"	"0"
+		}
+		"6924"
+		{
+			"name"	"kill sentry on wrench switch"
+			"attribute_class"	"kill_sentry_on_wrench_switch"
+			"description_string"	"#Attrib_kill_sentry_on_wrench_switch"
+			"description_format"	"value_is_additive"
+			"hidden"	"1"
+			"effect_type"	"neutral"
+			"stored_as_integer"	"0"
+		}
+		"6925"
+		{
+			"name"	"mult sentry upgrade cost"
+			"attribute_class"	"mult_sentry_upgrade_cost"
+			"description_string"	"#Attrib_mult_sentry_upgrade_cost"
+			"description_format"	"value_is_inverted_percentage"
+			"hidden"	"1"
+			"effect_type"	"neutral"
+			"stored_as_integer"	"0"
+		}
+		"6926"
+		{
+			"name"	"mult sentry health gl"
+			"attribute_class"	"mult_sentry_health_gl"
+			"description_string"	"#Attrib_mult_sentry_health_gl"
+			"description_format"	"value_is_percentage"
 			"hidden"	"0"
 			"effect_type"	"positive"
 			"stored_as_integer"	"0"
@@ -1853,7 +1983,7 @@
 		//GLUMPTACULAR
 		"32901"
 		{
-			"name"			"Cinderblock Clodhoppers"
+			"name"			"The Cinderblock Clodhoppers"
 			"first_sale_date"	"2009/10/21"
 			"item_class"		"tf_wearable"
 			"show_in_armory"	"1"
@@ -1899,19 +2029,19 @@
 				"self dmg push force decreased"
 				{
 					"attribute_class" 	"mult_dmgself_push_force"
-					"value" "0.66"
+					"value" "0.05"
 				}
 				
 					"rocket jump damage reduction"
 				{
 					"attribute_class"	"rocket_jump_dmg_reduction"
-					"value" "0.25"
+					"value" "0.05"
 				}
 				
 				"boots falling stomp custom mult"
 				{
 					"attribute_class"	"boots_falling_stomp_custom_mult"
-					"value" "7"
+					"value" "7000"
 				}
 				"kill eater score type"
 				{
@@ -1941,7 +2071,7 @@
 		
 		"32902"
 		{
-			"name"			"Runabout Roundrifle"
+			"name"			"The Runabout Roundrifle"
 			"first_sale_date"	"2009/10/21"
 			"item_class"	"tf_weapon_revolver"
 			"show_in_armory"	"1"
@@ -1951,7 +2081,7 @@
 			"item_description"	"For the seasoned outdoorsman who prefers hiking more than camping. Features a six-round cylinder but lacks a scope or laser. ...What do you mean this is the Ambassador? It's a completely new concept!"
 		
 			"base_item_name"	"TF_WEAPON_REVOLVER"
-			"item_slot"		"secondary"
+			"item_slot"		"primary"
 			"anim_slot"		"primary"
 			"item_quality"	"rarity3"
 			"min_ilevel"	"216"
@@ -1965,7 +2095,6 @@
 				"used_by_classes"
 				{
 				"sniper"	"1"
-				"spy"		"1"
 				}
 				
 				"tags"
@@ -1975,6 +2104,39 @@
 					"can_deal_mvm_penetration_damage"	"1"
 					"can_deal_long_distance_damage"	"1"
 				}
+				
+				"visuals"
+				{
+				"player_bodygroups"
+				{
+					"arrows"		"1"
+				}
+				"animation_replacement"
+				{
+					"ACT_VM_DRAW"		"ACT_REVOLVER_SNIPERRIFLE_VM_DRAW"
+					"ACT_VM_PRIMARYATTACK"	"ACT_REVOLVER_SNIPERRIFLE_VM_ATTACK"
+					"ACT_VM_IDLE"		"ACT_REVOLVER_SNIPERRIFLE_VM_IDLE"
+					"ACT_VM_FIDGET"		"ACT_REVOLVER_SNIPERRIFLE_VM_IDLE"
+					
+					"ACT_VM_RELOAD"		"ACT_RIFOLVER_VM_ATTACK_RELOAD"
+					
+					"ATTACKCROUCH_PRIMARY"			"ATTACKCROUCH_SECONDARY"
+					"ATTACKSTAND_PRIMARY"			"ATTACKSTAND_SECONDARY"
+					"ATTACKSWIM_PRIMARY"			"ATTACKSWIM_SECONDARY"
+					
+					"ACT_MP_RELOAD_STAND_PRIMARY"	"ACT_MP_RELOAD_STAND_SECONDARY"
+					"ACT_MP_RELOAD_CROUCH_PRIMARY"	"ACT_MP_RELOAD_CROUCH_SECONDARY"
+					"ACT_MP_RELOAD_AIRWALK_PRIMARY"	"ACT_MP_RELOAD_AIRWALK_SECONDARY"
+					"ACT_MP_RELOAD_SWIM_PRIMARY"	"ACT_MP_RELOAD_SWIM_SECONDARY"
+					"PRIMARY_INSPECT_START"	"PRIMARY_ALT1_INSPECT_START"
+					"PRIMARY_INSPECT_IDLE"	"PRIMARY_ALT1_INSPECT_IDLE"
+					"PRIMARY_INSPECT_END"	"PRIMARY_ALT1_INSPECT_END"
+				}
+				"sound_single_shot"	"BumperCar.Bump"
+				"sound_burst"	"BumperCar.SpeedBoostStop"
+				"sound_reload"	"Taunt.JackhammerExtend"
+				}
+				
 			"attributes"
 			{
 				"compare to revolver DISPLAYONLY"
@@ -1982,27 +2144,562 @@
 					"attribute_class" "compare_to_revolver"
 					"value" "1"
 				}
-				"revolver use hit locations generic"
+				//"revolver use hit locations generic"
+				//{
+				//	"attribute_class"	"set_weapon_mode"
+				//	"value"	"1"
+				//}
+				"dmg falloff decreased"
 				{
-					"attribute_class"	"set_weapon_mode"
-					"value"	"1"
+					"attribute_class"	"mult_dmg_falloff"
+					"value"				"0"
 				}
 				"headshot damage increase"
 				{
-				"attribute_class"	"headshot_damage_modify"
-				"value" "2"
+					"attribute_class"	"headshot_damage_modify"
+					"value" "1.75"
 				}
 				"fire rate penalty"
 				{
 					"attribute_class"	"mult_postfiredelay"
-					"value"	"1.2"
+					"value"	"1.4"
+				}
+				"weapon spread bonus"
+				{
+					"attribute_class"	"mult_spread_scale"
+					"value"	"0.4"
 				}
 				"crit mod disabled"
 				{
 					"attribute_class"	"mult_crit_chance"
 					"value"	"0"
 				}
+				"max health additive bonus"
+				{
+					"attribute_class"	"add_maxhealth"
+					"value"				"10"
+				}
+				"can headshot anyway without weaponmode attribute revolver"
+				{
+					"attribute_class"	"can_headshot_anyway"
+					"value" "1"
+				}
+				"headshot but no crit from it (use with headshot dmg mult)"
+				{
+					"attribute_class"	"headshot_no_crit"
+					"value" "1"
+				}
 			}
+		}
+		
+		"39008"
+		{
+			"name"	"2 Gunslingers"
+			"prefab"	"valve"
+			"first_sale_date"	"2010/09/29"
+			"item_class"	"tf_weapon_robot_arm"
+			"craft_class"	"weapon"
+			"craft_material_type"	"weapon"
+			"moditem" "1"
+			"capabilities"
+			{
+				"nameable"		"1"
+			}
+			"tags"
+			{
+				"can_deal_damage"			"1"
+				"can_deal_critical_damage"	"1"
+				"can_destroy_sappers"		"1"
+				"can_deal_taunt_damage"		"1"
+			}
+			"show_in_armory"	"1"
+			"item_type_name"	"Robot Arms"
+			"item_name"	"2 Gunslingers"
+			"item_slot"	"melee"
+			"equip_region"	"arms"
+			"item_quality"	"rarity3"
+			"anim_slot"	"item2"
+			"min_ilevel"	"15"
+			"max_ilevel"	"15"
+			"propername"	"1"
+			"item_logname"	"robot_arms_2ofthem"
+			"item_iconname"	"robot_arm_kill"
+			"image_inventory"	"backpack/weapons/gunslinger"
+			"image_inventory_size_w"		"128"
+			"image_inventory_size_h"		"82"
+			"inspect_panel_dist" 				"40"
+			"extra_wearable" 			"models\weapons\c_models\custom_viewmodels\c_engineer_twogunslingers.mdl"
+			"extra_wearable_vm" 		"models\weapons\c_models\custom_viewmodels\c_engineer_twogunslingers.mdl"
+			"attach_to_hands"			"2"
+			"disable_backpack_inspect"	"1"
+			"used_by_classes"
+			{
+				"engineer"	"1"
+			}
+			
+			"static_attrs"
+			{
+				"min_viewmodel_offset"		"10 -2 -7"				
+			}
+			"attributes"
+			{
+				"gunslinger punch combo"
+				{
+					"attribute_class"	"gunslinger_punch_combo"
+					"value"				"1"
+				}
+				"mod wrench builds minisentry"
+				{
+					"attribute_class"	"wrench_builds_minisentry"
+					"value"	"1"
+				}
+				"max health additive bonus"
+				{
+					"attribute_class"	"add_maxhealth"
+					"value" "50"
+				}		
+				"engineer sentry build rate multiplier"
+				{
+					"attribute_class"	"sentry_build_rate_multiplier"
+					"value"		"5"
+				}
+				"crit mod disabled"
+				{
+					"attribute_class"	"mult_crit_chance"
+					"value"	"0"
+				}
+				"kill eater score type"
+				{
+					"attribute_class"	"kill_eater_score_type"
+					"value" 	"3"									
+				}
+				"kill eater score type 2"
+				{
+					"attribute_class"	"kill_eater_score_type_2"
+					"value" 	"0"									
+				}
+				"special taunt"
+				{
+					"attribute_class"	"special_taunt"
+					"value" "1"
+				}
+				
+				"mult sentry scale"
+				{
+				"attribute_class"	"mult_sentry_scale"
+				"value"				"0.15"
+				}
+				"mult sentry pitch"
+				{
+				"attribute_class"	"mult_sentry_pitch"
+				"value"				"2.0"
+				}
+				"mult sentry volume"
+				{
+				"attribute_class"	"mult_sentry_volume"
+				"value"				"0.25"
+				}
+				"mult sentry turn rate"
+				{
+				"attribute_class" "mult_sentry_turn_rate"
+				"value" "2"
+				}
+				"engy sentry damage penalty"
+				{
+					"attribute_class"	"mult_engy_sentry_damage"
+					"value" "0"
+				}
+				"engy sentry radius increased"
+				{
+				"attribute_class"	"mult_sentry_range"
+				"value"				"0.15"
+				}
+				"engy sentry fire rate increased"
+				{
+					"attribute_class"	"mult_sentry_firerate"
+					"value" "0.7"
+				}
+				"override hand model index"
+				{
+				"attribute_class"	"override_hand_model_index"
+				"value" "21600"	
+				}
+			}
+			"visuals"
+			{
+				"player_bodygroups"
+				{
+					"rightarm"			"1"
+				}
+				"animation_replacement"
+				{
+					"ACT_MELEE_VM_INSPECT_START"	"ACT_ITEM2_VM_INSPECT_START"
+					"ACT_MELEE_VM_INSPECT_IDLE"		"ACT_ITEM2_VM_INSPECT_IDLE"
+					"ACT_MELEE_VM_INSPECT_END"		"ACT_ITEM2_VM_INSPECT_END"
+				}
+			}
+			"mouse_pressed_sound"	"ui/item_robot_arm_pickup.wav"
+			"drop_sound"		"ui/item_robot_arm_drop.wav"
+		}
+			"39009"
+		{
+			"name"	"3 Gunslingers"
+			"prefab"	"valve"
+			"first_sale_date"	"2010/09/29"
+			"item_class"	"tf_weapon_robot_arm"
+			"craft_class"	"weapon"
+			"craft_material_type"	"weapon"
+			"moditem" "1"
+			"capabilities"
+			{
+				"nameable"		"1"
+			}
+			"tags"
+			{
+				"can_deal_damage"			"1"
+				"can_deal_critical_damage"	"1"
+				"can_destroy_sappers"		"1"
+				"can_deal_taunt_damage"		"1"
+			}
+			"show_in_armory"	"1"
+			"item_type_name"	"Robot Armses"
+			"item_name"	"3 Gunslingers"
+			"item_slot"	"melee"
+			"equip_region"	"arms"
+			"item_quality"	"rarity3"
+			"anim_slot"	"item2"
+			"min_ilevel"	"15"
+			"max_ilevel"	"15"
+			"propername"	"1"
+			"item_logname"	"robot_arms_3ofthem"
+			"item_iconname"	"robot_arm_kill"
+			"image_inventory"	"backpack/weapons/gunslinger"
+			"extra_wearable" 			"models\weapons\c_models\custom_viewmodels\attach_3rd_gunslinger.mdl"
+			"extra_wearable_vm" 		"models\weapons\c_models\custom_viewmodels\attach_3rd_gunslinger.mdl"
+			"image_inventory_size_w"		"128"
+			"image_inventory_size_h"		"82"
+			"inspect_panel_dist" 				"40"
+			"attach_to_hands" "1"
+			"disable_backpack_inspect"	"1"
+			"used_by_classes"
+			{
+				"engineer"	"1"
+			}
+			"static_attrs"
+			{
+				"min_viewmodel_offset"		"10 -2 -7"				
+			}
+			"attributes"
+			{
+				"gunslinger punch combo"
+				{
+					"attribute_class"	"gunslinger_punch_combo"
+					"value"				"1"
+				}
+				"mod wrench builds minisentry"
+				{
+					"attribute_class"	"wrench_builds_minisentry"
+					"value"	"1"
+				}
+				"max health additive bonus"
+				{
+					"attribute_class"	"add_maxhealth"
+					"value" "50"
+				}		
+				"engineer sentry build rate multiplier"
+				{
+					"attribute_class"	"sentry_build_rate_multiplier"
+					"value"		"5"
+				}
+				"crit mod disabled"
+				{
+					"attribute_class"	"mult_crit_chance"
+					"value"	"0"
+				}
+				"kill eater score type"
+				{
+					"attribute_class"	"kill_eater_score_type"
+					"value" 	"3"									
+				}
+				"kill eater score type 2"
+				{
+					"attribute_class"	"kill_eater_score_type_2"
+					"value" 	"0"									
+				}
+				"special taunt"
+				{
+					"attribute_class"	"special_taunt"
+					"value" "1"
+				}
+				
+				"mult sentry scale"
+				{
+				"attribute_class"	"mult_sentry_scale"
+				"value"				"0.05"
+				}
+				"mult sentry pitch"
+				{
+				"attribute_class"	"mult_sentry_pitch"
+				"value"				"2.0"
+				}
+				"mult sentry volume"
+				{
+				"attribute_class"	"mult_sentry_volume"
+				"value"				"0.05"
+				}
+				"mult sentry turn rate"
+				{
+				"attribute_class" "mult_sentry_turn_rate"
+				"value" "2"
+				}
+				"engy sentry damage penalty"
+				{
+					"attribute_class"	"mult_engy_sentry_damage"
+					"value" "0"
+				}
+				"engy sentry radius increased"
+				{
+				"attribute_class"	"mult_sentry_range"
+				"value"				"0.15"
+				}
+				"engy sentry fire rate increased"
+				{
+					"attribute_class"	"mult_sentry_firerate"
+					"value" "0.7"
+				}
+				"override hand model index"
+				{
+				"attribute_class"	"override_hand_model_index"
+				"value" "21600"	
+				}
+
+				
+			}
+			"visuals"
+			{
+				"player_bodygroups"
+				{
+					"rightarm"			"1"
+				}
+				"animation_replacement"
+				{
+					"ACT_MELEE_VM_INSPECT_START"	"ACT_ITEM2_VM_INSPECT_START"
+					"ACT_MELEE_VM_INSPECT_IDLE"		"ACT_ITEM2_VM_INSPECT_IDLE"
+					"ACT_MELEE_VM_INSPECT_END"		"ACT_ITEM2_VM_INSPECT_END"
+				}
+			}
+			"mouse_pressed_sound"	"ui/item_robot_arm_pickup.wav"
+			"drop_sound"		"ui/item_robot_arm_drop.wav"
+		}
+		"39010"
+		{
+			"name"	"The Godslinger"
+			"prefab"	"valve"
+			"first_sale_date"	"2010/09/29"
+			"item_class"	"tf_weapon_robot_arm"
+			"craft_class"	"weapon"
+			"craft_material_type"	"weapon"
+			"moditem" "1"
+			"capabilities"
+			{
+				"nameable"		"1"
+			}
+			"tags"
+			{
+				"can_deal_damage"			"1"
+				"can_deal_critical_damage"	"1"
+				"can_destroy_sappers"		"1"
+				"can_deal_taunt_damage"		"1"
+			}
+			"show_in_armory"	"1"
+			"item_type_name"	"Infinity Hand"
+			"item_name"	"The Godslinger"
+			"item_slot"	"melee"
+			"equip_region"	"arms"
+			"item_quality"	"rarity3"
+			"anim_slot"	"item2"
+			"min_ilevel"	"15"
+			"max_ilevel"	"15"
+			"propername"	"1"
+			"item_logname"	"bigslinger"
+			"item_iconname"	"robot_arm_kill"
+			"image_inventory"	"backpack/weapons/gunslinger"
+			"image_inventory_size_w"		"128"
+			"image_inventory_size_h"		"82"
+			"inspect_panel_dist" 				"40"
+			"attach_to_hands" "1"
+			"disable_backpack_inspect"	"1"
+			"extra_wearable" "models/weapons/c_models/glumpy/bigslinger/bigslinger_attach.mdl"
+			"used_by_classes"
+			{
+				"engineer"	"1"
+			}
+			"static_attrs"
+			{
+				"min_viewmodel_offset"		"10 -2 -7"				
+			}
+			"attributes"
+			{
+				"gunslinger punch combo"
+				{
+					"attribute_class"	"gunslinger_punch_combo"
+					"value"				"1"
+				}
+				"blast dmg to self increased"
+				{
+					"attribute_class"	"blast_dmg_to_self "
+					"value" "70"
+				}
+				"mult sentry upgrade cost"
+				{
+				"attribute_class"	"mult_sentry_upgrade_cost"
+				"value" "1.66666"
+				}
+				"max health additive bonus"
+				{
+					"attribute_class"	"add_maxhealth"
+					"value" "5"
+				}
+				"engy building health bonus"
+				{
+					"attribute_class"	"mult_engy_building_health"
+					"value" "1.05"
+				}
+				"engineer sentry build rate multiplier"
+				{
+					"attribute_class"	"sentry_build_rate_multiplier"
+					"value"		"0.5"
+				}
+				"Construction rate decreased"
+				{
+					"attribute_class"	"mult_construction_value"
+					"value"				"0.5" 
+				}
+				"crit mod disabled"
+				{
+					"attribute_class"	"mult_crit_chance"
+					"value"	"0"
+				}
+				"kill eater score type"
+				{
+					"attribute_class"	"kill_eater_score_type"
+					"value" 	"3"									
+				}
+				"kill eater score type 2"
+				{
+					"attribute_class"	"kill_eater_score_type_2"
+					"value" 	"0"									
+				}
+				"special taunt"
+				{
+					"attribute_class"	"special_taunt"
+					"value" "1"
+				}
+				
+				"mult sentry scale"
+				{
+				"attribute_class"	"mult_sentry_scale"
+				"value"				"1.5"
+				}
+				"mult sentry pitch"
+				{
+				"attribute_class"	"mult_sentry_pitch"
+				"value"				"0.6"
+				}
+				"mult sentry volume"
+				{
+				"attribute_class"	"mult_sentry_volume"
+				"value"				"1"
+				}
+				"mult sentry turn rate"
+				{
+				"attribute_class" "mult_sentry_turn_rate"
+				"value" "0.62"
+				}
+				"engy sentry damage bonus"
+				{
+					"attribute_class"	"mult_engy_sentry_damage"
+					"value" "1.75"
+				}
+				"engy sentry radius increased"
+				{
+				"attribute_class"	"mult_sentry_range"
+				"value"				"0.85"
+				}
+				"engy sentry fire rate increased"
+				{
+					"attribute_class"	"mult_sentry_firerate"
+					"value" "1.25"
+				}
+				"override hand model index"
+				{
+				"attribute_class"	"override_hand_model_index"
+				"value" "21602"	
+				}
+
+				
+			}
+			"hide_bodygroups_deployed_only"	"0"
+			
+			"visuals"
+			{				
+				"wm_bodygroup_override"			"2"
+				"wm_bodygroup_state_override"			"2"
+				"use_per_class_bodygroups" "1"
+				"player_bodygroups"
+				{
+					"rightarm"			"2"	
+				}
+				"animation_replacement"
+				{
+					"ACT_MELEE_VM_INSPECT_START"	"ACT_ITEM2_VM_INSPECT_START"
+					"ACT_MELEE_VM_INSPECT_IDLE"		"ACT_ITEM2_VM_INSPECT_IDLE"
+					"ACT_MELEE_VM_INSPECT_END"		"ACT_ITEM2_VM_INSPECT_END"
+				}
+			}
+			"mouse_pressed_sound"	"ui/item_robot_arm_pickup.wav"
+			"drop_sound"		"ui/item_robot_arm_drop.wav"
+		}
+		"39011"
+		{
+			"name"	"The 5G Tower With Microwaves And Fluoride And"
+			"first_sale_date"	"2009/10/21"
+			"prefab"	"weapon_minigun"
+			"item_quality"	"rarity3"
+			"baseitem" "0"
+			"moditem"	"1"
+			"xifier_class_remap"	"minigun"
+			"item_type_name" 	"brainmelterer......"
+			"item_name"		"5G Tower With Microwaves And Fluoride And"
+			"item_description"	"how it feels to sleep with your phone next to you while fast charging with wifi bluethoot hotspot and gps enabled all night"
+			"attributes"
+			{
+				"bullets per shot bonus"
+				{
+					"attribute_class"	"mult_bullets_per_shot"
+					"value"				"18"
+				}
+				"damage penalty"
+				{
+					"attribute_class"	"mult_dmg"
+					"value"				"0.0111111111"
+				}
+				"spread penalty"
+				{ 	"attribute_class"	"mult_spread_scale"
+					"value"				"1.1"
+				}
+				"dmg falloff increased"
+				{
+					"attribute_class"	"mult_dmg_falloff"
+					"value"				"3"
+				}
+				"damage applies to sappers"
+				{
+					"attribute_class"	"set_dmg_apply_to_sapper"
+					"value"				"1"
+				}
+			}
+		
 		}
 	}
 	"client_loot_lists"

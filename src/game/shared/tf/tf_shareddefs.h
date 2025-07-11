@@ -240,6 +240,8 @@ extern const char g_szBotViewmodels[TF_LAST_NORMAL_CLASS][MAX_PATH];
 extern const char g_szBotBossViewmodels[TF_LAST_NORMAL_CLASS][MAX_PATH];
 extern const char g_szBotBossSentryBusterModel[ MAX_PATH ];
 
+extern const char g_szGlumptacularCustomViewmodels[MAX_PATH][MAX_PATH];
+
 extern const char g_szRomePromoItems_Hat[TF_LAST_NORMAL_CLASS][ MAX_PATH ];
 extern const char g_szRomePromoItems_Misc[TF_LAST_NORMAL_CLASS][ MAX_PATH ];
 

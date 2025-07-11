@@ -9,78 +9,111 @@ DESCRIPTION INFO_OPTIONS
 	}
 	"credit1_1"
 	{
-		"by Alien31, main_thing
-		NOTICE :If we forgot someone to credit in our mod, reach us in the discord please :("
+		"UraFoxa - All the Glumpy Fortress implementation and jank coding :)
+		N3ONFLUX, Slicktown, DoomNaybor - Friends Of The Glump"
+		"https://steamcommunity.com/id/expired_egg_yolk/"
 		{ BOOL }
 		{ "1" }
 	}	
 	"credit1_2"
+	{
+		"Better Fortress by Alien31, main_thing
+		''NOTICE :If we forgot someone to credit in our mod, reach us in the discord please :(''"
+		{ BOOL }
+		{ "1" }
+	}	
+	"credit1_3"
 	{
 		"PracticeMedicine - Discord RPC rewrite, misc. Fixes
 		Vvis - Give_econ command, Mini-Dispenser cost"
 		{ BOOL }
 		{ "1" }
 	}	
-	"credit1_3"
+	"credit1_4"
 	{
 		"Published by MIXERRULES"
 		"https://wiki.tf2sm.info"
 		{ BOOL }
 		{ "1" }
 	}	
-	"category2"
+	
+		"category2"
+	{
+		"Community Content Used"
+		{ CATEGORY }
+	}	
+	"credit2_1"
+	{
+		"N-Cognito - Separated C_animations"
+		"https://gamebanana.com/tools/5861"
+		{ BOOL }
+		{ "1" }
+	}	
+	
+	"category3"
 	{
 		"Community Help/Contributions"
 		{ CATEGORY }
 	}	
-	"credit2_1"
+	"credit3_1"
 	{
 		"BetaM - Custom Items, Credits menu, misc. fixes"
 		"https://www.youtube.com/BetaM"
 		{ BOOL }
 		{ "1" }
 	}	
-	"credit2_2"
+	"credit3_2"
 	{
 		"CTrigger_Hurt - MVM Versus Viewmodels"
 		"https://steamcommunity.com/profiles/76561198036209556"
 		{ BOOL }
 		{ "1" }
 	}	
-	"credit2_3"
+	"credit3_3"
 	{
 		"Gidi30 - 3D Custommodel portrait, Prop_vehicle fix"
 		"https://steamcommunity.com/profiles/76561198363234129"
 		{ BOOL }
 		{ "1" }
 	}	
-	"category4"
+	"category5"
 	{
 		"UPDATE: OFFSHORE"
 		{ CATEGORY }
 	}	
-	"credit4_1"
+	"credit5_1"
 	{
 		"Haau - The Hell Beneath Stickybomb launcher
 		Altranade - The Holy Merlin"
 		{ BOOL }
 		{ "1" }
 	}
-	"credit4_2"
+	"credit5_2"
 	{
 		"TheHypedScoot - Scout Sandkick taunt
 		Dansky - Crate and key models"
 		{ BOOL }
 		{ "1" }
 	}
-	"category5"
+	"category6"
 	{
 		"WORKSHOP COMMUNITY ITEMS"
 		{ CATEGORY }
 	}	
-	"credit5_1"
+	"credit6_1"
 	{
 		"Soviet Unit - Heavy Facewear"
+		{ BOOL }
+		{ "1" }
+	}
+		"category7"
+	{
+		"CREATIVE COMMONS STUFF"
+		{ CATEGORY }
+	}	
+	"credit7_1"
+	{
+		"nothing yet but i plan to take stuff from sketchfab for a funny joke"
 		{ BOOL }
 		{ "1" }
 	}

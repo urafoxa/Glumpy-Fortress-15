@@ -252,8 +252,10 @@ void CTFWrench::Equip( CBaseCombatCharacter *pOwner )
 	{
 		// if switching too gunslinger, blow up other sentry
 		int iMiniSentry = 0;
-		CALL_ATTRIB_HOOK_INT( iMiniSentry, wrench_builds_minisentry );
-		if ( iMiniSentry )
+		int iKillSentryOnWrenchSwitch = 0;
+		CALL_ATTRIB_HOOK_INT(iMiniSentry, wrench_builds_minisentry);
+		CALL_ATTRIB_HOOK_INT(iKillSentryOnWrenchSwitch, kill_sentry_on_wrench_switch);
+		if (iMiniSentry || iKillSentryOnWrenchSwitch)
 		{
 			// Just detonate Sentries
 			CObjectSentrygun *pSentry = dynamic_cast<CObjectSentrygun*>( pPlayer->GetObjectOfType( OBJ_SENTRYGUN ) );
@@ -287,12 +289,14 @@ void CTFWrench::Detach( void )
 		}
 
 		// Only detonate if we are unequipping gunslinger
-		if ( bDetonateObjects )
+		if (bDetonateObjects)
 		{
 			// if switching off of gunslinger detonate
 			int iMiniSentry = 0;
-			CALL_ATTRIB_HOOK_INT( iMiniSentry, wrench_builds_minisentry );
-			if ( iMiniSentry )
+			int iKillSentryOnWrenchSwitch = 0;
+			CALL_ATTRIB_HOOK_INT(iMiniSentry, wrench_builds_minisentry);
+			CALL_ATTRIB_HOOK_INT(iKillSentryOnWrenchSwitch, kill_sentry_on_wrench_switch);
+			if (iMiniSentry||iKillSentryOnWrenchSwitch)
 			{
 				// Just detonate Sentries
 				CObjectSentrygun *pSentry = dynamic_cast<CObjectSentrygun*>( pPlayer->GetObjectOfType( OBJ_SENTRYGUN ) );
@@ -437,7 +441,7 @@ void CTFRobotArm::UpdateOnRemove( void )
 	BaseClass::UpdateOnRemove();
 }
 
-//-----------------------------------------------------------------------------
+//--------------------------------------------------------------------x---------
 // Purpose: 
 //-----------------------------------------------------------------------------
 void CTFRobotArm::RemoveRobotArm( void )

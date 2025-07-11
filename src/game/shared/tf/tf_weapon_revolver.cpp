@@ -80,9 +80,16 @@ bool CTFRevolver::DefaultReload( int iClipSize1, int iClipSize2, int iActivity )
 //-----------------------------------------------------------------------------
 // Purpose: 
 //-----------------------------------------------------------------------------
-int	CTFRevolver::GetDamageType( void ) const
+int	CTFRevolver::GetDamageType(void) const
 {
-	if ( CanHeadshot() && (gpGlobals->curtime - m_flLastAccuracyCheck > 1.f) )
+	float canHeadshotAnyway = 0;
+	CALL_ATTRIB_HOOK_INT(canHeadshotAnyway, can_headshot_anyway);
+	if (canHeadshotAnyway == 1) {
+		int iDamageType = BaseClass::GetDamageType() | DMG_USE_HITLOCATIONS;
+		return iDamageType;
+	}
+	
+	if (CanHeadshot() && (gpGlobals->curtime - m_flLastAccuracyCheck > 1.f))
 	{
 		int iDamageType = BaseClass::GetDamageType() | DMG_USE_HITLOCATIONS;
 		return iDamageType;

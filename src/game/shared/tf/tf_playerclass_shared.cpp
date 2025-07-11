@@ -159,6 +159,11 @@ const char	*CTFPlayerClassShared::GetModelName( void ) const
 const char *g_HACK_GunslingerEngineerArmsOverride = "models\\weapons\\c_models\\c_engineer_gunslinger.mdl";
 const char *HACK_RobotGunsLinger = "models\\mvm\\weapons\\c_models\\c_engineer_bot_gunslinger.mdl";
 
+const char *customViewmodelTwoGunslinger = "models/weapons/c_models/custom_viewmodels/c_engineer_twogunslingers.mdl";
+const char* customViewmodelBigslinger = "models/weapons/c_models/custom_viewmodels/c_engineer_bigslinger.mdl";
+
+
+
 const char *CTFPlayerClassShared::GetHandModelName( int iHandIndex = 0 ) const
 {
 	switch(iHandIndex)
@@ -172,6 +177,18 @@ const char *CTFPlayerClassShared::GetHandModelName( int iHandIndex = 0 ) const
 	case 3:
 		return g_szBotBossViewmodels[m_iClass];
 		break;
+
+	case 21600:
+		return customViewmodelTwoGunslinger;
+		break;
+	case 21601:
+		return customViewmodelTwoGunslinger;
+		break;
+	case 21602:
+		return customViewmodelBigslinger;
+		break;
+
+
 	default:
 		return GetPlayerClassData(m_iClass)->m_szHandModelName;
 		break;

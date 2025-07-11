@@ -528,6 +528,8 @@ void CTFWeaponBase::Precache()
 
 	//MVM Versus - Legacy viewmodels
 	PrecacheModel("models/mvm/weapons/c_models/c_engineer_bot_gunslinger.mdl");
+	
+
 }
 
 // -----------------------------------------------------------------------------
@@ -664,12 +666,14 @@ const char *CTFWeaponBase::GetViewModel( int iViewModel ) const
 		CALL_ATTRIB_HOOK_FLOAT_ON_OTHER( pPlayer, iHandModelIndex, override_hand_model_index );		// this is a cleaner way of doing it, but...
 		CALL_ATTRIB_HOOK_FLOAT_ON_OTHER( pPlayer, iGunSlinger, wrench_builds_minisentry );			// ...the gunslinger is the only thing that uses this attribute for now
 	}
-
+	if (iGunSlinger > 0) {
+		iGunSlinger = 1; //dunno what exactly setting it to -1 would accomplish but heres a case for that
+	}
 	const CEconItemView *pItem = GetAttributeContainer()->GetItem();
 	if ( pPlayer && pItem->IsValid() && pItem->GetStaticData()->ShouldAttachToHands() )
 	{
 		// Should always be valid, because players without classes shouldn't be carrying items
-		const char *pszHandModel = pPlayer->GetPlayerClass()->GetHandModelName( iGunSlinger ? iGunSlinger : iHandModelIndex );
+		const char *pszHandModel = pPlayer->GetPlayerClass()->GetHandModelName(  iGunSlinger + iHandModelIndex );
 
 		//MVM Versus
 		if(TFGameRules()->IsMannVsMachineMode() && GetTeamNumber() == TF_TEAM_PVE_INVADERS || pPlayer->IsRobot() )

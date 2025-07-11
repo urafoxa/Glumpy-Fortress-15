@@ -178,6 +178,14 @@ const char g_szBotBossViewmodels[][MAX_PATH] =
 	"models/mvm/weapons/c_models/c_engineer_bot_arms.mdl",
 };
 
+
+const char g_szGlumptacularCustomViewmodels[][MAX_PATH] =
+{
+	"", //TF_CLASS_UNDEFINED
+	"models/weapons/c_models/custom_viewmodels/c_engineer_twogunslingers.mdl",
+	"models/weapons/c_models/custom_viewmodels/c_engineer_bigslinger.mdl",
+};
+
 const char g_szBotBossSentryBusterModel[ MAX_PATH ] = "models/bots/demo/bot_sentry_buster.mdl";
 
 // Rome 2 promo models

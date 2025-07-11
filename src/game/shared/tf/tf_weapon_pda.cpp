@@ -377,7 +377,7 @@ void CTFWeaponPDA::Equip(CBaseCombatCharacter* pOwner)
 	CTFPlayer* pPlayer = ToTFPlayer(pOwner);
 	if (pPlayer)
 	{
-		// if switching too gunslinger, blow up other sentry
+		// if switching to the small dispenser, take it out back and shoot it
 		int iMiniDispenser = 0;
 		CALL_ATTRIB_HOOK_INT(iMiniDispenser, pda_builds_minidispenser);
 		if (iMiniDispenser)
@@ -414,7 +414,7 @@ void CTFWeaponPDA::Detach(void)
 			}
 		}
 
-		// Only detonate if we are unequipping gunslinger
+		// Only detonate if we are unequipping mini dispenser
 		if (bDetonateObjects)
 		{
 			// if switching off of gunslinger detonate

@@ -319,12 +319,25 @@ void CObjectSentrygun::StartPlacement( CTFPlayer *pPlayer )
 	// Set my build size
 	m_vecBuildMins = SENTRYGUN_MINS;
 	m_vecBuildMaxs = SENTRYGUN_MAXS;
+
+	float flModelScale = 1.0f;
+	CALL_ATTRIB_HOOK_FLOAT_ON_OTHER(pPlayer, flModelScale, mult_sentry_scale);
+	if (flModelScale != 1.0f) {
+		m_vecBuildMins *= flModelScale;
+		m_vecBuildMaxs *= flModelScale;
+	}
+
 	m_vecBuildMins -= Vector( 4,4,0 );
 	m_vecBuildMaxs += Vector( 4,4,0 );
 
 	MakeMiniBuilding( pPlayer );
 	MakeDisposableBuilding( pPlayer );
 	MakeScaledBuilding( GetBuilder() );
+
+	if (flModelScale != 1.0f) {
+		SetModelScale(flModelScale);
+		SetBuildingSize();
+	}
 }
 
 //-----------------------------------------------------------------------------
@@ -419,7 +432,7 @@ void CObjectSentrygun::OnGoActive( void )
 	m_vecGoalAngles.x = m_vecCurAngles.x = 0;
 	m_bTurningRight = true;
 
-	EmitSound( "Building_Sentrygun.Built" );
+	EmitSentrySound( "Building_Sentrygun.Built" );
 
 	// if our eye pos is underwater, we're waterlevel 3, else 0
 	bool bUnderwater = ( UTIL_PointContents( EyePosition() ) & MASK_WATER ) ? true : false;
@@ -1361,18 +1374,22 @@ bool CObjectSentrygun::FireRocket()
 		{
 			int iDamage = 100;
 			CALL_ATTRIB_HOOK_INT_ON_OTHER( GetOwner(), iDamage, mult_engy_sentry_damage );
+			CALL_ATTRIB_HOOK_INT_ON_OTHER(GetOwner(), iDamage, mult_engy_sentry_damage_rocket_specific);
 			pProjectile->SetDamage( iDamage );
 		}
 
+		float flRocketDelayMult = 1.0f;
+		CALL_ATTRIB_HOOK_FLOAT_ON_OTHER(GetOwner(), flRocketDelayMult, mult_sentry_rocket_firerate_glumpy);
 		// Setup next rocket shot
 		if ( m_bPlayerControlled )
 		{
-			m_flNextRocketAttack = gpGlobals->curtime + 2.25;
+			AddGesture( ACT_RANGE_ATTACK2 );
+			m_flNextRocketAttack = gpGlobals->curtime + (2.25 * flRocketDelayMult);
 		}
 		else
 		{
 			AddGesture( ACT_RANGE_ATTACK2 );
-			m_flNextRocketAttack = gpGlobals->curtime + 3;
+			m_flNextRocketAttack = gpGlobals->curtime + (3 * flRocketDelayMult);
 		}
 
 		if ( !tf_sentrygun_ammocheat.GetBool() && !HasSpawnFlags( SF_SENTRY_INFINITE_AMMO ) )
@@ -1567,13 +1584,7 @@ bool CObjectSentrygun::Fire()
 
 		if ( IsMiniBuilding() )
 		{
-			EmitSound_t params;
-			params.m_pSoundName = "Building_MiniSentrygun.Fire";
-			params.m_flSoundTime = 0;
-			params.m_pflSoundDuration = 0;
-			params.m_bWarnOnDirectWaveReference = true;
-			CPASAttenuationFilter filter( this, "Building_MiniSentrygun.Fire" );
-			EmitSound( filter, entindex(), params );
+			EmitSentrySound("Building_MiniSentrygun.Fire");
 		}
 		else
 		{
@@ -1627,7 +1638,7 @@ bool CObjectSentrygun::Fire()
 		}
 
 		// Out of ammo, play a click
-		EmitSound( "Building_Sentrygun.Empty" );
+		EmitSentrySound( "Building_Sentrygun.Empty" );
 
 		// Disposable sentries blow up when their ammo runs out
 		if ( IsDisposableBuilding() )
@@ -1723,7 +1734,7 @@ void CObjectSentrygun::SentryRotate( void )
 
 		if ( IsDisabled() || m_nShieldLevel == SHIELD_NORMAL )
 		{
-			EmitSound( "Building_Sentrygun.Disabled" );
+			EmitSentrySound( "Building_Sentrygun.Disabled" );
 			m_vecGoalAngles.x = 30;
 		}
 		else
@@ -1735,10 +1746,10 @@ void CObjectSentrygun::SentryRotate( void )
 				EmitSentrySound( "Building_Sentrygun.Idle" );
 				break;
 			case 2:
-				EmitSound( "Building_Sentrygun.Idle2" );
+				EmitSentrySound( "Building_Sentrygun.Idle2" );
 				break;
 			case 3:
-				EmitSound( "Building_Sentrygun.Idle3" );
+				EmitSentrySound( "Building_Sentrygun.Idle3" );
 				break;
 			}
 
@@ -1804,14 +1815,18 @@ void CObjectSentrygun::OnEndDisabled( void )
 //-----------------------------------------------------------------------------
 int CObjectSentrygun::GetBaseTurnRate( void )
 {
-	if ( m_bPlayerControlled )
+	float flTurnRate = m_iBaseTurnRate;
+	if (m_bPlayerControlled)
 	{
-		return m_iBaseTurnRate * 100;
+		flTurnRate *= 100;
 	}
-	else
-	{
-		return m_iBaseTurnRate;
+	float flTurnMult = 1.f;
+	CALL_ATTRIB_HOOK_FLOAT_ON_OTHER(GetOwner(), flTurnMult, mult_sentry_turn_rate);
+	if (flTurnMult != 1.f) {
+		flTurnRate *= flTurnMult;
 	}
+
+	return flTurnRate;
 }
 
 //-----------------------------------------------------------------------------
@@ -2232,15 +2247,37 @@ void CObjectSentrygun::EmitSentrySound( const char* soundname )
 	params.m_flSoundTime = 0;
 	params.m_pflSoundDuration = 0;
 	params.m_bWarnOnDirectWaveReference = true;
+	params.m_nPitch = 100;
+	params.m_flVolume = 1.f;
 	
-	if ( IsMiniBuilding() || m_flFireRate != 1.f )
+	if (IsMiniBuilding() || m_flFireRate != 1.f)
 	{
-		StopSound( soundname );
-		params.m_nPitch = IsMiniBuilding() ? PITCH_HIGH : RemapValClamped( m_flFireRate, 1.0f, 0.5f, 100.f, 120.f );
+		StopSound(soundname);
+		params.m_nPitch = IsMiniBuilding() ? PITCH_HIGH : RemapValClamped(m_flFireRate, 1.0f, 0.5f, 100.f, 120.f);
 		params.m_nFlags = SND_CHANGE_PITCH;
 	}
+	int normalizesentrypitchto100 = 0;
+	CALL_ATTRIB_HOOK_INT_ON_OTHER(GetOwner(), normalizesentrypitchto100, normalize_sentry_pitch_to_100);
+	if (normalizesentrypitchto100 == 1) {
+		params.m_nPitch = 100;
+	}
+	float pitchmultipliervariablename = 1.f;
+	CALL_ATTRIB_HOOK_FLOAT_ON_OTHER(GetOwner(), pitchmultipliervariablename, mult_sentry_pitch);
+	if (pitchmultipliervariablename != 1.f)
+	{
+		params.m_nPitch *= pitchmultipliervariablename;
+		params.m_nFlags = SND_CHANGE_PITCH;
+	}
+	float volumemultipliervariablename = 1.f;
+	CALL_ATTRIB_HOOK_FLOAT_ON_OTHER(GetOwner(), volumemultipliervariablename, mult_sentry_volume);
+	if (volumemultipliervariablename != 1.f)
+	{
+		params.m_flVolume *= volumemultipliervariablename;
+		params.m_nFlags |= SND_CHANGE_VOL;
+	}
 
-	EmitSound( filter, entindex(), params );
+
+	EmitSound(filter, entindex(), params);
 }
 
 
@@ -2320,6 +2357,8 @@ int CObjectSentrygun::GetUpgradeMetalRequired()
 		iMetal *= 0.75f;
 	}
 	
+	CALL_ATTRIB_HOOK_FLOAT_ON_OTHER(GetOwner(), iMetal, mult_sentry_upgrade_cost);
+
 	return iMetal;
 }
 
@@ -2331,6 +2370,7 @@ int CObjectSentrygun::GetMaxHealthForCurrentLevel( void )
 	{
 		iHealth *= 0.66f;
 	}
+	CALL_ATTRIB_HOOK_FLOAT_ON_OTHER(GetOwner(), iHealth, mult_sentry_health_gl);
 	return iHealth;
 }
 //-------------------------------------------------------------------------------------------------------------------------------
