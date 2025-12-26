@@ -4461,7 +4461,17 @@ void CTFPlayer::Spawn()
 		SetHealth( GetMaxHealth() );
 	}
 
+	//putting glumptacular functions at the end of the init place
 	ApplyGravityMultiplierFromItems();
+
+
+	CAttribute_String customModelGlump;
+	CALL_ATTRIB_HOOK_STRING(customModelGlump, playermodel_custom_override);
+	const char* customModelGlumpConstChar = customModelGlump.value().c_str();
+	if (customModelGlumpConstChar)
+	{
+		SetCustomModel(customModelGlumpConstChar);
+	}
 
 	SetContextThink( &CTFPlayer::PostSpawnThink, gpGlobals->curtime + 0.1f, "PostSpawnThink" );
 }

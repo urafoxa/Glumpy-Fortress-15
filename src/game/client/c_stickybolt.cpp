@@ -2,7 +2,7 @@
 //
 // Purpose: Implements the Sticky Bolt code. This constraints ragdolls to the world
 //			after being hit by a crossbow bolt. If something here is acting funny
-//			let me know - Adrian.
+//			let me know - Adrian G.
 //
 // $Workfile:     $
 // $Date:         $

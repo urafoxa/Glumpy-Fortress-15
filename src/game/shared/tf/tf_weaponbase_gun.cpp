@@ -781,24 +781,35 @@ CBaseEntity *CTFWeaponBaseGun::FireArrow( CTFPlayer *pPlayer, ProjectileType_t p
 
 	Vector vecSrc;
 	QAngle angForward;
-	Vector vecOffset( 23.5f, -8.0f, -3.0f );
+	Vector vecOffset(23.5f, -8.0f, -3.0f);
 
-	GetProjectileFireSetup( pPlayer, vecOffset, &vecSrc, &angForward, false );
+	GetProjectileFireSetup(pPlayer, vecOffset, &vecSrc, &angForward, false);
 
-	CTFProjectile_Arrow *pProjectile = CTFProjectile_Arrow::Create( vecSrc, angForward, GetProjectileSpeed(), GetProjectileGravity(), projectileType, pPlayer, pPlayer );
-	if ( pProjectile )
+	CTFProjectile_Arrow* pProjectile = CTFProjectile_Arrow::Create(vecSrc, angForward, GetProjectileSpeed(), GetProjectileGravity(), projectileType, pPlayer, pPlayer);
+	if (pProjectile)
 	{
-		pProjectile->SetLauncher( this );
-		pProjectile->SetCritical( IsCurrentAttackACrit() );
-		pProjectile->SetDamage( GetProjectileDamage() );
+		// apply a custom projectile model if the attribute exists
+		// we love precaching
+		CAttribute_String attrCustomModelName;
+		GetCustomProjectileModel(&attrCustomModelName);
+		if (attrCustomModelName.has_value())
+		{
+			pProjectile->Precache();
+			pProjectile->SetModel(attrCustomModelName.value().c_str());
+		}
+		// // // //
+
+		pProjectile->SetLauncher(this);
+		pProjectile->SetCritical(IsCurrentAttackACrit());
+		pProjectile->SetDamage(GetProjectileDamage());
 
 		int iPenetrate = 0;
-		CALL_ATTRIB_HOOK_INT( iPenetrate, projectile_penetration );
-		if ( iPenetrate == 1 )
+		CALL_ATTRIB_HOOK_INT(iPenetrate, projectile_penetration);
+		if (iPenetrate == 1)
 		{
-			pProjectile->SetPenetrate( true );
+			pProjectile->SetPenetrate(true);
 		}
-		pProjectile->SetCollisionGroup( TFCOLLISION_GROUP_ROCKET_BUT_NOT_WITH_OTHER_ROCKETS );
+		pProjectile->SetCollisionGroup(TFCOLLISION_GROUP_ROCKET_BUT_NOT_WITH_OTHER_ROCKETS);
 	}
 	return pProjectile;
 

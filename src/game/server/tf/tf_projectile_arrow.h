@@ -106,6 +106,9 @@ private:
 
 	bool			m_bFiredWhileZoomed;
 
+	//glumpy custom particle jank
+	CAttribute_String m_sCustomTrailParticle;
+
 protected:
 	CUtlVector< int >	m_HitEntities;
 	float			m_flInitTime;

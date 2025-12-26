@@ -470,6 +470,8 @@ static const char *g_aConditionNames[] =
 	// ADD NEW ITEMS HERE TO AVOID BREAKING DEMOS
 	//
 
+	"TF_COND_GREASED_UP",						// = 131 glumptacular greasy
+
 	// ******** Keep this block last! ********
 	// Keep experimental conditions below and graduate out of it before shipping
 };

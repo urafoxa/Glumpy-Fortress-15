@@ -659,6 +659,14 @@ void CTFProjectile_Arrow::BuildingHealingArrow( CBaseEntity *pOther )
 	if ( !pTFAttacker )
 		return;
 
+	int iDisableHealing = 0;
+	if (GetLauncher())
+	{
+		CALL_ATTRIB_HOOK_INT_ON_OTHER(GetLauncher(), iDisableHealing, "disable crossbow healing");
+		if (iDisableHealing == 1)
+			return;	
+	}
+
 	// if not on our team, forget about it
 	if ( GetTeamNumber() != pOther->GetTeamNumber() )
 		return;
@@ -1197,6 +1205,19 @@ void CTFProjectile_HealingBolt::InitArrow( const QAngle &vecAngles, const float 
 //-----------------------------------------------------------------------------
 void CTFProjectile_HealingBolt::ImpactTeamPlayer( CTFPlayer *pOther )
 {
+
+	int iDisableHealing = 0;
+	if (GetLauncher())
+	{
+		CALL_ATTRIB_HOOK_INT_ON_OTHER(GetLauncher(), iDisableHealing, "disable crossbow healing");
+	}
+
+	if (iDisableHealing == 1)
+	{
+		//ImpactSound("insert.funny.sound.here");
+		return;
+	}
+
 	if ( !pOther )
 		return;
 

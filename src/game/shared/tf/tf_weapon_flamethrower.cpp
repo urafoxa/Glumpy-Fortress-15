@@ -73,11 +73,11 @@ ConVar  tf_flamethrower_flametime("tf_flamethrower_flametime", "0.5", FCVAR_CHEA
 
 // If we're shipping this it needs to be better hooked with flame manager -- right now we just spawn 5 managers for
 // prototyping
-#ifdef WATERFALL_FLAMETHROWER_TEST
+//#ifdef WATERFALL_FLAMETHROWER_TEST
 // TODO:  ConVars for easier for easier testing, but should be attributes for shipping?
 // (TODO: Add con commands to modify stock attributes on the fly)
 ConVar	tf_flamethrower_waterfall_damage_per_tick( "tf_flamethrower_waterfall_damage_per_tick", "7", FCVAR_REPLICATED );
-#endif // WATERFALL_FLAMETHROWER_TEST
+//#endif // WATERFALL_FLAMETHROWER_TEST
 extern ConVar friendlyfire;
 #if defined( GAME_DLL )
 // TODO These should be cheat upon shipping probably
@@ -862,14 +862,14 @@ void CTFFlameThrower::PrimaryAttack()
 		{
 			flDamage = tf_flamethrower_damage_per_tick;
 		}
-#ifdef WATERFALL_FLAMETHROWER_TEST
+//#ifdef WATERFALL_FLAMETHROWER_TEST
 		int iWaterfallMode = 0;
 		CALL_ATTRIB_HOOK_INT( iWaterfallMode, flame_waterfall );
 		if ( iWaterfallMode )
 		{
 			flDamage = tf_flamethrower_waterfall_damage_per_tick.GetFloat();
 		}
-#endif
+//#endif
 		CALL_ATTRIB_HOOK_FLOAT( flDamage, mult_dmg );
 
 		int iCritFromBehind = 0;
@@ -2570,6 +2570,8 @@ const char* CTFFlameThrower::FlameEffectName( bool bIsFirstPersonView )
 	case TF_FLAMETHROWER_MODE_PHLOG:	return "drg_phlo_stream_new_flame";
 	case TF_FLAMETHROWER_MODE_GIANT:	return "flamethrower_giant_mvm_new_flame";
 	case TF_FLAMETHROWER_MODE_RAINBOW:	return "flamethrower_rainbow_new_flame";
+	case TF_FLAMETHROWER_MODE_GREASE:	return "greaser_grease_stream_new_flame";
+	case TF_FLAMETHROWER_MODE_GREEN_ANYWAY:	return "flamethrower_halloween_new_flame";
 	default:							
 		{
 			return GetNewFlameEffectInternal( pOwner->GetTeamNumber(), false );
@@ -2597,6 +2599,8 @@ const char* CTFFlameThrower::FlameCritEffectName( bool bIsFirstPersonView )
 	case TF_FLAMETHROWER_MODE_PHLOG:	return "drg_phlo_stream_crit_new_flame";
 	case TF_FLAMETHROWER_MODE_GIANT:	return "flamethrower_crit_giant_mvm_new_flame";
 	case TF_FLAMETHROWER_MODE_RAINBOW:	return "flamethrower_rainbow_new_flame";
+	case TF_FLAMETHROWER_MODE_GREASE:	return (pOwner->GetTeamNumber() == TF_TEAM_BLUE ? "greaser_grease_crit_blue" : "greaser_grease_crit_red");
+	case TF_FLAMETHROWER_MODE_GREEN_ANYWAY:	return (pOwner->GetTeamNumber() == TF_TEAM_BLUE ? "flamethrower_halloween_crit_blue_new_flame" : "flamethrower_halloween_crit_red_new_flame");
 	default:
 		{
 			return GetNewFlameEffectInternal( pOwner->GetTeamNumber(), true );

@@ -103,4 +103,5 @@ particles_manifest
 		"file"		"!particles/halloween2024_unusuals.pcf"
 		"file"		"!particles/smissmas2024_unusuals.pcf"
 		"file"		"!particles/offshore_particles.pcf"
+		"file"		"!particles/glumpy.pcf"
 }

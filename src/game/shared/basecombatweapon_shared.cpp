@@ -378,6 +378,12 @@ int CBaseCombatWeapon::GetMaxClip1( void ) const
 //-----------------------------------------------------------------------------
 int CBaseCombatWeapon::GetMaxClip2( void ) const
 {
+#if defined ( TF_DLL ) || defined ( TF_CLIENT_DLL )
+	int iModMaxClipOverride = 0;
+	CALL_ATTRIB_HOOK_INT(iModMaxClipOverride, mod_max_secondary_clip_override);
+	if (iModMaxClipOverride != 0)
+		return iModMaxClipOverride;
+#endif
 	return GetWpnData().iMaxClip2;
 }
 
