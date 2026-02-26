@@ -4016,6 +4016,7 @@ void CTFPlayerShared::OnAddTaunting( void )
 	}
 
 #ifdef GAME_DLL
+	m_pOuter->UpdateModel(); // NEW: Revert hitboxes to real class for the taunt
 	m_pOuter->PlayWearableAnimsForPlaybackEvent( WAP_START_TAUNTING );
 #else
 	FireClientTauntParticleEffects();
@@ -4052,6 +4053,9 @@ void CTFPlayerShared::OnRemoveTaunting( void )
 	}
 
 #ifdef GAME_DLL
+
+	m_pOuter->UpdateModel(); // NEW: Restore the weapon's override class hitboxes
+
 	// Switch to our melee weapon, if we are at the end of a type 2 lunchbox taunt.
 	if ( m_bBiteEffectWasApplied && InCond( TF_COND_CANNOT_SWITCH_FROM_MELEE ) )
 	{
@@ -11838,6 +11842,7 @@ bool CTFPlayer::Weapon_Switch( CBaseCombatWeapon *pWeapon, int viewmodelindex )
 #endif
 
 #ifdef GAME_DLL
+	UpdateModel(); // NEW: Force server to update hitboxes to the new weapon's class
 	ApplyGravityMultiplierFromItems();
 #endif
 	return bSwitched;

@@ -1510,7 +1510,7 @@ void C_TFRagdoll::ClientThink( void )
 	if ( m_bFadingOut == true )
 	{
 		int iAlpha = GetRenderColor().a;
-		int iFadeSpeed = 600.0f;
+		int iFadeSpeed = 590.0f;
 
 		iAlpha = MAX( iAlpha - ( iFadeSpeed * gpGlobals->frametime ), 0 );
 
@@ -6042,6 +6042,84 @@ void C_TFPlayer::ClientThink()
 
 	UpdatedMarkedForDeathEffect();
 
+	// --- NEW: Hacky 3rd Person Animation Sharing ---
+	int iOverrideClass = 0;
+	CTFWeaponBase* pWpn = GetActiveTFWeapon();
+	if (pWpn && !m_Shared.InCond(TF_COND_TAUNTING) && !m_Shared.IsLoser())
+	{
+		CALL_ATTRIB_HOOK_INT_ON_OTHER(pWpn, iOverrideClass, override_anim_class);
+	}
+
+	// Are we currently overriding?
+	if (iOverrideClass > 0 && iOverrideClass < TF_CLASS_COUNT_ALL)
+	{
+		if (!m_hAnimOverrideModel.Get())
+		{
+			// Spawn the REAL class's model as a cosmetic attachment
+			const char* pszRealModel = GetPlayerClassData(GetPlayerClass()->GetClassIndex())->GetModelName();
+			m_hAnimOverrideModel = C_PlayerAttachedModel::Create(pszRealModel, this, 0, vec3_origin, PAM_PERMANENT, 0);
+			if (m_hAnimOverrideModel.Get())
+			{
+				m_hAnimOverrideModel->FollowEntity(this, true);
+			}
+		}
+
+		// --- NEW: Sync visual states every tick ---
+		if (m_hAnimOverrideModel.Get())
+		{
+			// 1. Sync Skins (Team color, Uber, etc.)
+			m_hAnimOverrideModel->m_nSkin = GetSkin();
+
+			// 2. Sync Bodygroups by Name (The "Smart" way)
+			C_BaseAnimating* pOverrideEnt = static_cast<C_BaseAnimating*>(m_hAnimOverrideModel.Get());
+			if (pOverrideEnt)
+			{
+				CStudioHdr* pPlayerHdr = GetModelPtr();
+				CStudioHdr* pOverrideHdr = pOverrideEnt->GetModelPtr();
+
+				if (pPlayerHdr && pOverrideHdr)
+				{
+					// Loop through every bodygroup on the player (Class A)
+					for (int i = 0; i < pPlayerHdr->numbodyparts(); i++)
+					{
+						mstudiobodyparts_t* pPart = pPlayerHdr->pBodypart(i);
+						if (!pPart) continue;
+
+						// Find if the override model (Class B) has a bodygroup with the same name
+						int iMatch = pOverrideEnt->FindBodygroupByName(pPart->pszName());
+						if (iMatch != -1)
+						{
+							// Get the current state of the player's bodygroup
+							int iValue = GetBodygroup(i);
+							// Apply it to the override model
+							pOverrideEnt->SetBodygroup(iMatch, iValue);
+						}
+					}
+				}
+			}
+		}
+		// --- END NEW ---
+
+		// Hide the actual base model (which is currently the incorrect Class B doing the animations)
+		SetRenderMode(kRenderTransColor);
+		SetRenderColorA(0);
+	}
+	else
+	{
+		// Not overriding, clean up!
+		if (m_hAnimOverrideModel.Get())
+		{
+			m_hAnimOverrideModel->StopFollowingEntity();
+			m_hAnimOverrideModel->Release();
+			m_hAnimOverrideModel = NULL;
+
+			// Restore visibility
+			SetRenderMode(kRenderNormal);
+			SetRenderColorA(255);
+		}
+	}
+	// --- END NEW ---
+
 	if ( TFGameRules() && TFGameRules()->IsPasstimeMode() )
 	{
 	    // 
@@ -8972,6 +9050,18 @@ Vector C_TFPlayer::GetChaseCamViewOffset( CBaseEntity *target )
 //-----------------------------------------------------------------------------
 void C_TFPlayer::ValidateModelIndex( void )
 {
+
+	// --- NEW: Check for our weapon override BEFORE standard class resolution ---
+	int iOverrideClass = 0;
+	CTFWeaponBase* pWpn = GetActiveTFWeapon();
+
+	// Revert to original model if taunting or losing (as requested)
+	if (pWpn && !m_Shared.InCond(TF_COND_TAUNTING) && !m_Shared.IsLoser())
+	{
+		CALL_ATTRIB_HOOK_INT_ON_OTHER(pWpn, iOverrideClass, override_anim_class);
+	}
+	// --- END NEW ---
+
 	if ( m_Shared.InCond( TF_COND_DISGUISED_AS_DISPENSER ) && IsEnemyPlayer() && ( GetFlags() & FL_DUCKING ) && ( GetGroundEntity() != NULL ) )
 	{
 		m_nModelIndex = modelinfo->GetModelIndex( "models/buildables/dispenser_light.mdl" );
@@ -9002,7 +9092,18 @@ void C_TFPlayer::ValidateModelIndex( void )
 		C_TFPlayerClass *pClass = GetPlayerClass();
 		if ( pClass )
 		{
-			m_nModelIndex = modelinfo->GetModelIndex( pClass->GetModelName() );
+			// --- NEW: Inject override logic here ---
+			if (iOverrideClass > 0 && iOverrideClass < TF_CLASS_COUNT_ALL)
+			{
+				TFPlayerClassData_t* pData = GetPlayerClassData(iOverrideClass);
+				if (pData)
+					m_nModelIndex = modelinfo->GetModelIndex(pData->GetModelName());
+			}
+			else
+			{
+				m_nModelIndex = modelinfo->GetModelIndex(pClass->GetModelName());
+			}
+			// --- END NEW ---
 		}
 	}
 

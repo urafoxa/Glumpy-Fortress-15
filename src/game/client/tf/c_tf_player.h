@@ -822,6 +822,9 @@ public:
 	CHandle<C_PlayerAttachedModel>	m_hHalloweenKartCage;
 	float			m_flBombDelay;
 
+	// NEW: Hacky Animation Sharing Model
+	CHandle<C_PlayerAttachedModel>  m_hAnimOverrideModel;
+
 	// Achievements
 	float m_flSaveMeExpireTime;
 

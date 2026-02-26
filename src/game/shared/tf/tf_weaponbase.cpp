@@ -660,11 +660,13 @@ const char *CTFWeaponBase::GetViewModel( int iViewModel ) const
 
 	int iHandModelIndex = 0;
 	int iGunSlinger = 0;
+	int iAnimClassOverride = 0; // NEW
 	char* HACK_RobotGunsLinger = "models/mvm/weapons/c_models/c_engineer_bot_gunslinger.mdl";
 	if ( pPlayer )
 	{
 		CALL_ATTRIB_HOOK_FLOAT_ON_OTHER( pPlayer, iHandModelIndex, override_hand_model_index );		// this is a cleaner way of doing it, but...
 		CALL_ATTRIB_HOOK_FLOAT_ON_OTHER( pPlayer, iGunSlinger, wrench_builds_minisentry );			// ...the gunslinger is the only thing that uses this attribute for now
+		CALL_ATTRIB_HOOK_INT(iAnimClassOverride, override_anim_class); // NEW: Read your custom attribute
 	}
 	if (iGunSlinger > 0) {
 		iGunSlinger = 1; //dunno what exactly setting it to -1 would accomplish but heres a case for that
@@ -672,6 +674,10 @@ const char *CTFWeaponBase::GetViewModel( int iViewModel ) const
 	const CEconItemView *pItem = GetAttributeContainer()->GetItem();
 	if ( pPlayer && pItem->IsValid() && pItem->GetStaticData()->ShouldAttachToHands() )
 	{
+
+		// NEW: If we have an override class, use THAT class's hand model to drive the animation
+		int iClassToUse = (iAnimClassOverride > 0 && iAnimClassOverride < TF_CLASS_COUNT_ALL) ? iAnimClassOverride : pPlayer->GetPlayerClass()->GetClassIndex();
+
 		// Should always be valid, because players without classes shouldn't be carrying items
 		const char *pszHandModel = pPlayer->GetPlayerClass()->GetHandModelName(  iGunSlinger + iHandModelIndex );
 
@@ -6730,6 +6736,65 @@ void CTFWeaponBase::UpdateAllViewmodelAddons( void )
 		RemoveViewmodelStatTrak();
 		return;
 	}
+	
+	// --- NEW: HACKY VIEWMODEL OVERRIDE SYSTEM ---
+	int iAnimClassOverride = 0;
+	CALL_ATTRIB_HOOK_INT(iAnimClassOverride, override_anim_class);
+
+	CBaseViewModel* pVM = pPlayer->GetViewModel(0);
+	if (iAnimClassOverride > 0 && pVM)
+	{
+
+		// 1. Make the base viewmodel (Class B's arms) invisible
+		pVM->SetRenderMode(kRenderTransColor);
+		pVM->SetRenderColorA(0);
+
+		// 2. Attach Class A's (the real class's) arms to Class B's viewmodel
+		if (!m_hRealArmsAttachment.Get())
+		{
+			CTFWeaponAttachmentModel* pRealArms = new class CTFWeaponAttachmentModel;
+			if (pRealArms)
+			{
+				const char* pszRealHandModel = pPlayer->GetPlayerClass()->GetHandModelName(0); // Get original arms
+				pRealArms->InitializeAsClientEntity(pszRealHandModel, RENDER_GROUP_VIEW_MODEL_OPAQUE);
+				pRealArms->Init(GetViewmodelAttachment() ? GetViewmodelAttachment() : pVM, this, true);
+				m_hRealArmsAttachment = pRealArms;
+			}
+		}
+	}
+	else
+	{
+		// Restore normal visibility if the weapon doesn't have the attribute
+		if (pVM)
+		{
+			pVM->SetRenderMode(kRenderNormal);
+			pVM->SetRenderColorA(255);
+		}
+		if (m_hRealArmsAttachment.Get())
+		{
+			m_hRealArmsAttachment->Remove();
+			m_hRealArmsAttachment = NULL;
+		}
+	}
+
+	C_BaseAnimating* pArmEnt = dynamic_cast<C_BaseAnimating*>(m_hCustomArmVM.Get());
+	if (pArmEnt && pPlayer)
+	{
+		pArmEnt->m_nSkin = pPlayer->GetSkin();
+
+		// Repeat the name-based loop here if you want viewmodel bodygroups to sync
+		for (int i = 0; i < pPlayer->GetNumBodyGroups(); i++)
+		{
+			const char* pszName = pPlayer->GetBodygroupName(i);
+			int iMatch = pArmEnt->FindBodygroupByName(pszName);
+			if (iMatch != -1)
+			{
+				pArmEnt->SetBodygroup(iMatch, pPlayer->GetBodygroup(i));
+			}
+		}
+	}
+
+	// --- END NEW ---
 
 	if ( GetStrangeType() > -1 )
 	{

@@ -519,6 +519,9 @@ void CModelPanel::InitCubeMaps()
 //-----------------------------------------------------------------------------
 void CModelPanel::UpdateModel()
 {
+
+
+
 	if ( m_bPanelDirty )
 	{
 		InitCubeMaps();

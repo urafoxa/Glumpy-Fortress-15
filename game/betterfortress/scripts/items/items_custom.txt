@@ -785,6 +785,15 @@
 			"attribute_class"	"mod_max_secondary_clip_override"
 			"description_string"	""
 			"description_format"	"value_is_additive"
+			"effect_type"	"positive"
+			"stored_as_integer"	"1"
+		}	
+		"6931"
+		{
+			"name"	"override anim class"
+			"attribute_class"	"override_anim_class"
+			"description_string"	""
+			"description_format"	"value_is_additive"
 			"hidden"	"1"
 			"effect_type"	"positive"
 			"stored_as_integer"	"1"
@@ -2879,7 +2888,14 @@
 			"used_by_classes"
 			{
 				"medic"	"1"
-				"heavyweapons"	"1"
+				"scout"	"1"
+				"heavyweapons"	"1"	
+				"soldier"	"1"	
+				"heavy"	"1"
+				"pyro"	"1"
+				"demoman"	"1"
+				"engineer"	"1"
+				"spy"	"1"				
 			}
 			"tags"
 			{
@@ -2901,6 +2917,13 @@
 				"attribute_class"	"compare_to_crossbow"
 				"value"				"1"
 				}
+				
+				"override anim class"
+				{
+				"attribute_class"	"override_anim_class"
+				"value"				"2"
+				}
+				
 				"maxammo metal mult hidden"
 				{
 				"attribute_class"	"mult_maxammo_metal"

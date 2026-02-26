@@ -645,6 +645,9 @@ class CTFWeaponBase : public CBaseCombatWeapon, public IHasOwner, public IHasGen
 	CHandle< CTFWeaponAttachmentModel > m_viewmodelStatTrakAddon;
 	CHandle< CTFWeaponAttachmentModel > m_worldmodelStatTrakAddon;
 
+	// Add this line:
+	CHandle< CTFWeaponAttachmentModel > m_hRealArmsAttachment;
+
 	virtual const Vector&	GetViewmodelOffset() OVERRIDE;
 #endif
 

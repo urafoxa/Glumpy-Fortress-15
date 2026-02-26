@@ -13874,12 +13874,38 @@ void CTFPlayer::ClientHearVox( const char *pSentence )
 //-----------------------------------------------------------------------------
 // Purpose: 
 //-----------------------------------------------------------------------------
-void CTFPlayer::UpdateModel( void )
+void CTFPlayer::UpdateModel(void)
 {
-	SetModel( GetPlayerClass()->GetModelName() );
+	// --- NEW: Check for our weapon override BEFORE standard class resolution ---
+	int iOverrideClass = 0;
+	CTFWeaponBase* pWpn = GetActiveTFWeapon();
+
+	// Revert to original model if taunting or losing
+	if (pWpn && !m_Shared.InCond(TF_COND_TAUNTING) && !m_Shared.IsLoser())
+	{
+		CALL_ATTRIB_HOOK_INT_ON_OTHER(pWpn, iOverrideClass, override_anim_class);
+	}
+
+	if (iOverrideClass > 0 && iOverrideClass < TF_CLASS_COUNT_ALL)
+	{
+		TFPlayerClassData_t* pData = GetPlayerClassData(iOverrideClass);
+		if (pData)
+		{
+			SetModel(pData->GetModelName());
+		}
+		else
+		{
+			SetModel(GetPlayerClass()->GetModelName());
+		}
+	}
+	else
+	{
+		SetModel(GetPlayerClass()->GetModelName());
+	}
+	// --- END NEW ---
 
 	// Immediately reset our collision bounds - our collision bounds will be set to the model's bounds.
-	SetCollisionBounds( GetPlayerMins(), GetPlayerMaxs() );
+	SetCollisionBounds(GetPlayerMins(), GetPlayerMaxs());
 
 	m_PlayerAnimState->OnNewModel();
 }
