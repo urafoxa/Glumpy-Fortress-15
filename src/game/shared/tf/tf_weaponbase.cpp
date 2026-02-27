@@ -651,43 +651,59 @@ bool CTFWeaponBase::UsesPrimaryAmmo( void )
 // -----------------------------------------------------------------------------
 // Purpose:
 // -----------------------------------------------------------------------------
-const char *CTFWeaponBase::GetViewModel( int iViewModel ) const
+
+// NEW: im going to have a heart attack
+
+const char* CTFWeaponBase::GetViewModel(int iViewModel) const
 {
-	if ( GetPlayerOwner() == NULL )
+	if (GetPlayerOwner() == NULL)
 		return BaseClass::GetViewModel();
 
-	CTFPlayer *pPlayer = ToTFPlayer( GetOwner() );
+	CTFPlayer* pPlayer = ToTFPlayer(GetOwner());
 
 	int iHandModelIndex = 0;
 	int iGunSlinger = 0;
 	int iAnimClassOverride = 0; // NEW
 	char* HACK_RobotGunsLinger = "models/mvm/weapons/c_models/c_engineer_bot_gunslinger.mdl";
-	if ( pPlayer )
+	if (pPlayer)
 	{
-		CALL_ATTRIB_HOOK_FLOAT_ON_OTHER( pPlayer, iHandModelIndex, override_hand_model_index );		// this is a cleaner way of doing it, but...
-		CALL_ATTRIB_HOOK_FLOAT_ON_OTHER( pPlayer, iGunSlinger, wrench_builds_minisentry );			// ...the gunslinger is the only thing that uses this attribute for now
-		CALL_ATTRIB_HOOK_INT(iAnimClassOverride, override_anim_class); // NEW: Read your custom attribute
+		CALL_ATTRIB_HOOK_FLOAT_ON_OTHER(pPlayer, iHandModelIndex, override_hand_model_index);
+		CALL_ATTRIB_HOOK_FLOAT_ON_OTHER(pPlayer, iGunSlinger, wrench_builds_minisentry);
+		CALL_ATTRIB_HOOK_INT(iAnimClassOverride, override_anim_class); // NEW: Read custom attribute
 	}
 	if (iGunSlinger > 0) {
-		iGunSlinger = 1; //dunno what exactly setting it to -1 would accomplish but heres a case for that
+		iGunSlinger = 1;
 	}
-	const CEconItemView *pItem = GetAttributeContainer()->GetItem();
-	if ( pPlayer && pItem->IsValid() && pItem->GetStaticData()->ShouldAttachToHands() )
+	const CEconItemView* pItem = GetAttributeContainer()->GetItem();
+	if (pPlayer && pItem->IsValid() && pItem->GetStaticData()->ShouldAttachToHands())
 	{
-
-		// NEW: If we have an override class, use THAT class's hand model to drive the animation
+		// NEW: If we have an override class, use THAT class's hand model
 		int iClassToUse = (iAnimClassOverride > 0 && iAnimClassOverride < TF_CLASS_COUNT_ALL) ? iAnimClassOverride : pPlayer->GetPlayerClass()->GetClassIndex();
 
-		// Should always be valid, because players without classes shouldn't be carrying items
-		const char *pszHandModel = pPlayer->GetPlayerClass()->GetHandModelName(  iGunSlinger + iHandModelIndex );
+		const char* pszHandModel = NULL;
+
+		if (iClassToUse == pPlayer->GetPlayerClass()->GetClassIndex())
+		{
+			// Normal behavior: use current class's arms (with gunslinger support)
+			pszHandModel = pPlayer->GetPlayerClass()->GetHandModelName(iGunSlinger + iHandModelIndex);
+		}
+		else
+		{
+			// OVERRIDE: Look up the global class data for the target class!
+			TFPlayerClassData_t* pData = GetPlayerClassData(iClassToUse);
+			if (pData)
+			{
+				pszHandModel = pData->m_szHandModelName;
+			}
+		}
 
 		//MVM Versus
-		if(TFGameRules()->IsMannVsMachineMode() && GetTeamNumber() == TF_TEAM_PVE_INVADERS || pPlayer->IsRobot() )
+		if (TFGameRules()->IsMannVsMachineMode() && GetTeamNumber() == TF_TEAM_PVE_INVADERS || pPlayer->IsRobot())
 		{
-			int nBotViewmodelIndex = (pPlayer->GetPlayerClass() ? pPlayer->GetPlayerClass()->GetClassIndex() : TF_CLASS_UNDEFINED);
-			if( !iGunSlinger )
+			int nBotViewmodelIndex = iClassToUse; // FIXED: Make the robot arms match the override class too!
+			if (!iGunSlinger)
 			{
-				if(nBotViewmodelIndex >= TF_CLASS_SCOUT && nBotViewmodelIndex <= TF_CLASS_ENGINEER)
+				if (nBotViewmodelIndex >= TF_CLASS_SCOUT && nBotViewmodelIndex <= TF_CLASS_ENGINEER)
 				{
 					Assert(pPlayer->IsMiniBoss() ? g_szBotBossViewmodels[nBotViewmodelIndex] : g_szBotViewmodels[nBotViewmodelIndex]);
 					return pPlayer->IsMiniBoss() ? g_szBotBossViewmodels[nBotViewmodelIndex] : g_szBotViewmodels[nBotViewmodelIndex];
@@ -695,17 +711,15 @@ const char *CTFWeaponBase::GetViewModel( int iViewModel ) const
 			}
 			else
 			{
-				Assert( HACK_RobotGunsLinger );
+				Assert(HACK_RobotGunsLinger);
 				return HACK_RobotGunsLinger;
 			}
-			
+
 		}
-		Assert( pszHandModel );
+		Assert(pszHandModel);
 
 		return pszHandModel;
 	}
-
-
 
 	const char* pszViewModel = GetTFWpnData().szViewModel;
 	return pszViewModel;
@@ -6994,33 +7008,34 @@ bool CTFWeaponAttachmentModel::ShouldDraw( void )
 	}
 	return false;
 
-	//if ( pWeapon )
-	//{
-	//	// If the weapon isn't active, don't draw
-	//	if ( pOwner && pOwner->GetActiveWeapon() != pWeapon )
-	//	{
-	//		return false;
-	//	}
-
-	//	if ( !IsViewModelWearable() )
-	//	{
-	//		// If it's the 3rd person wearable, don't draw it when the weapon is hidden
-	//		if ( !pWeapon->ShouldDraw() )
-	//		{
-	//			return false;
-	//		}
-	//	}
-
-	//	// If the weapon is being repurposed for a taunt dont draw.
-	//	// The Brutal Legend taunt changes your weapon's model to be the guitar,
-	//	// but we dont want things like bot-killer skulls or festive lights
-	//	// to continue to draw
-	//	if ( pWeapon->IsBeingRepurposedForTaunt() )
-	//	{
-	//		return false;
-	//	}
-	//}
-	//
 }
+
+//if ( pWeapon )
+//{
+//	// If the weapon isn't active, don't draw
+//	if ( pOwner && pOwner->GetActiveWeapon() != pWeapon )
+//	{
+//		return false;
+//	}
+
+//	if ( !IsViewModelWearable() )
+//	{
+//		// If it's the 3rd person wearable, don't draw it when the weapon is hidden
+//		if ( !pWeapon->ShouldDraw() )
+//		{
+//			return false;
+//		}
+//	}
+
+//	// If the weapon is being repurposed for a taunt dont draw.
+//	// The Brutal Legend taunt changes your weapon's model to be the guitar,
+//	// but we dont want things like bot-killer skulls or festive lights
+//	// to continue to draw
+//	if ( pWeapon->IsBeingRepurposedForTaunt() )
+//	{
+//		return false;
+//	}
+//}
+//
 
 #endif // CLIENT_DLL
