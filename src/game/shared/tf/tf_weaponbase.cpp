@@ -6758,6 +6758,20 @@ void CTFWeaponBase::UpdateAllViewmodelAddons( void )
 	CBaseViewModel* pVM = pPlayer->GetViewModel(0);
 	if (iAnimClassOverride > 0 && pVM)
 	{
+		// --- NEW: Aggressively force the base viewmodel to be the override class's arms ---
+		int iGunSlinger = 0;
+		int iHandModelIndex = 0;
+		CALL_ATTRIB_HOOK_FLOAT_ON_OTHER(pPlayer, iGunSlinger, wrench_builds_minisentry);
+		CALL_ATTRIB_HOOK_FLOAT_ON_OTHER(pPlayer, iHandModelIndex, override_hand_model_index);
+
+		const char* pszOverrideArms = GetPlayerClassData(iAnimClassOverride)->GetHandModelName((iGunSlinger > 0 ? 1 : 0) + iHandModelIndex);
+		int nOverrideModelIndex = modelinfo->GetModelIndex(pszOverrideArms);
+
+		if (pVM->GetModelIndex() != nOverrideModelIndex)
+		{
+			pVM->SetModelIndex(nOverrideModelIndex);
+		}
+		// --- END NEW ---
 
 		// 1. Make the base viewmodel (Class B's arms) invisible
 		pVM->SetRenderMode(kRenderTransColor);

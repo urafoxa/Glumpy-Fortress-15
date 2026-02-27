@@ -79,6 +79,8 @@ struct TFPlayerClassData_t
 	void Parse( const char *pszClassName );
 	void ParseData( KeyValues *pKeyValuesData );
 	void AddAdditionalPlayerDeathSounds( void );
+
+	const char* GetHandModelName(int /*unused*/) const { return m_szHandModelName; }
 };
 
 
