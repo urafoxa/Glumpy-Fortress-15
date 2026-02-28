@@ -6732,25 +6732,25 @@ bool CTFWeaponBase::BHasStatTrakModule()
 }
 #ifdef CLIENT_DLL
 //-----------------------------------------------------------------------------
-void CTFWeaponBase::UpdateAllViewmodelAddons( void )
+void CTFWeaponBase::UpdateAllViewmodelAddons(void)
 {
-	C_TFPlayer *pPlayer = ToTFPlayer( GetOwner() );
+	C_TFPlayer* pPlayer = ToTFPlayer(GetOwner());
 
 	// Remove any view model add ons if we're spectating.
-	if ( !pPlayer )
+	if (!pPlayer)
 	{
 		RemoveViewmodelStatTrak();
 		return;
 	}
 
 	// econ-related addons follow, so bail out if we can't get at the econitemview
-	CEconItemView *pItem = GetAttributeContainer()->GetItem();
-	if ( !pItem )
+	CEconItemView* pItem = GetAttributeContainer()->GetItem();
+	if (!pItem)
 	{
 		RemoveViewmodelStatTrak();
 		return;
 	}
-	
+
 	// --- NEW: HACKY VIEWMODEL OVERRIDE SYSTEM ---
 	int iAnimClassOverride = 0;
 	CALL_ATTRIB_HOOK_INT(iAnimClassOverride, override_anim_class);
@@ -6765,6 +6765,21 @@ void CTFWeaponBase::UpdateAllViewmodelAddons( void )
 		CALL_ATTRIB_HOOK_FLOAT_ON_OTHER(pPlayer, iHandModelIndex, override_hand_model_index);
 
 		const char* pszOverrideArms = GetPlayerClassData(iAnimClassOverride)->GetHandModelName((iGunSlinger > 0 ? 1 : 0) + iHandModelIndex);
+		if (TFGameRules()->IsMannVsMachineMode() && pPlayer->GetTeamNumber() == TF_TEAM_PVE_INVADERS || pPlayer->IsRobot())
+		{
+			if (!iGunSlinger)
+			{
+				if (iAnimClassOverride >= TF_CLASS_SCOUT && iAnimClassOverride <= TF_CLASS_ENGINEER)
+				{
+					pszOverrideArms = pPlayer->IsMiniBoss() ? g_szBotBossViewmodels[iAnimClassOverride] : g_szBotViewmodels[iAnimClassOverride];
+				}
+			}
+			else
+			{
+				pszOverrideArms = "models/mvm/weapons/c_models/c_engineer_bot_gunslinger.mdl";
+			}
+		}
+
 		int nOverrideModelIndex = modelinfo->GetModelIndex(pszOverrideArms);
 
 		if (pVM->GetModelIndex() != nOverrideModelIndex)
@@ -6773,17 +6788,40 @@ void CTFWeaponBase::UpdateAllViewmodelAddons( void )
 		}
 		// --- END NEW ---
 
-		// 1. Make the base viewmodel (Class B's arms) invisible
-		pVM->SetRenderMode(kRenderTransColor);
-		pVM->SetRenderColorA(0);
-
 		// 2. Attach Class A's (the real class's) arms to Class B's viewmodel
+		const char* pszRealHandModel = pPlayer->GetPlayerClass()->GetHandModelName((iGunSlinger > 0 ? 1 : 0) + iHandModelIndex);
+		if (TFGameRules()->IsMannVsMachineMode() && pPlayer->GetTeamNumber() == TF_TEAM_PVE_INVADERS || pPlayer->IsRobot())
+		{
+			int nRealClass = pPlayer->GetPlayerClass()->GetClassIndex();
+			if (!iGunSlinger)
+			{
+				if (nRealClass >= TF_CLASS_SCOUT && nRealClass <= TF_CLASS_ENGINEER)
+				{
+					pszRealHandModel = pPlayer->IsMiniBoss() ? g_szBotBossViewmodels[nRealClass] : g_szBotViewmodels[nRealClass];
+				}
+			}
+			else
+			{
+				pszRealHandModel = "models/mvm/weapons/c_models/c_engineer_bot_gunslinger.mdl";
+			}
+		}
+
+		// Recreate the real arms attachment if the underlying hand model changed (like from picking up/dropping weapoins)
+		if (m_hRealArmsAttachment.Get())
+		{
+			int nRealModelIndex = modelinfo->GetModelIndex(pszRealHandModel);
+			if (m_hRealArmsAttachment->GetModelIndex() != nRealModelIndex)
+			{
+				m_hRealArmsAttachment->Remove();
+				m_hRealArmsAttachment = NULL;
+			}
+		}
+
 		if (!m_hRealArmsAttachment.Get())
 		{
 			CTFWeaponAttachmentModel* pRealArms = new class CTFWeaponAttachmentModel;
 			if (pRealArms)
 			{
-				const char* pszRealHandModel = pPlayer->GetPlayerClass()->GetHandModelName(0); // Get original arms
 				pRealArms->InitializeAsClientEntity(pszRealHandModel, RENDER_GROUP_VIEW_MODEL_OPAQUE);
 				pRealArms->Init(GetViewmodelAttachment() ? GetViewmodelAttachment() : pVM, this, true);
 				m_hRealArmsAttachment = pRealArms;
@@ -6792,12 +6830,6 @@ void CTFWeaponBase::UpdateAllViewmodelAddons( void )
 	}
 	else
 	{
-		// Restore normal visibility if the weapon doesn't have the attribute
-		if (pVM)
-		{
-			pVM->SetRenderMode(kRenderNormal);
-			pVM->SetRenderColorA(255);
-		}
 		if (m_hRealArmsAttachment.Get())
 		{
 			m_hRealArmsAttachment->Remove();
@@ -6805,7 +6837,7 @@ void CTFWeaponBase::UpdateAllViewmodelAddons( void )
 		}
 	}
 
-	C_BaseAnimating* pArmEnt = dynamic_cast<C_BaseAnimating*>(m_hCustomArmVM.Get());
+	C_BaseAnimating* pArmEnt = dynamic_cast<C_BaseAnimating*>(m_hRealArmsAttachment.Get());
 	if (pArmEnt && pPlayer)
 	{
 		pArmEnt->m_nSkin = pPlayer->GetSkin();
@@ -6824,11 +6856,11 @@ void CTFWeaponBase::UpdateAllViewmodelAddons( void )
 
 	// --- END NEW ---
 
-	if ( GetStrangeType() > -1 )
+	if (GetStrangeType() > -1)
 	{
 		CSteamID HolderSteamID;
-		pPlayer->GetSteamID( &HolderSteamID );
-		AddStatTrakModel( pItem, m_eStrangeType, HolderSteamID.GetAccountID() );
+		pPlayer->GetSteamID(&HolderSteamID);
+		AddStatTrakModel(pItem, m_eStrangeType, HolderSteamID.GetAccountID());
 	}
 	else
 	{

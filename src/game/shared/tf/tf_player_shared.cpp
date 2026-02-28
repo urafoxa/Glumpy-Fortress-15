@@ -11842,9 +11842,12 @@ bool CTFPlayer::Weapon_Switch( CBaseCombatWeapon *pWeapon, int viewmodelindex )
 #endif
 
 #ifdef GAME_DLL
-	UpdateModel(); // NEW: Force server to update hitboxes to the new weapon's class
 	ApplyGravityMultiplierFromItems();
+	UpdateModel(); // NEW: Force server to update hitboxes to the new weapon's class
+#else
+	ValidateModelIndex(); // NEW: Force client to update model instantly to prevent T-posing
 #endif
+	
 	return bSwitched;
 }
 

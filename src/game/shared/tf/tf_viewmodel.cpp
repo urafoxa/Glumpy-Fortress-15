@@ -231,14 +231,14 @@ void CTFViewModel::CalcViewModelView( CBasePlayer *owner, const Vector& eyePosit
 // Purpose: Don't render the weapon if its supposed to be lowered and we have 
 // finished the lowering animation
 //-----------------------------------------------------------------------------
-int CTFViewModel::DrawModel( int flags )
+int CTFViewModel::DrawModel(int flags)
 {
 	// Check for lowering the weapon
-	C_TFPlayer *pPlayer = C_TFPlayer::GetLocalTFPlayer();
+	C_TFPlayer* pPlayer = C_TFPlayer::GetLocalTFPlayer();
 
-	Assert( pPlayer );
+	Assert(pPlayer);
 
-	if ( m_bBodygroupsDirty )
+	if (m_bBodygroupsDirty)
 	{
 		m_nBody = 0;
 		pPlayer->RecalcBodygroupsIfDirty();
@@ -247,30 +247,30 @@ int CTFViewModel::DrawModel( int flags )
 
 	bool bLowered = pPlayer->IsWeaponLowered();
 
-	if ( bLowered && fabs( m_vLoweredWeaponOffset.x - cl_gunlowerangle.GetFloat() ) < 0.1 )
+	if (bLowered && fabs(m_vLoweredWeaponOffset.x - cl_gunlowerangle.GetFloat()) < 0.1)
 	{
 		// fully lowered, stop drawing
 		return 1;
 	}
 
-	C_TFPlayer *pLocalPlayer = C_TFPlayer::GetLocalTFPlayer();
-	if ( pLocalPlayer && pLocalPlayer->GetObserverMode() == OBS_MODE_IN_EYE && 
-		pLocalPlayer->GetObserverTarget() && pLocalPlayer->GetObserverTarget()->IsPlayer() )
+	C_TFPlayer* pLocalPlayer = C_TFPlayer::GetLocalTFPlayer();
+	if (pLocalPlayer && pLocalPlayer->GetObserverMode() == OBS_MODE_IN_EYE &&
+		pLocalPlayer->GetObserverTarget() && pLocalPlayer->GetObserverTarget()->IsPlayer())
 	{
-		pPlayer = ToTFPlayer( pLocalPlayer->GetObserverTarget() );
+		pPlayer = ToTFPlayer(pLocalPlayer->GetObserverTarget());
 	}
 
-	if ( pPlayer != GetOwner() && pPlayer->GetViewModel() != GetMoveParent() )
+	if (pPlayer != GetOwner() && pPlayer->GetViewModel() != GetMoveParent())
 	{
 		return 0;
 	}
 
-	if ( pPlayer->IsAlive() == false )
+	if (pPlayer->IsAlive() == false)
 	{
-		 return 0;
+		return 0;
 	}
 
-	return BaseClass::DrawModel( flags );
+	return BaseClass::DrawModel(flags);
 }
 
 //-----------------------------------------------------------------------------
@@ -285,7 +285,7 @@ bool CTFViewModel::OnInternalDrawModel( ClientModelRenderInfo_t *pInfo )
 	}
 
 	return BaseClass::OnInternalDrawModel( pInfo );
-}
+}	
 
 //-----------------------------------------------------------------------------
 // Purpose: 

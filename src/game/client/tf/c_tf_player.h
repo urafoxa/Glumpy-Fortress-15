@@ -350,6 +350,7 @@ public:
 
 public:
 	// Shared functions
+	bool IsMVMRobot(void);
 	float			GetMovementForwardPull( void ) const;
 	bool			CanPlayerMove() const;
 	float			TeamFortress_CalculateMaxSpeed( bool bIgnoreSpecialAbility = false ) const;

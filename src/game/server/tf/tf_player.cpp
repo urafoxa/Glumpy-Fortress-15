@@ -13886,21 +13886,44 @@ void CTFPlayer::UpdateModel(void)
 		CALL_ATTRIB_HOOK_INT_ON_OTHER(pWpn, iOverrideClass, override_anim_class);
 	}
 
-	if (iOverrideClass > 0 && iOverrideClass < TF_CLASS_COUNT_ALL)
+	int iClassToUse = (iOverrideClass > 0 && iOverrideClass < TF_CLASS_COUNT_ALL) ? iOverrideClass : GetPlayerClass()->GetClassIndex();
+	const char* pszModelToUse = NULL;
+
+	bool bUseRobotModel = IsMVMRobot() || (TFGameRules() && TFGameRules()->IsMannVsMachineMode() && GetTeamNumber() == TF_TEAM_PVE_INVADERS);
+
+	if (bUseRobotModel && iClassToUse >= TF_CLASS_SCOUT && iClassToUse <= TF_CLASS_ENGINEER)
 	{
-		TFPlayerClassData_t* pData = GetPlayerClassData(iOverrideClass);
-		if (pData)
+		if (IsMiniBoss() && g_pFullFileSystem->FileExists(g_szBotBossModels[iClassToUse]))
 		{
-			SetModel(pData->GetModelName());
+			pszModelToUse = g_szBotBossModels[iClassToUse];
 		}
-		else
+		else if (g_pFullFileSystem->FileExists(g_szBotModels[iClassToUse]))
 		{
-			SetModel(GetPlayerClass()->GetModelName());
+			pszModelToUse = g_szBotModels[iClassToUse];
 		}
 	}
-	else
+
+	// Fallback to normal class models or custom model if not a robot override
+	if (!pszModelToUse)
 	{
-		SetModel(GetPlayerClass()->GetModelName());
+		if (iOverrideClass > 0 && iOverrideClass < TF_CLASS_COUNT_ALL)
+		{
+			TFPlayerClassData_t* pData = GetPlayerClassData(iOverrideClass);
+			if (pData)
+			{
+				pszModelToUse = pData->GetModelName();
+			}
+		}
+
+		if (!pszModelToUse)
+		{
+			pszModelToUse = GetPlayerClass()->GetModelName();
+		}
+	}
+
+	if (pszModelToUse)
+	{
+		SetModel(pszModelToUse);
 	}
 	// --- END NEW ---
 

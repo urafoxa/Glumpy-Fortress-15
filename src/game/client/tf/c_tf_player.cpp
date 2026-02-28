@@ -5860,7 +5860,13 @@ bool C_TFPlayer::IsPlayerOnSteamFriendsList( C_BasePlayer *pPlayer )
 
 	return false;
 }
-
+///////////////////mvm robot see if do are
+bool C_TFPlayer::IsMVMRobot(void)
+{
+	int iRobot = 0;
+	CALL_ATTRIB_HOOK_INT(iRobot, robotrobotrobotrobot);
+	return iRobot != 0;
+}
 
 //-----------------------------------------------------------------------------
 // Purpose: 
@@ -5877,14 +5883,14 @@ void C_TFPlayer::ClientThink()
 	UpdateOverheadEffects();
 
 	{
-		if ( !IsTaunting() && m_PlayerAnimState->IsGestureSlotActive( GESTURE_SLOT_VCD ) )
+		if (!IsTaunting() && m_PlayerAnimState->IsGestureSlotActive(GESTURE_SLOT_VCD))
 		{
-			m_PlayerAnimState->ResetGestureSlot( GESTURE_SLOT_VCD );
+			m_PlayerAnimState->ResetGestureSlot(GESTURE_SLOT_VCD);
 		}
 	}
 
 	// NVNT update state based effects (prior to healer clear)
-	if ( haptics &&haptics->HasDevice() && IsLocalPlayer()) 
+	if (haptics && haptics->HasDevice() && IsLocalPlayer())
 	{
 		tfHaptics.HapticsThink(this);
 	}
@@ -5893,27 +5899,27 @@ void C_TFPlayer::ClientThink()
 	m_hHealer = NULL;
 
 	// Start smoke if we're not invisible or disguised.
-	if ( CanLightCigarette() )
+	if (CanLightCigarette())
 	{
-		if ( !m_bCigaretteSmokeActive )
+		if (!m_bCigaretteSmokeActive)
 		{
-			int iSmokeAttachment = LookupAttachment( "cig_smoke" );
-			ParticleProp()->Create( "cig_smoke", PATTACH_POINT_FOLLOW, iSmokeAttachment );
+			int iSmokeAttachment = LookupAttachment("cig_smoke");
+			ParticleProp()->Create("cig_smoke", PATTACH_POINT_FOLLOW, iSmokeAttachment);
 			m_bCigaretteSmokeActive = true;
 		}
 	}
 	else	// stop the smoke otherwise if its active
 	{
-		if ( m_bCigaretteSmokeActive )
+		if (m_bCigaretteSmokeActive)
 		{
-			ParticleProp()->StopParticlesNamed( "cig_smoke", false );
+			ParticleProp()->StopParticlesNamed("cig_smoke", false);
 			m_bCigaretteSmokeActive = false;
 		}
 	}
 
-	if ( m_bWaterExitEffectActive && !IsAlive() )
+	if (m_bWaterExitEffectActive && !IsAlive())
 	{
-		ParticleProp()->StopParticlesNamed( "water_playeremerge", false );
+		ParticleProp()->StopParticlesNamed("water_playeremerge", false);
 		m_bWaterExitEffectActive = false;
 	}
 
@@ -5922,14 +5928,14 @@ void C_TFPlayer::ClientThink()
 	// a) the player is dead
 	// b) the enemy disguised spy is now invisible
 
-	if ( !IsAlive() ||
-		( m_Shared.InCond( TF_COND_DISGUISED ) && IsEnemyPlayer() && ( GetPercentInvisible() > 0 ) ) )
+	if (!IsAlive() ||
+		(m_Shared.InCond(TF_COND_DISGUISED) && IsEnemyPlayer() && (GetPercentInvisible() > 0)))
 	{
-		StopSaveMeEffect( true );
-		ParticleProp()->StopParticlesNamed( "bot_eye_glow", true );
+		StopSaveMeEffect(true);
+		ParticleProp()->StopParticlesNamed("bot_eye_glow", true);
 	}
 
-	if ( ShouldTauntHintIconBeVisible() )
+	if (ShouldTauntHintIconBeVisible())
 	{
 		CreateTauntWithMeEffect();
 	}
@@ -5938,103 +5944,103 @@ void C_TFPlayer::ClientThink()
 		StopTauntWithMeEffect();
 	}
 
-	if ( IsLocalPlayer() )
+	if (IsLocalPlayer())
 	{
-		g_ItemEffectMeterManager.Update( this );
+		g_ItemEffectMeterManager.Update(this);
 	}
 
-	if ( m_Shared.InCond( TF_COND_DEMO_BUFF ) )
+	if (m_Shared.InCond(TF_COND_DEMO_BUFF))
 	{
 		m_Shared.ClientDemoBuffThink();
 	}
 
-	if ( m_pBlastJumpLoop )
+	if (m_pBlastJumpLoop)
 	{
-		CSoundEnvelopeController &controller = CSoundEnvelopeController::GetController();
-		if ( !IsAlive() )
+		CSoundEnvelopeController& controller = CSoundEnvelopeController::GetController();
+		if (!IsAlive())
 		{
-			controller.SoundDestroy( m_pBlastJumpLoop );
+			controller.SoundDestroy(m_pBlastJumpLoop);
 			m_pBlastJumpLoop = NULL;
 		}
 		else
 		{
 			float flTimeAloft = gpGlobals->curtime - m_flBlastJumpLaunchTime;
-			float flPitch = RemapValClamped( flTimeAloft, 0.1f, 3.f, 200.f, 100.f );
-			float flVolume = RemapValClamped( flTimeAloft, 0.1f, 2.f, 0.25f, 0.95f );
-			controller.SoundChangePitch( m_pBlastJumpLoop, flPitch, 0.1f );
-			controller.SoundChangeVolume( m_pBlastJumpLoop, flVolume, 0.1f );
+			float flPitch = RemapValClamped(flTimeAloft, 0.1f, 3.f, 200.f, 100.f);
+			float flVolume = RemapValClamped(flTimeAloft, 0.1f, 2.f, 0.25f, 0.95f);
+			controller.SoundChangePitch(m_pBlastJumpLoop, flPitch, 0.1f);
+			controller.SoundChangeVolume(m_pBlastJumpLoop, flVolume, 0.1f);
 		}
 	}
 
-	if ( !m_pFallingSoundLoop && m_Local.m_flFallVelocity > PLAYER_MAX_SAFE_FALL_SPEED && m_Shared.CanFallStomp() )
+	if (!m_pFallingSoundLoop && m_Local.m_flFallVelocity > PLAYER_MAX_SAFE_FALL_SPEED && m_Shared.CanFallStomp())
 	{
 		CBroadcastRecipientFilter filter;
-		CSoundEnvelopeController &controller = CSoundEnvelopeController::GetController();
-		m_pFallingSoundLoop = controller.SoundCreate( filter, entindex(), "Player.FallDamageIndicator" );
-		controller.Play( m_pFallingSoundLoop, 1.f, 100.f );
+		CSoundEnvelopeController& controller = CSoundEnvelopeController::GetController();
+		m_pFallingSoundLoop = controller.SoundCreate(filter, entindex(), "Player.FallDamageIndicator");
+		controller.Play(m_pFallingSoundLoop, 1.f, 100.f);
 	}
-	else if ( m_pFallingSoundLoop && ( m_Local.m_flFallVelocity < PLAYER_MAX_SAFE_FALL_SPEED || !m_Shared.CanFallStomp() ) )
+	else if (m_pFallingSoundLoop && (m_Local.m_flFallVelocity < PLAYER_MAX_SAFE_FALL_SPEED || !m_Shared.CanFallStomp()))
 	{
-		CSoundEnvelopeController &controller = CSoundEnvelopeController::GetController();
-		controller.SoundDestroy( m_pFallingSoundLoop );
+		CSoundEnvelopeController& controller = CSoundEnvelopeController::GetController();
+		controller.SoundDestroy(m_pFallingSoundLoop);
 		m_pFallingSoundLoop = NULL;
 	}
 
-	if ( HasTheFlag() && GetGlowObject() )
+	if (HasTheFlag() && GetGlowObject())
 	{
-		C_TFItem *pFlag = GetItem();
-		if ( pFlag->ShouldHideGlowEffect() )
+		C_TFItem* pFlag = GetItem();
+		if (pFlag->ShouldHideGlowEffect())
 		{
-			GetGlowObject()->SetEntity( NULL );
+			GetGlowObject()->SetEntity(NULL);
 		}
 		else
 		{
-			GetGlowObject()->SetEntity( this );
+			GetGlowObject()->SetEntity(this);
 		}
 	}
 
 	m_Shared.ClientKillStreakBuffThink();
 
-/*
+	/*
 	if ( m_LeaveServerTimer.HasStarted() && m_LeaveServerTimer.IsElapsed() )
 	{
 		engine->ExecuteClientCmd( "disconnect" );
 	}
-*/
+	*/
 
-	if ( m_Shared.IsEnteringOrExitingFullyInvisible() )
+	if (m_Shared.IsEnteringOrExitingFullyInvisible())
 	{
 		UpdateSpyStateChange();
 	}
 
 	// Act on prediction suppress (halloween karts, hopefully never anything else)
-	if ( IsLocalPlayer() )
+	if (IsLocalPlayer())
 	{
-		if ( !m_pGiantIdleSound )
+		if (!m_pGiantIdleSound)
 		{
 			MVM_StartIdleSound();
 		}
-		else if( !IsMiniBoss() )
+		else if (!IsMiniBoss())
 		{
 			MVM_StopIdleSound();
-			Msg( "No longer a miniboss. Stopping sounds...\n" );
+			Msg("No longer a miniboss. Stopping sounds...\n");
 		}
 
 		bool bWantPredict = !m_Shared.ShouldSuppressPrediction();
-		if ( bWantPredict != cl_predict->GetBool() )
+		if (bWantPredict != cl_predict->GetBool())
 		{
-			cl_predict->SetValue( bWantPredict );
+			cl_predict->SetValue(bWantPredict);
 		}
 	}
 
 	// update rune charge particle
-	if ( m_Shared.IsRuneCharged() && !m_pRuneChargeReadyEffect && !m_Shared.IsStealthed() )
+	if (m_Shared.IsRuneCharged() && !m_pRuneChargeReadyEffect && !m_Shared.IsStealthed())
 	{
-		m_pRuneChargeReadyEffect = ParticleProp()->Create( "powerup_supernova_ready", PATTACH_ABSORIGIN_FOLLOW );
+		m_pRuneChargeReadyEffect = ParticleProp()->Create("powerup_supernova_ready", PATTACH_ABSORIGIN_FOLLOW);
 	}
-	else if ( m_pRuneChargeReadyEffect && ( m_Shared.IsStealthed() || !m_Shared.IsRuneCharged() ) )
+	else if (m_pRuneChargeReadyEffect && (m_Shared.IsStealthed() || !m_Shared.IsRuneCharged()))
 	{
-		ParticleProp()->StopEmission( m_pRuneChargeReadyEffect );
+		ParticleProp()->StopEmission(m_pRuneChargeReadyEffect);
 		m_pRuneChargeReadyEffect = NULL;
 	}
 
@@ -6055,8 +6061,22 @@ void C_TFPlayer::ClientThink()
 	{
 		if (!m_hAnimOverrideModel.Get())
 		{
-			// Spawn the REAL class's model as a cosmetic attachment
-			const char* pszRealModel = GetPlayerClassData(GetPlayerClass()->GetClassIndex())->GetModelName();
+			int nRealClassIndex = GetPlayerClass()->GetClassIndex();
+			const char* pszRealModel = GetPlayerClassData(nRealClassIndex)->GetModelName();
+
+			bool bUseRobotModel = IsMVMRobot() || (TFGameRules() && TFGameRules()->IsMannVsMachineMode() && GetTeamNumber() == TF_TEAM_PVE_INVADERS);
+			if (bUseRobotModel && nRealClassIndex >= TF_CLASS_SCOUT && nRealClassIndex <= TF_CLASS_ENGINEER)
+			{
+				if (IsMiniBoss() && g_pFullFileSystem->FileExists(g_szBotBossModels[nRealClassIndex]))
+					pszRealModel = g_szBotBossModels[nRealClassIndex];
+				else if (g_pFullFileSystem->FileExists(g_szBotModels[nRealClassIndex]))
+					pszRealModel = g_szBotModels[nRealClassIndex];
+			}
+			else if (GetPlayerClass()->HasCustomModel())
+			{
+				pszRealModel = GetPlayerClass()->GetModelName();
+			}
+
 			m_hAnimOverrideModel = C_PlayerAttachedModel::Create(pszRealModel, this, 0, vec3_origin, PAM_PERMANENT, 0);
 			if (m_hAnimOverrideModel.Get())
 			{
@@ -6120,39 +6140,39 @@ void C_TFPlayer::ClientThink()
 	}
 	// --- END NEW ---
 
-	if ( TFGameRules() && TFGameRules()->IsPasstimeMode() )
+	if (TFGameRules() && TFGameRules()->IsPasstimeMode())
 	{
-	    // 
-	    // Passtime player reticle
-	    //
-	    if ( !IsLocalPlayer() && !m_pPasstimePlayerReticle )
-	    {
-		    m_pPasstimePlayerReticle = new C_PasstimePlayerReticle( this );
-	    }
-	    if ( m_pPasstimePlayerReticle )
-	    {
-		    m_pPasstimePlayerReticle->OnClientThink();
-	    }
-    
-	    // 
-	    // Passtime ask for ball reticle
-	    //
-	    if ( !IsLocalPlayer() && !m_pPasstimeAskForBallReticle )
-	    {
-		    m_pPasstimeAskForBallReticle = new C_PasstimeAskForBallReticle( this );
-	    }
-	    if ( m_pPasstimeAskForBallReticle )
-	    {
-		    m_pPasstimeAskForBallReticle->OnClientThink();
-	    }
-    
+		// 
+		// Passtime player reticle
+		//
+		if (!IsLocalPlayer() && !m_pPasstimePlayerReticle)
+		{
+			m_pPasstimePlayerReticle = new C_PasstimePlayerReticle(this);
+		}
+		if (m_pPasstimePlayerReticle)
+		{
+			m_pPasstimePlayerReticle->OnClientThink();
+		}
+
+		// 
+		// Passtime ask for ball reticle
+		//
+		if (!IsLocalPlayer() && !m_pPasstimeAskForBallReticle)
+		{
+			m_pPasstimeAskForBallReticle = new C_PasstimeAskForBallReticle(this);
+		}
+		if (m_pPasstimeAskForBallReticle)
+		{
+			m_pPasstimeAskForBallReticle->OnClientThink();
+		}
+
 		// 
 		// Passtime ask for ball button
 		//
-	    if ( m_afButtonPressed & IN_ATTACK3 )
-	    {
-		    engine->ClientCmd("voicemenu 1 8");
-	    }
+		if (m_afButtonPressed & IN_ATTACK3)
+		{
+			engine->ClientCmd("voicemenu 1 8");
+		}
 	}
 }
 
@@ -9093,15 +9113,40 @@ void C_TFPlayer::ValidateModelIndex( void )
 		if ( pClass )
 		{
 			// --- NEW: Inject override logic here ---
-			if (iOverrideClass > 0 && iOverrideClass < TF_CLASS_COUNT_ALL)
+			int iClassToUse = (iOverrideClass > 0 && iOverrideClass < TF_CLASS_COUNT_ALL) ? iOverrideClass : pClass->GetClassIndex();
+			const char* pszModelToUse = NULL;
+
+			bool bUseRobotModel = IsMVMRobot() || (TFGameRules() && TFGameRules()->IsMannVsMachineMode() && GetTeamNumber() == TF_TEAM_PVE_INVADERS);
+
+			if (bUseRobotModel && iClassToUse >= TF_CLASS_SCOUT && iClassToUse <= TF_CLASS_ENGINEER)
 			{
-				TFPlayerClassData_t* pData = GetPlayerClassData(iOverrideClass);
-				if (pData)
-					m_nModelIndex = modelinfo->GetModelIndex(pData->GetModelName());
+				if (IsMiniBoss() && g_pFullFileSystem->FileExists(g_szBotBossModels[iClassToUse]))
+				{
+					pszModelToUse = g_szBotBossModels[iClassToUse];
+				}
+				else if (g_pFullFileSystem->FileExists(g_szBotModels[iClassToUse]))
+				{
+					pszModelToUse = g_szBotModels[iClassToUse];
+				}
 			}
-			else
+
+			if (!pszModelToUse)
 			{
-				m_nModelIndex = modelinfo->GetModelIndex(pClass->GetModelName());
+				if (iOverrideClass > 0 && iOverrideClass < TF_CLASS_COUNT_ALL)
+				{
+					TFPlayerClassData_t* pData = GetPlayerClassData(iOverrideClass);
+					if (pData) pszModelToUse = pData->GetModelName();
+				}
+
+				if (!pszModelToUse)
+				{
+					pszModelToUse = pClass->GetModelName();
+				}
+			}
+
+			if (pszModelToUse)
+			{
+				m_nModelIndex = modelinfo->GetModelIndex(pszModelToUse);
 			}
 			// --- END NEW ---
 		}
