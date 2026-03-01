@@ -9116,7 +9116,8 @@ void C_TFPlayer::ValidateModelIndex( void )
 			int iClassToUse = (iOverrideClass > 0 && iOverrideClass < TF_CLASS_COUNT_ALL) ? iOverrideClass : pClass->GetClassIndex();
 			const char* pszModelToUse = NULL;
 
-			bool bUseRobotModel = IsMVMRobot() || (TFGameRules() && TFGameRules()->IsMannVsMachineMode() && GetTeamNumber() == TF_TEAM_PVE_INVADERS);
+			// Force the animation donor to always be human by disabling the robot model check if overriding
+			bool bUseRobotModel = (iOverrideClass == 0) && (IsMVMRobot() || (TFGameRules() && TFGameRules()->IsMannVsMachineMode() && GetTeamNumber() == TF_TEAM_PVE_INVADERS));
 
 			if (bUseRobotModel && iClassToUse >= TF_CLASS_SCOUT && iClassToUse <= TF_CLASS_ENGINEER)
 			{
