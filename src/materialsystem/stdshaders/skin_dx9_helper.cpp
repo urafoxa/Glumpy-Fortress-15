@@ -735,8 +735,14 @@ void DrawSkin_DX9_Internal( CBaseVSShader *pShader, IMaterialVar** params, IShad
 
 		bool bHasBaseAlphaPhongMask = (info.m_nBaseMapAlphaPhongMask != -1) && ( params[info.m_nBaseMapAlphaPhongMask]->GetIntValue() != 0 );
 		float fHasBaseAlphaPhongMask = bHasBaseAlphaPhongMask ? 1 : 0;
+		
+		bool bBlendTintByBaseAlpha = (info.m_nBlendTintByBaseAlpha != -1) && ( params[info.m_nBlendTintByBaseAlpha]->GetIntValue() != 0 );
+		float fBlendTintByBaseAlpha = bBlendTintByBaseAlpha ? 1 : 0;
+		bool bNoTint = (info.m_nNoTint != -1) && ( params[info.m_nNoTint]->GetIntValue() != 0 );
+
 		// Controls for lerp-style paths through shader code
-		float vShaderControls[4] = { fHasBaseAlphaPhongMask, 0.0f/*unused*/, flTintReplacementAmount, fInvertPhongMask };
+		//float vShaderControls[4] = { fHasBaseAlphaPhongMask, 0.0f/*unused*/, flTintReplacementAmount, fInvertPhongMask };
+		float vShaderControls[4] = { fHasBaseAlphaPhongMask, 0.0f, bNoTint ? -1.0f : ( 1.0f - fBlendTintByBaseAlpha ), fInvertPhongMask };
 		pShaderAPI->SetPixelShaderConstant( PSREG_CONSTANT_27, vShaderControls, 1 );
 
 		if ( hasDetailTexture )
