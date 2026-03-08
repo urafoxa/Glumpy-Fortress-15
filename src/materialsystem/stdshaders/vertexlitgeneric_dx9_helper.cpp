@@ -221,14 +221,6 @@ void InitParamsVertexLitGeneric_DX9( CBaseVSShader *pShader, IMaterialVar** para
 
 	InitIntParam( info.m_nLinearWrite, params, 0 );
 	InitIntParam( info.m_nGammaColorRead, params, 0 );
-	
-	//NoTint
-	InitIntParam( info.m_nAllowDiffuseModulation, params, 1 )
-	
-	if ( info.m_nNoTint != -1 && params[info.m_nNoTint]->GetIntValue() )
-	{
-		params[info.m_nAllowDiffuseModulation]->SetIntValue( 0 );
-	}
 
 	InitIntParam( info.m_nDepthBlend, params, 0 );
 	InitFloatParam( info.m_nDepthBlendScale, params, 50.0f );
@@ -368,11 +360,6 @@ void InitVertexLitGeneric_DX9( CBaseVSShader *pShader, IMaterialVar** params, bo
 	{
 		pShader->LoadTexture( info.m_nSelfIllumMask );
 	}
-	//No Tint
-	if ( (info.m_nTintMaskTexture != -1) && params[info.m_nTintMaskTexture]->IsDefined() )
-    {
-        pShader->LoadTexture( info.m_nTintMaskTexture, TEXTUREFLAGS_SRGB );
-    }
 }
 
 class CVertexLitGeneric_DX9_Context : public CBasePerMaterialContextData
@@ -1487,18 +1474,6 @@ static void DrawVertexLitGeneric_DX9_Internal( CBaseVSShader *pShader, IMaterial
 		// Controls for lerp-style paths through shader code (bump and non-bump have use different register)
 		float vShaderControls[4] = { fPixelFogType, fWriteDepthToAlpha, fWriteWaterFogToDestAlpha, fVertexAlpha	 };
 		DynamicCmdsOut.SetPixelShaderConstant( 12, vShaderControls, 1 );
-		
-		// --- $notint ---
-		float vNotint[4] = { 0, 0, 0, 0 };
-		bool bAllowDiffuseModulation = (info.m_nAllowDiffuseModulation != -1) && (params[info.m_nAllowDiffuseModulation]->GetIntValue() != 0);
-		bool bHasTintMask = (info.m_nTintMaskTexture != -1) && params[info.m_nTintMaskTexture]->IsTexture();
-
-		if ( !bAllowDiffuseModulation || bHasTintMask )
-		{
-			vNotint[0] = 1.0f; 
-		}
-		DynamicCmdsOut.SetPixelShaderConstant( 13, vNotint, 1 ); 
-		// ------------------------------------
 
 		// flashlightfixme: put this in common code.
 		if ( bHasFlashlight )
