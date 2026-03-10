@@ -2973,7 +2973,7 @@
 			"drop_sound"		"ui/item_light_gun_drop.wav"
 			"xifier_class_remap"	"crusaders_crossbow"
 		}
-		32914
+		"32914"
 		{
 			"name"	"Brick Cannon"
 			"first_sale_date"	"2009/03/23"
