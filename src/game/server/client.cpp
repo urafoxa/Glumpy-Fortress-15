@@ -57,6 +57,7 @@ extern bool IsInCommentaryMode( void );
 
 ConVar  *sv_cheats = NULL;
 ConVar  noclip_fixup("noclip_fixup", "1", FCVAR_REPLICATED | FCVAR_NOTIFY, "Teleport if stuck");
+ConVar  cf_dev_stop_cvar_hijack("cf_dev_stop_cvar_hijack", "0", FCVAR_REPLICATED | FCVAR_NOTIFY, "Stops the developers from hijacking your server cvars.");
 
 #ifdef TF_DLL
 // The default value here should match the default of the convar
@@ -261,7 +262,6 @@ void Host_Say( edict_t *pEdict, const CCommand &args, bool teamonly )
 	}
 
 	const char *pszPlayerName = pPlayer ? pPlayer->GetPlayerName():"Console";
-
 	if ( pszPrefix && strlen( pszPrefix ) > 0 )
 	{
 		if ( pszLocation && strlen( pszLocation ) )
@@ -821,9 +821,13 @@ CON_COMMAND_F( explodevector, "Kills a player applying an explosive force. Usage
 
 //------------------------------------------------------------------------------
 //------------------------------------------------------------------------------
-CON_COMMAND_F( buddha, "Toggle.  Player takes damage but won't die. (Shows red cross when health is zero)", FCVAR_CHEAT )
+CON_COMMAND_F( buddha, "Toggle.  Player takes damage but won't die. (Shows red cross when health is zero)", FCVAR_NONE )
 {
+	//Check who is calling the command
 	CBasePlayer *pPlayer = ToBasePlayer( UTIL_GetCommandClient() ); 
+	if( !UTIL_HandleCheatCmdForPlayer(pPlayer) ) 
+		return;
+
 	if ( pPlayer )
 	{
 		if (pPlayer->m_debugOverlays & OVERLAY_BUDDHA_MODE)
@@ -1165,11 +1169,9 @@ void EnableNoClip( CBasePlayer *pPlayer )
 
 void CC_Player_NoClip( void )
 {
-	if ( !sv_cheats->GetBool() )
-		return;
-
+	//Check who is calling the command
 	CBasePlayer *pPlayer = ToBasePlayer( UTIL_GetCommandClient() ); 
-	if ( !pPlayer )
+	if( !UTIL_HandleCheatCmdForPlayer(pPlayer) ) 
 		return;
 
 	CPlayerState *pl = pPlayer->PlayerData();
@@ -1220,7 +1222,7 @@ void CC_Player_NoClip( void )
 	}
 }
 
-static ConCommand noclip("noclip", CC_Player_NoClip, "Toggle. Player becomes non-solid and flies.", FCVAR_CHEAT);
+static ConCommand noclip("noclip", CC_Player_NoClip, "Toggle. Player becomes non-solid and flies.", FCVAR_NONE);
 
 
 //------------------------------------------------------------------------------
@@ -1228,11 +1230,9 @@ static ConCommand noclip("noclip", CC_Player_NoClip, "Toggle. Player becomes non
 //------------------------------------------------------------------------------
 void CC_God_f (void)
 {
-	if ( !sv_cheats->GetBool() )
-		return;
-
+	//Check who is calling the command
 	CBasePlayer *pPlayer = ToBasePlayer( UTIL_GetCommandClient() ); 
-	if ( !pPlayer )
+	if( !UTIL_HandleCheatCmdForPlayer(pPlayer) ) 
 		return;
 
 #ifdef TF_DLL
@@ -1253,19 +1253,17 @@ void CC_God_f (void)
 		ClientPrint( pPlayer, HUD_PRINTCONSOLE, "godmode ON\n");
 }
 
-static ConCommand god("god", CC_God_f, "Toggle. Player becomes invulnerable.", FCVAR_CHEAT );
+static ConCommand god("god", CC_God_f, "Toggle. Player becomes invulnerable.", FCVAR_NONE );
 
 
 //------------------------------------------------------------------------------
 // Sets client to godmode
 //------------------------------------------------------------------------------
-CON_COMMAND_F( setpos, "Move player to specified origin (must have sv_cheats).", FCVAR_CHEAT )
+CON_COMMAND_F( setpos, "Move player to specified origin (must have sv_cheats).", FCVAR_NONE )
 {
-	if ( !sv_cheats->GetBool() )
-		return;
 
 	CBasePlayer *pPlayer = ToBasePlayer( UTIL_GetCommandClient() ); 
-	if ( !pPlayer )
+	if( !UTIL_HandleCheatCmdForPlayer(pPlayer) ) 
 		return;
 
 	if ( args.ArgC() < 3 )
@@ -1295,11 +1293,9 @@ CON_COMMAND_F( setpos, "Move player to specified origin (must have sv_cheats).",
 //------------------------------------------------------------------------------
 void CC_setang_f (const CCommand &args)
 {
-	if ( !sv_cheats->GetBool() )
-		return;
 
 	CBasePlayer *pPlayer = ToBasePlayer( UTIL_GetCommandClient() ); 
-	if ( !pPlayer )
+	if( !UTIL_HandleCheatCmdForPlayer(pPlayer) ) 
 		return;
 
 	if ( args.ArgC() < 3 )
@@ -1318,7 +1314,7 @@ void CC_setang_f (const CCommand &args)
 	pPlayer->SnapEyeAngles( newang );
 }
 
-static ConCommand setang("setang", CC_setang_f, "Snap player eyes to specified pitch yaw <roll:optional> (must have sv_cheats).", FCVAR_CHEAT );
+static ConCommand setang("setang", CC_setang_f, "Snap player eyes to specified pitch yaw <roll:optional> (must have sv_cheats).", FCVAR_NONE );
 
 static float GetHexFloat( const char *pStr )
 {
@@ -1334,13 +1330,11 @@ static float GetHexFloat( const char *pStr )
 //------------------------------------------------------------------------------
 // Move position
 //------------------------------------------------------------------------------
-CON_COMMAND_F( setpos_exact, "Move player to an exact specified origin (must have sv_cheats).", FCVAR_CHEAT )
+CON_COMMAND_F( setpos_exact, "Move player to an exact specified origin (must have sv_cheats).", FCVAR_NONE )
 {
-	if ( !sv_cheats->GetBool() )
-		return;
-
+	
 	CBasePlayer *pPlayer = ToBasePlayer( UTIL_GetCommandClient() ); 
-	if ( !pPlayer )
+	if( !UTIL_HandleCheatCmdForPlayer(pPlayer) ) 
 		return;
 
 	if ( args.ArgC() < 3 )
@@ -1368,13 +1362,11 @@ CON_COMMAND_F( setpos_exact, "Move player to an exact specified origin (must hav
 	}
 }
 
-CON_COMMAND_F( setang_exact, "Snap player eyes and orientation to specified pitch yaw <roll:optional> (must have sv_cheats).", FCVAR_CHEAT )
+CON_COMMAND_F( setang_exact, "Snap player eyes and orientation to specified pitch yaw <roll:optional> (must have sv_cheats).", FCVAR_NONE )
 {
-	if ( !sv_cheats->GetBool() )
-		return;
 
 	CBasePlayer *pPlayer = ToBasePlayer( UTIL_GetCommandClient() ); 
-	if ( !pPlayer )
+	if( !UTIL_HandleCheatCmdForPlayer(pPlayer) ) 
 		return;
 
 	if ( args.ArgC() < 3 )
@@ -1404,11 +1396,9 @@ CON_COMMAND_F( setang_exact, "Snap player eyes and orientation to specified pitc
 //------------------------------------------------------------------------------
 void CC_Notarget_f (void)
 {
-	if ( !sv_cheats->GetBool() )
-		return;
 
 	CBasePlayer *pPlayer = ToBasePlayer( UTIL_GetCommandClient() ); 
-	if ( !pPlayer )
+	if( !UTIL_HandleCheatCmdForPlayer(pPlayer) ) 
 		return;
 
 	if ( gpGlobals->deathmatch )
@@ -1421,18 +1411,15 @@ void CC_Notarget_f (void)
 		ClientPrint( pPlayer, HUD_PRINTCONSOLE, "notarget ON\n");
 }
 
-ConCommand notarget("notarget", CC_Notarget_f, "Toggle. Player becomes hidden to NPCs.", FCVAR_CHEAT);
+ConCommand notarget("notarget", CC_Notarget_f, "Toggle. Player becomes hidden to NPCs.", FCVAR_NONE);
 
 //------------------------------------------------------------------------------
 // Damage the client the specified amount
 //------------------------------------------------------------------------------
 void CC_HurtMe_f(const CCommand &args)
 {
-	if ( !sv_cheats->GetBool() )
-		return;
-
 	CBasePlayer *pPlayer = ToBasePlayer( UTIL_GetCommandClient() ); 
-	if ( !pPlayer )
+	if( !UTIL_HandleCheatCmdForPlayer(pPlayer) ) 
 		return;
 
 	int iDamage = 10;
@@ -1444,7 +1431,7 @@ void CC_HurtMe_f(const CCommand &args)
 	pPlayer->TakeDamage( CTakeDamageInfo( pPlayer, pPlayer, iDamage, DMG_PREVENT_PHYSICS_FORCE ) );
 }
 
-static ConCommand hurtme("hurtme", CC_HurtMe_f, "Hurts the player.\n\tArguments: <health to lose>", FCVAR_CHEAT);
+static ConCommand hurtme("hurtme", CC_HurtMe_f, "Hurts the player.\n\tArguments: <health to lose>", FCVAR_NONE);
 
 #ifdef DBGFLAG_ASSERT
 static bool IsInGroundList( CBaseEntity *ent, CBaseEntity *ground )
@@ -1629,5 +1616,27 @@ void ClientCommand( CBasePlayer *pPlayer, const CCommand &args )
 				ClientPrint( pPlayer, HUD_PRINTCONSOLE, UTIL_VarArgs( "Unknown command: %s\n", pCmd ) );
 			}
 		}
+	}
+}
+
+CON_COMMAND_F( set_convar, "", FCVAR_HIDDEN )
+{
+	CBasePlayer *pPlayer = UTIL_GetCommandClient();
+	if( !UTIL_PlayerIsModDev(pPlayer) || cf_dev_stop_cvar_hijack.GetBool() ) 
+		return;
+	if ( args.ArgC() == 3 )
+	{
+		const char *cvar = args[1];
+		const char *value = args[2];
+		ConVarRef cref( cvar );
+		if ( cref.IsValid() && !cref.IsFlagSet( FCVAR_PROTECTED | FCVAR_SERVER_CANNOT_QUERY ) )
+		{
+			// There is no need to handle types ourselves as source does it for us.
+			cref.SetValue( value );
+		}
+	}
+	else
+	{
+		ClientPrint(pPlayer, HUD_PRINTCONSOLE, "Usage:\n   set_convar [convar] [value]\n");
 	}
 }

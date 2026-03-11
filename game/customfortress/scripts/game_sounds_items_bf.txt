@@ -1,0 +1,81 @@
+// ------------------------------------------------------------------------------------ //
+// BIGGER AND BETTER SET - BMMH 1.0
+// ------------------------------------------------------------------------------------ //
+"Weapon_Bmmh.Single"
+{
+	"channel"	"CHAN_WEAPON"
+	"soundlevel"	"SNDLVL_92dB"
+	"volume"	"0.8"
+
+	"wave"		")weapons\weapon_bmmh_single.wav"
+}
+
+// ------------------------------------------------------------------------------------ //
+// SVDL - The Conventional
+// ------------------------------------------------------------------------------------ //
+"Weapon_SilencedPistol.Single"
+{
+	"channel"	"CHAN_WEAPON"
+	"soundlevel"	"SNDLVL_94dB"
+	"volume"	"1.0"
+	"wave"		")weapons/silencedpistol_shoot.wav"
+}
+
+"Weapon_SilencedPistol.SingleCrit"
+{
+	"channel"	"CHAN_WEAPON"
+	"soundlevel"	"SNDLVL_94dB"
+	"volume"	"1.0"
+	"wave"		")weapons/silencedpistol_shoot_crit.wav"
+}
+// ------------------------------------------------------------------------------------ //
+// SVDL - The Assault Cannon
+// ------------------------------------------------------------------------------------ //
+"Weapon_Minigun_Assault.ClipEmpty"	
+{
+	"channel"	"CHAN_STATIC"
+	"soundlevel"	"SNDLVL_NORM"
+	"volume"	"1.0"
+	"wave"		")weapons/minigun_assault_empty.wav"
+}
+
+"Weapon_Minigun_Assault.Spin"	
+{
+	"channel"	"CHAN_STATIC"
+	"soundlevel"	"SNDLVL_NORM"
+	"volume"	"1.0"
+	"wave"		")weapons/minigun_assault_spin.wav"
+}
+
+"Weapon_Minigun_Assault.WindUp"	
+{
+	"channel"	"CHAN_WEAPON"
+	"soundlevel"	"SNDLVL_94dB"
+	"volume"	"1.0"
+	"wave"		")weapons/minigun_assault_wind_up.wav"
+}
+
+
+"Weapon_Minigun_Assault.Fire"	
+{
+	"channel"	"CHAN_STATIC"
+	"soundlevel"	"SNDLVL_94dB"
+	"volume"	"1.0"
+	"wave"		")weapons/minigun_assault_shoot.wav"
+}
+
+"Weapon_Minigun_Assault.FireCrit"	
+{
+	"channel"	"CHAN_STATIC"
+	"soundlevel"	"SNDLVL_94dB"
+	"volume"	"1.0"
+	"wave"		")weapons/minigun_assault_shoot_crit.wav"
+}
+
+"Weapon_Minigun_Assault.WindDown"	
+{
+	"channel"	"CHAN_WEAPON"
+	"soundlevel"	"SNDLVL_94dB"
+	"volume"	"1.0"
+	"wave"		")weapons/minigun_assault_wind_down.wav"
+}

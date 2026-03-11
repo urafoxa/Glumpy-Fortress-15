@@ -29,6 +29,11 @@
 #include "quest_log_panel.h"
 #include "local_steam_shared_object_listener.h"
 
+namespace vgui
+{
+	class CCFWorkshopBrowserPanel;
+}
+
 
 #include "mute_player_dialog.h"
 
@@ -141,6 +146,12 @@ public:
 
 	void UpdateRankPanelType();
 
+	// Splash text functions
+	void		LoadSplashTexts();
+	void		UpdateSplashText();
+	void		ChangeSplashText();
+	void		AnimateSplashText();
+
 
 protected:
 	virtual void PaintTraverse( bool Repaint, bool allowForce = true ) OVERRIDE;
@@ -183,6 +194,7 @@ private:
 	CExImageButton					*m_pMOTDNextButton;
 	CExImageButton					*m_pMOTDPrevButton;
 	CExButton						*m_pMOTDURLButton;
+	CExButton						*m_pMOTDURLButton2;
 
 	// MOTD handling
 	static CMOTDManager		m_MOTDManager;
@@ -247,9 +259,22 @@ private:
 	bool m_bBackgroundUsesCharacterImages;
 	const char* m_pszForcedCharacterImage = NULL;
 
+	// Splash text system
+	vgui::Label*	m_pSplashTextLabel = NULL;
+	CUtlVector<CUtlString> m_vecSplashTexts;
+	float			m_flNextSplashTextChange = 0.0f;
+	float			m_flSplashAnimationTime = 0.0f;
+	bool			m_bSplashAnimatingIn = true;
+
 	CPvPRankPanel*	m_pRankPanel = NULL;
 	CPvPRankPanel*	m_pRankModelPanel = NULL;
 	vgui::Menu*		m_pRankTypeMenu = NULL;
+
+	vgui::DHANDLE<vgui::CCFWorkshopBrowserPanel> m_pWorkshopPanel;
+
+	// Beta notification
+	vgui::EditablePanel*	m_pBetaNotificationPanel;
+	vgui::CheckButton*		m_pBetaCheckbox;
 
 	CPanelAnimationVarAliasType( int, m_iButtonXOffset, "button_x_offset", "0", "proportional_int" );
 	CPanelAnimationVarAliasType( int, m_iButtonY, "button_y", "0", "proportional_int" );

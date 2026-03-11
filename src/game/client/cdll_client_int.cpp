@@ -9,6 +9,9 @@
 #include "vgui_int.h"
 #include "clientmode.h"
 #include "iinput.h"
+#include "cf_crashhandler.h"
+#include "cf_crashupload.h"
+#include "cf_sentry.h"
 #include "iviewrender.h"
 #include "ivieweffects.h"
 #include "ivmodemanager.h"
@@ -1089,6 +1092,20 @@ int CHLClient::Init( CreateInterfaceFn appSystemFactory, CreateInterfaceFn physi
 	IGameSystem::Add( GetPredictionCopyTester() );
 #endif
 
+#ifndef DEDICATED
+
+	//usually thats in materialsystem but sdk dont have that
+	//overlays freaks out when flashlight support is on while having pyrovision
+	//this check is only for tf mods, because pyrovision is only tf thing
+#if defined( TF_CLIENT_DLL )
+	{
+		ConVarRef( "mat_supportflashlight" ).SetValue( false );
+	}
+#endif
+
+
+#endif
+
 	modemanager->Init( );
 
 	g_pClientMode->InitViewport();
@@ -1239,6 +1256,10 @@ void CHLClient::PostInit()
 
 	g_ClientVirtualReality.StartupComplete();
 
+	// Initialize crash reporting system
+	CCrashHandler::Init();
+	CCrashUploadManager::Init();
+
 #ifdef HL1MP_CLIENT_DLL
 	if ( s_cl_load_hl1_content.GetBool() && steamapicontext && steamapicontext->SteamApps() )
 	{
@@ -1319,6 +1340,10 @@ void CHLClient::Shutdown( void )
 #ifdef DISCORD_RPC
 	Discord_Shutdown();
 #endif
+
+	// Shutdown crash reporting system
+	CCrashUploadManager::Shutdown();
+	CCrashHandler::Shutdown();
 	
 	// This call disconnects the VGui libraries which we rely on later in the shutdown path, so don't do it
 //	DisconnectTier3Libraries( );
@@ -1391,6 +1416,9 @@ void CHLClient::HudUpdate( bool bActive )
 	// I don't think this is necessary any longer, but I will leave it until
 	// I can check into this further.
 	C_BaseTempEntity::CheckDynamicTempEnts();
+
+	// Update crash upload manager
+	CCrashUploadManager::Think();
 
 #ifdef SIXENSE
 	// If we're not connected, update sixense so we can move the mouse cursor when in the menus
@@ -1795,6 +1823,13 @@ void CHLClient::LevelInitPostEntity( )
 	IGameSystem::LevelInitPostEntityAllSystems();
 	C_PhysPropClientside::RecreateAll();
 	internalCenterPrint->Clear();
+	
+	// Track map load for crash reporting
+	const char *pszMapName = engine->GetLevelName();
+	if ( pszMapName && pszMapName[0] )
+	{
+		CCrashHandler::SetCurrentMap( pszMapName );
+	}
 }
 
 //-----------------------------------------------------------------------------
@@ -1815,6 +1850,19 @@ void CHLClient::ResetStringTablePointers()
 	g_pStringTableServerMapCycleMvM = NULL;
 #endif
 }
+
+#ifdef SDK_TEMP_PATCH
+static void ClearClientDynamicModelList()
+{
+	// engine bugfix: clear out client dynamic model list for listen servers
+	// TODO remove this when the engine is updated
+	struct CModelInfo : IVModelInfoClient
+	{
+		CUtlVector< model_t* > m_vecDynamicModels;
+	};
+	static_cast<CModelInfo*>( modelinfo )->m_vecDynamicModels.Purge();
+}
+#endif
 
 //-----------------------------------------------------------------------------
 // Purpose: Per level de-init
@@ -1866,6 +1914,9 @@ void CHLClient::LevelShutdown( void )
 	internalCenterPrint->Clear();
 
 	messagechars->Clear();
+#ifdef SDK_TEMP_PATCH
+	ClearClientDynamicModelList();
+#endif
 
 #ifndef TF_CLIENT_DLL
 	// don't want to do this for TF2 because we have particle systems in our
@@ -2640,6 +2691,23 @@ void CHLClient::WriteSaveGameScreenshotOfSize( const char *pFilename, int width,
 											   bool bWriteVTF/*=false*/ )
 {
 	view->WriteSaveGameScreenshotOfSize( pFilename, width, height, bCreatePowerOf2Padded, bWriteVTF );
+}
+
+CON_COMMAND(WriteGameScreenshot, "WriteSaveGameScreenshotOfSize")
+{
+	if (args.ArgC() == 6)
+	{
+		const char *pFilename = args[1];
+		int width = atoi(args[2]);
+		int height = atoi(args[3]);
+		int bCreatePowerOf2Padded = atoi(args[4]);
+		int bWriteVTF = atoi(args[5]);
+		view->WriteSaveGameScreenshotOfSize( pFilename, width, height, !!bCreatePowerOf2Padded, !!bWriteVTF );
+	}
+	else
+	{
+		Msg( "Format: WriteGameScreenshot <filename> <width> <height> <pad> <writevtf>\n" );
+	}
 }
 
 // See RenderViewInfo_t

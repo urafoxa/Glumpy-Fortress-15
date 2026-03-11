@@ -958,6 +958,10 @@ bool CObjectSentrygun::FindTarget()
 			if ( pTargetPlayer->GetFlags() & FL_NOTARGET )
 				continue;
 
+			//Ignore Spawn protection Uber
+			if ( pTargetPlayer->m_Shared.InCond( TF_COND_INVULNERABLE_HIDE_UNLESS_DAMAGED ) )
+				continue;
+
 			vecTargetCenter = pTargetPlayer->GetAbsOrigin();
 			vecTargetCenter += pTargetPlayer->GetViewOffset();
 			VectorSubtract( vecTargetCenter, vecSentryOrigin, vecSegment );
@@ -1381,15 +1385,22 @@ bool CObjectSentrygun::FireRocket()
 		float flRocketDelayMult = 1.0f;
 		CALL_ATTRIB_HOOK_FLOAT_ON_OTHER(GetOwner(), flRocketDelayMult, mult_sentry_rocket_firerate_glumpy);
 		// Setup next rocket shot
+		
+		// Custom Fortress - Rocket Firerate attribute
+		float flRocketFireRate = 3.f;
+		float flRocketFireRateMod = 1.f;
+		CALL_ATTRIB_HOOK_FLOAT_ON_OTHER( GetOwner(), flRocketFireRateMod, mult_engy_sentry_rockets_firerate );
+		flRocketFireRate /= flRocketFireRateMod;
+
 		if ( m_bPlayerControlled )
 		{
-			AddGesture( ACT_RANGE_ATTACK2 );
-			m_flNextRocketAttack = gpGlobals->curtime + (2.25 * flRocketDelayMult);
+			AddGesture( ACT_RANGE_ATTACK2, ( flRocketFireRate * 0.75f ), true);
+			m_flNextRocketAttack = gpGlobals->curtime + ( flRocketFireRate * 0.75f );
 		}
 		else
 		{
-			AddGesture( ACT_RANGE_ATTACK2 );
-			m_flNextRocketAttack = gpGlobals->curtime + (3 * flRocketDelayMult);
+			AddGesture( ACT_RANGE_ATTACK2, ( flRocketFireRate ), true );
+			m_flNextRocketAttack = gpGlobals->curtime + ( flRocketFireRate );
 		}
 
 		if ( !tf_sentrygun_ammocheat.GetBool() && !HasSpawnFlags( SF_SENTRY_INFINITE_AMMO ) )
@@ -1841,6 +1852,17 @@ bool CObjectSentrygun::MoveTurret( void )
 	if ( IsMiniBuilding() )
 	{
 		iBaseTurnRate *= 1.35f;
+	}
+
+	// Apply turn rate multiplier from attributes
+	float flTurnRateMult = 1.0f;
+	if ( GetOwner() && !IsDisposableBuilding() )
+	{
+		CALL_ATTRIB_HOOK_FLOAT_ON_OTHER( GetOwner(), flTurnRateMult, mult_sentry_turn_rate );
+		if ( flTurnRateMult != 1.0f )
+		{
+			iBaseTurnRate = (int)( (float)iBaseTurnRate / flTurnRateMult );
+		}
 	}
 
 	// any x movement?

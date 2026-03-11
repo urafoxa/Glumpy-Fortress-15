@@ -6,7 +6,7 @@
 
 $Macro SRCDIR		"..\.."
 $Macro GAMENAME 	"tf" [!$SOURCESDK]
-$Macro GAMENAME 	"betterfortress" [$SOURCESDK]
+$Macro GAMENAME 	"customfortress" [$SOURCESDK]
 
 // This code currently only builds on Windows (itemtest_lib and dependencies)
 $Conditional WORKSHOP_IMPORT_ENABLE	1 [$WINDOWS && !$SOURCESDK]
@@ -23,14 +23,19 @@ $Configuration
 {
 	$Compiler
 	{
-		$AdditionalIncludeDirectories	".\hl2;.\hl2\elements;.\tf;.\tf\vgui;..\statemachine;$SRCDIR\game\shared\multiplayer;$SRCDIR\game\shared\tf;$SRCDIR\gcsdk\steamextra;$BASE;.\econ"
-		$PreprocessorDefinitions		"$BASE;TF_CLIENT_DLL;USES_ECON_ITEMS;ENABLE_GC_MATCHMAKING;GLOWS_ENABLE;USE_DYNAMIC_ASSET_LOADING;VOTING_ENABLED;NEXT_BOT"
+		$AdditionalIncludeDirectories	".\hl2;.\hl2\elements;.\tf;.\tf\vgui;..\statemachine;$SRCDIR\game\shared\multiplayer;$SRCDIR\game\shared\tf;$SRCDIR\gcsdk\steamextra;$BASE;.\econ;$SRCDIR\thirdparty\sentry-native\include"
+		$PreprocessorDefinitions		"$BASE;TF_CLIENT_DLL;USES_ECON_ITEMS;ENABLE_GC_MATCHMAKING;GLOWS_ENABLE;USE_DYNAMIC_ASSET_LOADING;VOTING_ENABLED;NEXT_BOT;USE_SENTRY"
 		$PreprocessorDefinitions		"$BASE;SAXXYMAINMENU_ENABLED" [$SAXXYAWARDS_ENABLE]
 		$PreprocessorDefinitions		"$BASE;WORKSHOP_IMPORT_ENABLED" [$WORKSHOP_IMPORT_ENABLE]
 		$PreprocessorDefinitions		"$BASE;SIXENSE" [!$SOURCESDK]
 		$PreprocessorDefinitions		"$BASE;DISABLE_GC_CONNECTION;DISABLE_IN_SOURCESDK;INVENTORY_VIA_WEBAPI" [$SOURCESDK]
 		$PreprocessorDefinitions		"$BASE;TF_RAID_MODE" [$TF_RAID_MODE]
 		//$PreprocessorDefinitions		"$BASE;DISCORD_RPC" [$DISCORD_RPC] // eh we don't need it
+	}
+	
+	$Linker
+	{
+		$AdditionalDependencies		"$BASE $SRCDIR\thirdparty\sentry-native\lib\sentry.lib"
 	}
 }
 
@@ -43,6 +48,19 @@ $Project "Client (TF)"
 
 	$Folder	"Source Files"
 	{
+		$File	"cf_crashhandler.h"
+		$File	"cf_crashhandler.cpp"
+		$File	"cf_crashupload.h"
+		$File	"cf_crashupload.cpp"
+		$File	"cf_sentry.h"
+		$File	"cf_sentry.cpp"
+
+		$Folder "FC"
+		{
+				$file	"fc\vgui\radialmenu.cpp"
+				$file	"fc\vgui\radialmenu.h"
+		}
+
 		$File	"$SRCDIR\game\shared\basecombatweapon_shared.h"
 		$File	"$SRCDIR\game\client\abuse_report.cpp"
 		$File	"$SRCDIR\game\client\abuse_report.h"
@@ -212,6 +230,7 @@ $Project "Client (TF)"
 
 		$Folder	"TF"
 		{
+			$File	"episodic\c_prop_scalable.cpp"
 			$File	"$SRCDIR\game\shared\tf\tf_weapon_passtime_gun.cpp"
 			$File	"$SRCDIR\game\shared\tf\tf_weapon_passtime_gun.h"
 			$File	"$SRCDIR\game\shared\tf\passtime_game_events.cpp"
@@ -267,6 +286,10 @@ $Project "Client (TF)"
 			$File	"tf\c_obj_sentrygun.h"
 			$File	"tf\c_obj_teleporter.cpp"
 			$File	"tf\c_obj_teleporter.h"
+			$File	"tf\c_obj_speedpad.cpp"
+			$File	"tf\c_obj_speedpad.h"
+			$File	"tf\c_obj_jumppad.cpp"
+			$File	"tf\c_obj_jumppad.h"
 			$File	"tf\c_tf_stickybolt.cpp"
 			$File	"tf\c_tf_death_callingcard.cpp"
 			$File	"tf\c_playerattachedmodel.cpp"
@@ -316,6 +339,8 @@ $Project "Client (TF)"
 			$File	"$SRCDIR\game\shared\tf\tf_gamemovement.cpp"
 			$File	"$SRCDIR\game\shared\tf\tf_gamerules.cpp"
 			$File	"$SRCDIR\game\shared\tf\tf_gamerules.h"
+			$File	"$SRCDIR\game\shared\tf\tf_steam_branch.cpp"
+			$File	"$SRCDIR\game\shared\tf\tf_steam_branch.h"
 			$File	"$SRCDIR\game\shared\tf\tf_classdata.cpp"
 			$File	"$SRCDIR\game\shared\tf\tf_classdata.h"
 			$File	"tf\tf_hud_account.cpp"
@@ -568,6 +593,8 @@ $Project "Client (TF)"
 				$File	"tf\c_tf_projectile_flare.h"
 				$File	"tf\c_tf_projectile_rocket.cpp"
 				$File	"tf\c_tf_projectile_rocket.h"
+				$File	"tf\c_tf_projectile_scrapball.cpp"
+				$File	"tf\c_tf_projectile_scrapball.h"
 				$File	"tf\c_tf_weapon_builder.cpp"
 				$File	"tf\c_tf_weapon_builder.h"
 				$File	"$SRCDIR\game\shared\tf\tf_dropped_weapon.cpp"
@@ -584,6 +611,8 @@ $Project "Client (TF)"
 				$File	"$SRCDIR\game\shared\tf\tf_weapon_club.h"
 				$File	"$SRCDIR\game\shared\tf\tf_weapon_compound_bow.cpp"
 				$File	"$SRCDIR\game\shared\tf\tf_weapon_compound_bow.h"
+				$File	"$SRCDIR\game\shared\tf\tf_weapon_bmmh.cpp"
+				$File	"$SRCDIR\game\shared\tf\tf_weapon_bmmh.h"
 				$File	"$SRCDIR\game\shared\tf\tf_weapon_dragons_fury.cpp"
 				$File	"$SRCDIR\game\shared\tf\tf_weapon_dragons_fury.h"
 				$File	"$SRCDIR\game\shared\tf\tf_weapon_fireaxe.cpp"
@@ -674,6 +703,8 @@ $Project "Client (TF)"
 				$File	"$SRCDIR\game\shared\tf\tf_weapon_mechanical_arm.h"
 				$File	"$SRCDIR\game\shared\tf\tf_weapon_rocketpack.cpp"
 				$File	"$SRCDIR\game\shared\tf\tf_weapon_rocketpack.h"
+				$File	"$SRCDIR\game\shared\tf\tf_weapon_scripted.cpp"
+				$File	"$SRCDIR\game\shared\tf\tf_weapon_scripted.h"
 			}
 
 			$Folder	"Economy"
@@ -693,6 +724,15 @@ $Project "Client (TF)"
 				$File	"$SRCDIR\game\client\tf\workshop\item_import.cpp"         [$WORKSHOP_IMPORT_ENABLE]
 				$File	"$SRCDIR\game\client\bsp_utils.cpp"
 				$File	"$SRCDIR\game\client\bsp_utils.h"
+				$File	"$SRCDIR\game\shared\tf\cf_workshop_manager.h"
+				$File	"$SRCDIR\game\shared\tf\cf_workshop_manager.cpp"
+				$File	"$SRCDIR\game\shared\tf\cf_workshop_integration.cpp"
+				$File	"$SRCDIR\game\client\tf\cf_workshop_panel.h"
+				$File	"$SRCDIR\game\client\tf\cf_workshop_panel.cpp"
+				$File	"$SRCDIR\game\client\tf\cf_workshop_weapon_tool.h"
+				$File	"$SRCDIR\game\client\tf\cf_workshop_weapon_tool.cpp"
+				$File	"$SRCDIR\game\client\tf\cf_workshop_cosmetic_tool.h"
+				$File	"$SRCDIR\game\client\tf\cf_workshop_cosmetic_tool.cpp"
 			}
 
 			$Folder	"vgui"

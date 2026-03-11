@@ -17,12 +17,62 @@
 #include "tf_gamerules.h"
 #include "ihudlcd.h"
 #include "tf_hud_freezepanel.h"
+#include "tier1/strtools.h"
 #if defined( REPLAY_ENABLED )
 #include "replay/ienginereplay.h"
 #endif
 
 // memdbgon must be the last include file in a .cpp file!!!
 #include "tier0/memdbgon.h"
+
+extern ConVar is_dedicated;
+//-----------------------------------------------------------------------------
+// Client-side role detection functions
+//-----------------------------------------------------------------------------
+int ClientUTIL_PlayerIsModDev( int clientIndex )
+{
+	if ( !g_PR )
+		return 0;
+		
+	// Get the player's Steam ID using the client function
+	CSteamID steamID = GetSteamIDForPlayerIndex( clientIndex );
+	uint64 steamid = steamID.ConvertToUint64();
+	
+	switch(steamid)
+	{
+		//Main Devs
+		case 76561198130175522: // Alien31
+		case 76561198886303174: // main_thing
+		case 76561199004586557: // Vvis
+		case 76561198302570978: // GabenZone
+		case 76561198269305264: // Loner
+			return 1;
+		break;
+		//Publishers
+		case 76561198087658491: // MixerRules
+			return 2;
+		break;
+		//Contributors
+		case 76561198813329543: // Grub - it's grubbin time.
+		case 76561198423023261: // Alieneer/MOTS0
+			return 3;
+		break;
+		//None
+		default:
+			return 0;
+		break;
+	}
+}
+
+bool ClientUTIL_IsListenServerHost( int clientIndex )
+{
+	// On dedicated servers, there's no listen server host
+	if ( engine->IsPlayingDemo() || engine->IsPlayingTimeDemo() || is_dedicated.GetBool() )
+		return false;
+		
+	// The listen server host is always player index 1
+	return (clientIndex == 1);
+}
 
 DECLARE_HUDELEMENT( CHudChat );
 DECLARE_HUD_MESSAGE( CHudChat, SayText );
@@ -31,6 +81,8 @@ DECLARE_HUD_MESSAGE( CHudChat, TextMsg );
 DECLARE_HUD_MESSAGE( CHudChat, VoiceSubtitle );
 
 extern ConVar hud_saytext_time;
+extern ConVar cf_sound_chatping;
+extern ConVar cf_sound_chatping_file;
 
 void RenderPartyChatMessage( const ChatMessage_t& message,
 							 RichText* pRichText,
@@ -456,4 +508,286 @@ int CHudChat::GetFilterFlags( void )
 	}
 	
 	return iFlags;
+}
+
+//-----------------------------------------------------------------------------
+// Purpose: Override to add custom tags with colors
+//-----------------------------------------------------------------------------
+void CHudChat::MsgFunc_SayText2( bf_read &msg )
+{
+	// Got message during connection
+	if ( !g_PR )
+		return;
+
+	int client = msg.ReadByte();
+	bool bWantsToChat = msg.ReadByte();
+
+	wchar_t szBuf[6][256];
+	char untranslated_msg_text[256];
+	wchar_t *msg_text = ReadLocalizedString( msg, szBuf[0], sizeof( szBuf[0] ), false, untranslated_msg_text, sizeof( untranslated_msg_text ) );
+
+	// Read chat components
+	ReadChatTextString ( msg, szBuf[1], sizeof( szBuf[1] ) );		// player name
+	ReadChatTextString ( msg, szBuf[2], sizeof( szBuf[2] ) );		// chat text
+	ReadLocalizedString( msg, szBuf[3], sizeof( szBuf[3] ), true );
+	ReadLocalizedString( msg, szBuf[4], sizeof( szBuf[4] ), true );
+
+	if ( bWantsToChat )
+	{
+		int iFilter = CHAT_FILTER_NONE;
+
+		if ( client > 0 && (g_PR->GetTeam( client ) != g_PR->GetTeam( GetLocalPlayerIndex() )) )
+		{
+			iFilter = CHAT_FILTER_PUBLICCHAT;
+		}
+
+		// Build player name with custom tags
+		wchar_t szPlainPlayerName[512];
+		Q_wcsncpy( szPlainPlayerName, L"", sizeof(szPlainPlayerName) );
+		
+		// Add HOST tag
+		if ( client > 0 && ClientUTIL_IsListenServerHost( client ) )
+		{
+			V_wcsncat( szPlainPlayerName, g_pVGuiLocalize->Find( "#TF_Tag_Host" ), ARRAYSIZE(szPlainPlayerName) );
+		}
+		
+		// Add special tag
+		if ( client > 0 )
+		{
+			int bModDev = ClientUTIL_PlayerIsModDev( client );
+			switch(bModDev)
+			{
+				case 1:
+					V_wcsncat( szPlainPlayerName, g_pVGuiLocalize->Find( "#TF_Tag_Dev" ), ARRAYSIZE(szPlainPlayerName) );
+					break;
+				case 2:
+					V_wcsncat( szPlainPlayerName, g_pVGuiLocalize->Find( "#TF_Tag_Publisher" ), ARRAYSIZE(szPlainPlayerName) );
+					break;
+				case 3:
+					V_wcsncat( szPlainPlayerName, g_pVGuiLocalize->Find( "#TF_Tag_Contributor" ), ARRAYSIZE(szPlainPlayerName) );
+					break;
+			}
+		}
+		
+		// Add player name
+		V_wcsncat( szPlainPlayerName, szBuf[1], ARRAYSIZE(szPlainPlayerName) );
+
+		// Use the format string to construct the complete message with DEAD/TEAM prefixes
+		g_pVGuiLocalize->ConstructString_safe( szBuf[5], msg_text, 4, szPlainPlayerName, szBuf[2], szBuf[3], szBuf[4] );
+
+		// Build custom colored chat message for history display
+		CHudChatHistory *pChatHistory = GetChatHistory();
+		if ( pChatHistory )
+		{
+			// Parse the constructed message to colorize it properly
+			wchar_t *pszMessage = szBuf[5];
+			
+			// Insert linebreak first
+			pChatHistory->InsertString( L"\n" );
+			
+			// First, display special tags (HOST, DEV, PUBLISHER, CONTRIBUTOR) before any prefixes
+			const wchar_t *pszHostTagText = g_pVGuiLocalize->Find( "#TF_Tag_Host" );
+			const wchar_t *pszDevTagText = g_pVGuiLocalize->Find( "#TF_Tag_Dev" );
+			const wchar_t *pszPubTagText = g_pVGuiLocalize->Find( "#TF_Tag_Publisher" );
+			const wchar_t *pszContribTagText = g_pVGuiLocalize->Find( "#TF_Tag_Contributor" );
+			
+			// Display HOST tag if present
+			if ( client > 0 && ClientUTIL_IsListenServerHost( client ) )
+			{
+				pChatHistory->InsertColorChange( Color( 240, 240, 240, 255 ) ); // #F0F0F0
+				pChatHistory->InsertString( pszHostTagText );
+				pChatHistory->InsertFade( hud_saytext_time.GetFloat(), CHAT_HISTORY_IDLE_FADE_TIME );
+			}
+			
+			// Display special role tag if present
+			if ( client > 0 )
+			{
+				int bModDev = ClientUTIL_PlayerIsModDev( client );
+				switch(bModDev)
+				{
+					case 1:
+						pChatHistory->InsertColorChange( Color( 240, 135, 43, 255 ) ); // #F0872B
+						pChatHistory->InsertString( pszDevTagText );
+						pChatHistory->InsertFade( hud_saytext_time.GetFloat(), CHAT_HISTORY_IDLE_FADE_TIME );
+						break;
+					case 2:
+						pChatHistory->InsertColorChange( Color( 46, 143, 191, 255 ) ); // #2E8FBF
+						pChatHistory->InsertString( pszPubTagText );
+						pChatHistory->InsertFade( hud_saytext_time.GetFloat(), CHAT_HISTORY_IDLE_FADE_TIME );
+						break;
+					case 3:
+						pChatHistory->InsertColorChange( Color( 95, 154, 63, 255 ) ); // #5F9A3F
+						pChatHistory->InsertString( pszContribTagText );
+						pChatHistory->InsertFade( hud_saytext_time.GetFloat(), CHAT_HISTORY_IDLE_FADE_TIME );
+						break;
+				}
+			}
+			
+			// Look for prefixes in the message and colorize them
+			wchar_t *pszStart = pszMessage;
+			wchar_t *pszPlayerStart = NULL;
+			
+			// Get localized prefix strings
+			const wchar_t *pszDeadPrefix = g_pVGuiLocalize->Find( "#TF_Chat_Dead" );
+			const wchar_t *pszSpecPrefix = g_pVGuiLocalize->Find( "#TF_Chat_Spec" );
+			const wchar_t *pszTeamPrefix = g_pVGuiLocalize->Find( "#TF_Chat_TeamPrefix" );
+			const wchar_t *pszCoachPrefix = g_pVGuiLocalize->Find( "#TF_Chat_CoachPrefix" );
+			
+			// Find where the player name starts (after any prefixes)
+			if ( wcsstr( pszMessage, pszDeadPrefix ) )
+			{
+				pChatHistory->InsertColorChange( Color( 255, 255, 255, 255 ) );  // White for DEAD
+				
+				// Check for combined DEAD+TEAM prefix
+				wchar_t szDeadTeamPrefix[64];
+				V_swprintf_safe( szDeadTeamPrefix, L"%s%s", pszDeadPrefix, pszTeamPrefix );
+				if ( wcsstr( pszMessage, szDeadTeamPrefix ) )
+				{
+					pChatHistory->InsertString( pszDeadPrefix );
+					pChatHistory->InsertFade( hud_saytext_time.GetFloat(), CHAT_HISTORY_IDLE_FADE_TIME );
+					pChatHistory->InsertColorChange( GetClientColor( client ) );  // Team colored for TEAM
+					pChatHistory->InsertString( pszTeamPrefix );
+					pChatHistory->InsertString( L" " );
+					pChatHistory->InsertFade( hud_saytext_time.GetFloat(), CHAT_HISTORY_IDLE_FADE_TIME );
+					pszPlayerStart = wcsstr( pszMessage, szDeadTeamPrefix ) + wcslen( szDeadTeamPrefix ) + 1; // +1 for space
+				}
+				else
+				{
+					pChatHistory->InsertString( pszDeadPrefix );
+					pChatHistory->InsertString( L" " );
+					pChatHistory->InsertFade( hud_saytext_time.GetFloat(), CHAT_HISTORY_IDLE_FADE_TIME );
+					pszPlayerStart = wcsstr( pszMessage, pszDeadPrefix ) + wcslen( pszDeadPrefix ) + 1; // +1 for space
+				}
+			}
+			else if ( wcsstr( pszMessage, pszSpecPrefix ) )
+			{
+				pChatHistory->InsertColorChange( Color( 160, 160, 160, 255 ) );  // Gray for SPEC
+				
+				// Check for combined SPEC+TEAM prefix
+				wchar_t szSpecTeamPrefix[64];
+				V_swprintf_safe( szSpecTeamPrefix, L"%s%s", pszSpecPrefix, pszTeamPrefix );
+				if ( wcsstr( pszMessage, szSpecTeamPrefix ) )
+				{
+					pChatHistory->InsertString( pszSpecPrefix );
+					pChatHistory->InsertFade( hud_saytext_time.GetFloat(), CHAT_HISTORY_IDLE_FADE_TIME );
+					pChatHistory->InsertColorChange( GetClientColor( client ) );  // Team colored for TEAM
+					pChatHistory->InsertString( pszTeamPrefix );
+					pChatHistory->InsertString( L" " );
+					pChatHistory->InsertFade( hud_saytext_time.GetFloat(), CHAT_HISTORY_IDLE_FADE_TIME );
+					pszPlayerStart = wcsstr( pszMessage, szSpecTeamPrefix ) + wcslen( szSpecTeamPrefix ) + 1; // +1 for space
+				}
+				else
+				{
+					pChatHistory->InsertString( pszSpecPrefix );
+					pChatHistory->InsertString( L" " );
+					pChatHistory->InsertFade( hud_saytext_time.GetFloat(), CHAT_HISTORY_IDLE_FADE_TIME );
+					pszPlayerStart = wcsstr( pszMessage, pszSpecPrefix ) + wcslen( pszSpecPrefix ) + 1; // +1 for space
+				}
+			}
+			else if ( wcsstr( pszMessage, pszTeamPrefix ) )
+			{
+				pChatHistory->InsertColorChange( GetClientColor( client ) );  // Team colored for TEAM
+				pChatHistory->InsertString( pszTeamPrefix );
+				pChatHistory->InsertString( L" " );
+				pChatHistory->InsertFade( hud_saytext_time.GetFloat(), CHAT_HISTORY_IDLE_FADE_TIME );
+				pszPlayerStart = wcsstr( pszMessage, pszTeamPrefix ) + wcslen( pszTeamPrefix ) + 1; // +1 for space
+			}
+			else if ( wcsstr( pszMessage, pszCoachPrefix ) )
+			{
+				pChatHistory->InsertColorChange( Color( 153, 204, 255, 255 ) );  // Blue for COACH
+				pChatHistory->InsertString( pszCoachPrefix );
+				pChatHistory->InsertString( L" " );
+				pChatHistory->InsertFade( hud_saytext_time.GetFloat(), CHAT_HISTORY_IDLE_FADE_TIME );
+				pszPlayerStart = wcsstr( pszMessage, pszCoachPrefix ) + wcslen( pszCoachPrefix ) + 1; // +1 for space
+			}
+			else
+			{
+				pszPlayerStart = pszMessage;
+			}
+
+			if ( pszPlayerStart )
+			{
+				// Find the player name and message separator
+				wchar_t *pszColon = wcsstr( pszPlayerStart, L" :" );
+				if ( pszColon )
+				{
+					// Find the actual player name (after removing the tags we already added)
+					wchar_t *pszNameStart = pszPlayerStart;
+					
+					// Skip past any HOST tag in the message
+					wchar_t *pszHostTag = wcsstr( pszNameStart, pszHostTagText );
+					if ( pszHostTag )
+					{
+						pszNameStart = pszHostTag + wcslen( pszHostTagText );
+					}
+					
+					// Skip past any role tag in the message
+					wchar_t *pszDevTag = wcsstr( pszNameStart, pszDevTagText );
+					wchar_t *pszPubTag = wcsstr( pszNameStart, pszPubTagText );
+					wchar_t *pszContribTag = wcsstr( pszNameStart, pszContribTagText );
+					
+					if ( pszDevTag )
+					{
+						pszNameStart = pszDevTag + wcslen( pszDevTagText );
+					}
+					else if ( pszPubTag )
+					{
+						pszNameStart = pszPubTag + wcslen( pszPubTagText );
+					}
+					else if ( pszContribTag )
+					{
+						pszNameStart = pszContribTag + wcslen( pszContribTagText );
+					}
+					
+					// Display player name with team color
+					wchar_t *pszNameSection = pszNameStart;
+					*pszColon = L'\0';  // Temporarily null-terminate at colon
+					
+					if ( *pszNameSection )
+					{
+						pChatHistory->InsertColorChange( GetClientColor( client ) );
+						pChatHistory->InsertString( pszNameSection );
+					}
+					
+					pChatHistory->InsertFade( hud_saytext_time.GetFloat(), CHAT_HISTORY_IDLE_FADE_TIME );
+					*pszColon = L' ';  // Restore the space
+					
+					// Add separator and chat text
+					pChatHistory->InsertColorChange( GetTextColorForClient( COLOR_NORMAL, client ) );
+					pChatHistory->InsertString( L" : " );
+					pChatHistory->InsertString( pszColon + 3 );  // Skip past " : "
+					pChatHistory->InsertFade( hud_saytext_time.GetFloat(), CHAT_HISTORY_IDLE_FADE_TIME );
+				}
+			}
+		}
+
+		char ansiString[512];
+		g_pVGuiLocalize->ConvertUnicodeToANSI( ConvertCRtoNL( szBuf[ 5 ] ), ansiString, sizeof( ansiString ) );
+
+		UTIL_GetFilteredChatText( client, ansiString, sizeof( ansiString ) );
+		if ( !ansiString[ 0 ] )
+		{
+			// This user has been ignored at the Steam level
+			return;
+		}
+
+		Msg( "%s\n", (const char*)RemoveColorMarkup(ansiString) );
+
+
+		if ( cf_sound_chatping.GetBool() )
+		{ 
+			CLocalPlayerFilter filter;
+			C_BaseEntity::EmitSound( filter, SOUND_FROM_LOCAL_PLAYER, cf_sound_chatping_file.GetString() );
+		}
+	}
+	else
+	{
+		// For non-chat messages, use the original approach
+		g_pVGuiLocalize->ConstructString_safe( szBuf[5], msg_text, 4, szBuf[1], szBuf[2], szBuf[3], szBuf[4] );
+		char ansiString[512];
+		g_pVGuiLocalize->ConvertUnicodeToANSI( ConvertCRtoNL( szBuf[ 5 ] ), ansiString, sizeof( ansiString ) );
+		
+		// print raw chat text
+		ChatPrintf( client, GetFilterForString( untranslated_msg_text ), "%s", ansiString );
+	}
 }

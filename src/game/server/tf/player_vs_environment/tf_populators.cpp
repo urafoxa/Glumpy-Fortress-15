@@ -9,7 +9,9 @@
 #include "tf_populators.h"
 #include "tf_populator_spawners.h"
 #include "tf_team.h"
+#include "tf_player.h"
 #include "tf_obj_sentrygun.h"
+#include "func_respawnroom.h"
 #include "tf_objective_resource.h"
 #include "eventqueue.h"
 #include "tf_tank_boss.h"
@@ -598,7 +600,29 @@ bool CMissionPopulator::UpdateMissionDestroySentries( void )
 			continue;
 		}
 
-		// spawn a sentry buster squad to destroy this sentry
+		// Check if human Sentry Busters are enabled for MvM Versus
+		extern ConVar cf_mvmvs_enable_human_busters;
+		extern ConVar cf_gamemode_mvmvs;
+		
+		bool bUseHumanBusters = (cf_gamemode_mvmvs.GetBool() && cf_mvmvs_enable_human_busters.GetBool());
+		
+		if ( bUseHumanBusters )
+		{
+			// Try to select a human player to become a Sentry Buster
+			if ( SelectHumanSentryBuster( targetSentry ) )
+			{
+				didSpawn = true;
+				continue; // Successfully converted a human, skip bot spawning
+			}
+			// If human Sentry Busters are enabled but none were available,
+			// skip bot spawning entirely (human busters disable bot busters)
+			else
+			{
+				continue; // Skip this sentry, don't spawn bot buster
+			}
+		}
+
+		// spawn a sentry buster squad to destroy this sentry (only if human busters are disabled)
 		Vector vSpawnPosition;
 		SpawnLocationResult spawnLocationResult = m_where.FindSpawnLocation( vSpawnPosition );
 		if ( spawnLocationResult != SPAWN_LOCATION_NOT_FOUND )
@@ -697,6 +721,107 @@ bool CMissionPopulator::UpdateMissionDestroySentries( void )
 	}
 
 	return didSpawn;
+}
+
+//-----------------------------------------------------------------------
+// Purpose: Try to select a human player to become a Sentry Buster
+//-----------------------------------------------------------------------
+bool CMissionPopulator::SelectHumanSentryBuster( CObjectSentrygun *pTargetSentry )
+{
+	if ( !TFGameRules() || !TFGameRules()->IsMannVsMachineMode() )
+		return false;
+
+	// Get all eligible human robot players who can become Sentry Busters
+	CUtlVector<CTFPlayer*> eligiblePlayers;
+	CUtlVector<CTFPlayer*> robotPlayers;
+	
+	// Collect ALL human robot players (living and dead)
+	CollectPlayers( &robotPlayers, TF_TEAM_PVE_INVADERS, false );
+	
+	FOR_EACH_VEC( robotPlayers, i )
+	{
+		CTFPlayer *pPlayer = robotPlayers[i];
+		
+		// Skip bots - we only want human players
+		if ( !pPlayer || pPlayer->IsBot() )
+			continue;
+			
+		// Skip if already a Sentry Buster
+		if ( pPlayer->m_Shared.InCond( TF_COND_SENTRY_BUSTER ) )
+			continue;
+			
+		// Skip if in spawn room (let them get into the action first)
+		if ( PointInRespawnRoom( pPlayer, pPlayer->WorldSpaceCenter(), true ) )
+			continue;
+			
+		// Skip if carrying the bomb
+		CCaptureFlag *pFlag = dynamic_cast<CCaptureFlag*>( pPlayer->GetItem() );
+		if ( pFlag )
+			continue;
+			
+		// This player is eligible
+		eligiblePlayers.AddToTail( pPlayer );
+	}
+	
+	if ( eligiblePlayers.Count() == 0 )
+		return false; // No eligible players
+	
+	// Engineer performance influences selection chance
+	float flChanceMultiplier = 1.0f;
+	if ( pTargetSentry && pTargetSentry->GetOwner() )
+	{
+		CTFPlayer *pSentryOwner = pTargetSentry->GetOwner();
+		int nDmgDone = pSentryOwner->GetAccumulatedSentryGunDamageDealt();
+		int nKillsMade = pSentryOwner->GetAccumulatedSentryGunKillCount();
+		
+		// Higher damage/kills = higher chance for Sentry Buster selection
+		flChanceMultiplier = RemapValClamped( nDmgDone + (nKillsMade * 100), 500, 3000, 1.0f, 3.0f );
+	}
+	
+	// Select a random player, but weight selection based on engineer performance
+	int nBaseChance = 30; // 30% base chance
+	int nAdjustedChance = MIN( 90, (int)(nBaseChance * flChanceMultiplier) ); // Cap at 90%
+	
+	if ( RandomInt( 1, 100 ) > nAdjustedChance )
+		return false; // Chance failed
+	
+	// Pick a random eligible player
+	CTFPlayer *pSelectedPlayer = eligiblePlayers[RandomInt( 0, eligiblePlayers.Count() - 1 )];
+	if ( !pSelectedPlayer )
+		return false;
+	
+	// Convert the player to a Sentry Buster
+	pSelectedPlayer->BecomeHumanSentryBuster( pTargetSentry );
+	
+	// Play announcer sounds like the bot version
+	if ( TFGameRules() )
+	{
+		CWave *pWave = GetManager()->GetCurrentWave();
+		if ( pWave )
+		{
+			pWave->IncrementSentryBustersSpawned();
+			
+			if ( pWave->NumSentryBustersSpawned() > 1 )
+			{
+				TFGameRules()->BroadcastSound( 255, "Announcer.MVM_Sentry_Buster_Alert_Another" );
+			}
+			else
+			{
+				TFGameRules()->BroadcastSound( 255, "Announcer.MVM_Sentry_Buster_Alert" );
+			}
+		}
+		
+		// Make defenders aware
+		TFGameRules()->HaveAllPlayersSpeakConceptIfAllowed( MP_CONCEPT_MVM_SENTRY_BUSTER, TF_TEAM_PVE_DEFENDERS );
+	}
+	
+	if ( tf_populator_debug.GetBool() )
+	{
+		DevMsg( "MANN VS MACHINE: %3.2f: <<<< Converting Human Player '%s' to Sentry Buster >>>>\n", 
+			gpGlobals->curtime, pSelectedPlayer->GetPlayerName() );
+	}
+	
+	return true; // Successfully converted a human player
 }
 
 
@@ -1746,6 +1871,7 @@ void CWaveSpawnPopulator::Update( void )
 CWave::CWave( CPopulationManager *manager ) : IPopulator( manager )
 {
 	m_iEnemyCount = 0;
+	m_bHasTanks = false;
 	m_nTanksSpawned = 0;
 	m_nSentryBustersSpawned = 0;
 	m_nNumEngineersTeleportSpawned = 0;
@@ -1780,6 +1906,7 @@ CWave::~CWave()
 bool CWave::Parse( KeyValues *data )
 {
 	m_iEnemyCount = 0;
+	m_bHasTanks = false;
 	m_nWaveClassCounts.RemoveAll();
 	m_totalCurrency = 0;
 
@@ -1808,6 +1935,11 @@ bool CWave::Parse( KeyValues *data )
 
 			if ( wavePopulator->m_spawner )
 			{
+				CTankSpawner* tankSpawner = dynamic_cast<CTankSpawner*> ( wavePopulator->m_spawner );
+				if ( tankSpawner )
+				{
+					m_bHasTanks = true;
+				}
 				if ( wavePopulator->m_spawner->IsVarious() )
 				{
 					for ( int i = 0; i < wavePopulator->m_totalCount; ++i )
@@ -1960,6 +2092,27 @@ void CWave::ForceReset()
 	{
 		m_waveSpawnVector[i]->ForceReset();
 	}
+}
+
+void CWave::ForceWin()
+{
+	FOR_EACH_VEC(m_waveSpawnVector, i)
+	{
+		CWaveSpawnPopulator* waveSpawnPopulator = m_waveSpawnVector[i];
+		waveSpawnPopulator->OnNonSupportWavesDone();
+	}
+
+	for (int i = 1; i <= gpGlobals->maxClients; i++)
+	{
+		// Now let's kill everyone left on the attacking team
+		CTFPlayer* pPlayer = ToTFPlayer(UTIL_PlayerByIndex(i));
+		if (pPlayer && pPlayer->IsAlive() &&
+			((pPlayer->GetTeamNumber() == TF_TEAM_PVE_INVADERS) || pPlayer->m_Shared.InCond(TF_COND_REPROGRAMMED)))
+		{
+			pPlayer->CommitSuicide(true, false);
+		}
+	}
+	WaveCompleteUpdate();
 }
 
 //-------------------------------------------------------------------------
@@ -2211,6 +2364,9 @@ void CWave::WaveCompleteUpdate( void )
 			}
 		}
 	}
+
+	// rabscootle - MVM Wave Win/Lose Responses
+	TFGameRules()->HaveAllPlayersSpeakConceptIfAllowed( MP_CONCEPT_MVM_WAVE_LOSE,TF_TEAM_PVE_DEFENDERS );
 
 	CBroadcastRecipientFilter filter;
 	filter.MakeReliable();

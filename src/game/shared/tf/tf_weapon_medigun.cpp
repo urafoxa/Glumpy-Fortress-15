@@ -54,6 +54,7 @@ MedigunEffects_t g_MedigunEffects[MEDIGUN_NUM_CHARGE_TYPES] =
 	{ TF_COND_MEDIGUN_UBER_BULLET_RESIST,	TF_COND_LAST,					 "WeaponMedigun_Vaccinator.InvulnerableOn",		"WeaponMedigun_Vaccinator.InvulnerableOff" },		// TF_COND_MEDIGUN_UBER_BULLET_RESIST,
 	{ TF_COND_MEDIGUN_UBER_BLAST_RESIST,	TF_COND_LAST,					 "WeaponMedigun_Vaccinator.InvulnerableOn",		"WeaponMedigun_Vaccinator.InvulnerableOff" },		// TF_COND_MEDIGUN_UBER_BLAST_RESIST,
 	{ TF_COND_MEDIGUN_UBER_FIRE_RESIST,		TF_COND_LAST,					 "WeaponMedigun_Vaccinator.InvulnerableOn",		"WeaponMedigun_Vaccinator.InvulnerableOff" },		// TF_COND_MEDIGUN_UBER_FIRE_RESIST,
+	{ TF_COND_STEALTHED_USER_BUFF,			TF_COND_STEALTHED_USER_BUFF_FADING,					 "TFPlayer.QuickFixInvulnerableOn",				"TFPlayer.MegaHealOff" },		// MEDIGUN_CHARGE_CLOAK,
 };
 
 struct MedigunResistConditions_t
@@ -203,6 +204,7 @@ extern ConVar tf_max_health_boost;
 ConVar hud_medicautocallers( "hud_medicautocallers", "0", FCVAR_ARCHIVE | FCVAR_ARCHIVE_XBOX );
 ConVar hud_medicautocallersthreshold( "hud_medicautocallersthreshold", "75", FCVAR_ARCHIVE | FCVAR_ARCHIVE_XBOX );
 ConVar hud_medichealtargetmarker ( "hud_medichealtargetmarker", "0", FCVAR_ARCHIVE | FCVAR_ARCHIVE_XBOX );
+ConVar cf_medic_show_crit_heal_indicator( "cf_medic_show_crit_heal_indicator", "1", FCVAR_ARCHIVE | FCVAR_USERINFO, "Show critical heal indicators above patients who haven't taken damage recently while playing as Medic." );
 #endif
 
 const char *g_pszMedigunHealSounds[] =
@@ -213,6 +215,7 @@ const char *g_pszMedigunHealSounds[] =
 	"WeaponMedigun_Vaccinator.Healing",	// MEDIGUN_CHARGE_BULLET_RESIST,
 	"WeaponMedigun_Vaccinator.Healing",	// MEDIGUN_CHARGE_BLAST_RESIST,
 	"WeaponMedigun_Vaccinator.Healing",	// MEDIGUN_CHARGE_FIRE_RESIST,
+	"Weapon_Quick_Fix.Healing",			// MEDIGUN_CHARGE_CLOAK,
 };
 COMPILE_TIME_ASSERT( ARRAYSIZE( g_pszMedigunHealSounds ) == MEDIGUN_NUM_CHARGE_TYPES );
 
@@ -255,6 +258,7 @@ CWeaponMedigun::~CWeaponMedigun()
 	}
 
 	m_flAutoCallerCheckTime = 0.0f;
+	m_flCritHealCheckTime = 0.0f;
 #endif
 }
 
@@ -458,6 +462,7 @@ bool CWeaponMedigun::Holster( CBaseCombatWeapon *pSwitchingTo )
 //-----------------------------------------------------------------------------
 void CWeaponMedigun::UpdateOnRemove( void )
 {
+	m_bHealing = false;
 	RemoveHealingTarget( true );
 	m_bAttacking = false;
 	m_bChargeRelease = false;
@@ -599,6 +604,16 @@ bool CWeaponMedigun::AllowedToHealTarget( CBaseEntity *pTarget )
 	}
 	else
 	{
+
+		// VSCRIPT - Allow anything to be healable
+		if ( pTarget->m_bCanBeHealed )
+		{
+			if ( !pTarget->InSameTeam( pOwner ) && pTarget->m_bCanBeHealed == 1 )
+				return true;
+			else if ( pTarget->InSameTeam( pOwner ) && pTarget->m_bCanBeHealed == 2  )
+				return true;
+		}
+
 		if ( !pTarget->InSameTeam( pOwner ) )
 			return false;
 
@@ -906,9 +921,9 @@ medigun_resist_types_t CWeaponMedigun::GetResistType() const
 //-----------------------------------------------------------------------------
 bool CWeaponMedigun::IsAllowedToTargetBuildings( void )
 {
-	int iHealBuildings = 0;
-	CALL_ATTRIB_HOOK_INT( iHealBuildings, medic_machinery_beam );
-	return iHealBuildings ? true : false;
+	int iCanHealEngineerBuildings = 0;
+	CALL_ATTRIB_HOOK_INT( iCanHealEngineerBuildings, medic_machinery_beam );
+	return iCanHealEngineerBuildings ? true : false;
 
 }
 
@@ -1377,7 +1392,7 @@ bool CWeaponMedigun::FindAndHealTargets( void )
 				}
 
 #ifdef CLIENT_DLL
-					if ( GetMedigunType() == MEDIGUN_RESIST )
+					if ( GetMedigunType() == MEDIGUN_RESIST && prediction->IsFirstTimePredicted() )
 					{
 						// Play a sound when we tick over to a new charge level
 						int nChargeLevel = int(floor(flNewLevel/flMinChargeAmount));
@@ -2269,6 +2284,9 @@ void CWeaponMedigun::OnDataChanged( DataUpdateType_t updateType )
 		{
 			UpdateMedicAutoCallers();
 		}
+		
+		// Update crit heal indicators (independent of auto-caller setting)
+		UpdateCritHealIndicators();
 	}
 }
 
@@ -2564,6 +2582,100 @@ void CWeaponMedigun::UpdateMedicAutoCallers( void )
 		// Throttle this check
 		m_flAutoCallerCheckTime = gpGlobals->curtime + 0.25f;
 	}
+}
+
+//-----------------------------------------------------------------------------
+// Purpose: Show crit heal indicators for patients ready for critical healing
+//-----------------------------------------------------------------------------
+void CWeaponMedigun::UpdateCritHealIndicators( void )
+{
+#ifdef CLIENT_DLL
+	if ( !cf_medic_show_crit_heal_indicator.GetBool() )
+		return;
+
+	// Find teammates that can be crit healed
+	if ( gpGlobals->curtime > m_flCritHealCheckTime )
+	{
+		if ( !g_TF_PR )
+		{
+			return;
+		}
+
+		C_TFPlayer *pLocalPlayer = C_TFPlayer::GetLocalTFPlayer();
+		
+		// Only show indicators when playing as medic
+		if ( !pLocalPlayer || !pLocalPlayer->IsPlayerClass( TF_CLASS_MEDIC ) )
+		{
+			return;
+		}
+
+		for( int playerIndex = 1; playerIndex <= MAX_PLAYERS; playerIndex++ )
+		{
+			C_TFPlayer *pPlayer = ToTFPlayer( UTIL_PlayerByIndex( playerIndex ) );
+			if ( pPlayer )
+			{
+				// Don't do this for the local player
+				if ( pPlayer == pLocalPlayer )
+					continue;
+
+				// Only show for teammates
+				if ( pPlayer->GetTeamNumber() != GetLocalPlayerTeam() )
+					continue;
+
+				if ( pPlayer->IsAlive() && !pPlayer->IsPlayerDead() )
+				{
+					// Check if player hasn't taken damage recently (15+ seconds for full crit heal benefit)
+					float flTimeSinceLastDamage = gpGlobals->curtime - pPlayer->GetLastDamageTime();
+					
+					// Show crit heal indicator if player hasn't taken damage in 15+ seconds
+					// TF2 crit heal mechanics: 10 seconds for start, 15 seconds for full crit heal bonus
+					bool bCanBeCritHealed = (flTimeSinceLastDamage >= 15.0f);
+					
+					if ( bCanBeCritHealed )
+					{
+						// Make sure we're not already tracking this
+						if ( m_iCritHealIndicators.Find( playerIndex ) != m_iCritHealIndicators.InvalidIndex() )
+							continue;
+
+						// Distance check - don't show for players too far away
+						float flDistSq = pPlayer->GetAbsOrigin().DistToSqr( pLocalPlayer->GetAbsOrigin() );
+						if ( flDistSq >= 1000000 ) // 1000 units
+						{
+							continue;
+						}
+
+						// Create the crit heal indicator
+						pPlayer->CreateCritHealIndicator();
+
+						// Track this player so we don't re-add them
+						m_iCritHealIndicators.AddToTail( playerIndex );
+					}
+					else
+					{
+						// Player has taken recent damage, remove indicator if present
+						if ( m_iCritHealIndicators.Find( playerIndex ) != m_iCritHealIndicators.InvalidIndex() )
+						{
+							pPlayer->StopCritHealIndicator();
+							m_iCritHealIndicators.FindAndRemove( playerIndex );
+						}
+					}
+				}
+				else
+				{
+					// Player is dead, remove indicator if present
+					if ( m_iCritHealIndicators.Find( playerIndex ) != m_iCritHealIndicators.InvalidIndex() )
+					{
+						pPlayer->StopCritHealIndicator();
+						m_iCritHealIndicators.FindAndRemove( playerIndex );
+					}
+				}
+			}
+		}
+
+		// Throttle this check
+		m_flCritHealCheckTime = gpGlobals->curtime + 0.25f;
+	}
+#endif
 }
 #endif
 

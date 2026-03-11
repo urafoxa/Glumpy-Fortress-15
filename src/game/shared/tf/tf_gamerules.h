@@ -97,7 +97,13 @@ class CMannVsMachineUpgrades;
 //extern ConVar tf_populator_damage_multiplier;
 
 extern ConVar tf_mvm_defenders_team_size;
-extern ConVar tf_mvm_forceversus;
+extern ConVar cf_gamemode_mvmvs;
+extern ConVar cf_mvmvs_use_loadout;
+extern ConVar cf_mvmvs_playstyle;
+extern ConVar cf_mvmvs_max_bosses;
+extern ConVar cf_mvmvs_max_giants;
+extern ConVar cf_mvmvs_restrict_slots;
+extern ConVar cf_mvmvs_enable_human_busters;
 extern ConVar tf_mvm_max_invaders;
 
 const int kLadder_TeamSize_6v6 = 6;
@@ -878,7 +884,7 @@ bool IsCreepWaveMode( void ) const;
 
 	bool CanHaveAmmo( CBaseCombatCharacter *pPlayer, int iAmmoIndex );
 
-	virtual const char *GetGameDescription( void ){ return "Team Fortress"; }
+	virtual const char *GetGameDescription( void ){ return "Custom Fortress 2"; }
 
 	virtual void Status( void (*print) (PRINTF_FORMAT_STRING const char *fmt, ...) );
 

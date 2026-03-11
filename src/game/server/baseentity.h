@@ -23,6 +23,10 @@
 #include "vscript/ivscript.h"
 #include "vscript_server.h"
 
+class IPhysicsObject;
+void PhysDisableEntityCollisions( IPhysicsObject *pObject0, IPhysicsObject *pObject1 );
+void PhysEnableEntityCollisions( IPhysicsObject *pObject0, IPhysicsObject *pObject1 );
+
 class CDamageModifier;
 class CDmgAccumulator;
 
@@ -1086,6 +1090,11 @@ public:
 	virtual void			Blocked( CBaseEntity *pOther );
 	virtual void			EndBlocked( void ) {}
 
+	//Vscript - Touch hooks
+	virtual void			ScriptOnStartTouch( CBaseEntity *pOther ); 
+	virtual void			ScriptOnTouch( CBaseEntity *pOther ); 
+	virtual void			ScriptOnEndTouch( CBaseEntity *pOther ); 
+
 	// Physics simulation
 	virtual void			PhysicsSimulate( void );
 
@@ -1247,6 +1256,14 @@ public:
 	CNetworkVarForDerived( char, m_lifeState );
 	CNetworkVarForDerived( char , m_takedamage );
 
+	//TF2 Specific
+	CNetworkVarForDerived( bool , m_bExplodesProjectiles );
+	CNetworkVarForDerived( bool , m_bSticksProjectiles );
+	CNetworkVarForDerived( int , m_bCanBeHealed );
+	CNetworkVarForDerived( bool , m_bCanBeTargeted );
+	CNetworkVarForDerived( bool , m_bCanBeBurned );
+	CNetworkVarForDerived( bool , m_bCanBeObserved );
+
 	// Damage filtering
 	string_t	m_iszDamageFilterName;	// The name of the entity to use as our damage filter.
 	EHANDLE		m_hDamageFilter;		// The entity that controls who can damage us.
@@ -1354,6 +1371,93 @@ public:
 	{ 
 		VPhysicsDestroyObject(); 
 	}
+
+	void ScriptToggleCollisionsOn( HSCRIPT pEntity, bool bEnable )
+	{
+		IPhysicsObject * vPhysObj1 = VPhysicsGetObject();
+		// need two different objects to do anything
+
+		CBaseEntity *hTarget = ToEnt( pEntity );
+		IPhysicsObject* vPhysObj2 = hTarget->VPhysicsGetObject();
+		//Invalid Target
+		if ( !vPhysObj2 && !vPhysObj1 )
+			return;
+
+		if ( vPhysObj1 && vPhysObj2 && vPhysObj1 != vPhysObj2 )
+		{
+			if ( bEnable )
+			{
+				PhysEnableEntityCollisions( vPhysObj1, vPhysObj2 );
+			}
+			else
+			{
+				PhysDisableEntityCollisions( vPhysObj1, vPhysObj2 );
+			}
+		}
+	}
+
+	void ScriptSetMass( float flMass ) 
+	{ 
+		IPhysicsObject * vPhys = VPhysicsGetObject();
+		if ( vPhys )
+		{
+			Assert(flMass > 0);
+			vPhys->SetMass( flMass );
+		}
+		else
+		{
+			Log_Warning( LOG_VScript, "Entity has no Physics, use MakePhysics function\n" );
+		} 
+	}
+	
+
+	float ScriptGetMass( void ) const
+	{ 
+		IPhysicsObject *vPhys = VPhysicsGetObject();
+		if ( vPhys )
+		{
+			return vPhys->GetMass();
+		}
+		else
+		{
+			Log_Warning( LOG_VScript, "Entity has no Physics, use MakePhysics function\n" );
+			return -1;
+		} 
+	}
+	
+
+	void ScriptSetBuoyancyRatio( float flBuoyancy )
+	{ 
+		IPhysicsObject *vPhys = VPhysicsGetObject();
+		if ( vPhys )
+		{
+			return vPhys->SetBuoyancyRatio( flBuoyancy );
+		}
+		else
+		{
+			Log_Warning( LOG_VScript, "Entity has no Physics, use MakePhysics function\n" );
+		} 
+	}
+
+
+	void ScriptSetElasticity( float flElasticity ) 
+	{ 
+		SetElasticity( flElasticity );
+	}
+
+
+	float ScriptGetElasticity (void ) const
+	{
+		return m_flElasticity; 
+	}
+
+	//TF2 Specific
+	void ScriptSetExplodeProjectilesOnTouch( bool bValue ) { m_bExplodesProjectiles = bValue; }
+	void ScriptCanStickProjectiles( bool bValue ) { m_bSticksProjectiles = bValue; }
+	void ScriptCanBeHealed( int bValue ) { m_bCanBeHealed = bValue; }
+	void ScriptSetTargetable( bool bValue ) { m_bCanBeTargeted = bValue; }
+	void ScriptSetBurnable(bool bValue) { m_bCanBeBurned = bValue; }
+	void ScriptSetObservable(bool bValue) { m_bCanBeObserved = bValue; }
 
 	HSCRIPT ScriptGetModelKeyValues( void );
 
@@ -1890,7 +1994,7 @@ private:
 	EHANDLE			m_pBlocker;
 
 	// was pev->gravity;
-	float			m_flGravity;  // rename to m_flGravityScale;
+	CNetworkVar( float, m_flGravity );  // rename to m_flGravityScale;
 	// was pev->friction
 	CNetworkVarForDerived( float, m_flFriction );
 	CNetworkVar( float, m_flElasticity );

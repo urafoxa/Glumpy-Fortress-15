@@ -19,6 +19,8 @@
 #include "ilagcompensationmanager.h"
 #endif
 
+ConVar cf_enable_shortstop_shove( "cf_enable_shortstop_shove", "1", FCVAR_NOTIFY | FCVAR_REPLICATED, "Enable alt-fire shove for the Shortstop. 0 disabled, 1 enabled." );
+
 //=============================================================================
 //
 // Weapon Pistol tables.
@@ -93,6 +95,10 @@ void CTFPistol_ScoutPrimary::PlayWeaponShootSound( void )
 //-----------------------------------------------------------------------------
 void CTFPistol_ScoutPrimary::SecondaryAttack( void )
 {
+	extern ConVar cf_enable_shortstop_shove;
+	if ( !cf_enable_shortstop_shove.GetBool() )
+		return;
+
 	CTFPlayer *pOwner = ToTFPlayer( GetPlayerOwner() );
 	if ( !pOwner )
 		return;
@@ -138,7 +144,7 @@ void CTFPistol_ScoutPrimary::Push( void )
 		if ( pVictim == pOwner )
 			continue;
 
-		if ( pVictim->InSameTeam( pOwner ) )
+		if ( pVictim->InSameTeam( pOwner ) && !friendlyfire.GetBool() )
 			continue;
 
 		if ( TFGameRules() && TFGameRules()->IsTruceActive() && pOwner->IsTruceValidForEnt() )

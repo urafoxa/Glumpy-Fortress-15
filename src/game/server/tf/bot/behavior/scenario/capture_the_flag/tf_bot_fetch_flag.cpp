@@ -51,6 +51,7 @@ ActionResult< CTFBot > CTFBotFetchFlag::Update( CTFBot *me, float interval )
 
 	if ( TFGameRules()->IsMannVsMachineMode() && flag->IsHome() )
 	{
+
 		if ( gpGlobals->curtime - me->GetSpawnTime() < 1.0f && me->GetTeamNumber() != TEAM_SPECTATOR )
 		{
 			// we just spawned - give us the flag

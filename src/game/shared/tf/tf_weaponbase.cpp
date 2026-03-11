@@ -45,9 +45,11 @@
 #include "halloween/halloween_base_boss.h"
 #include "tf_fx.h"
 #include "tf_gamestats.h"
+#include "func_respawnroom.h"
 // Client specific.
 #else
 #include "c_tf_player.h"
+#include "c_baseviewmodel.h"
 #include "tf_viewmodel.h"
 #include "hud_crosshair.h"
 #include "c_tf_playerresource.h"
@@ -81,6 +83,8 @@ ConVar tf_scout_hype_pep_min_damage( "tf_scout_hype_pep_min_damage", "5.0", FCVA
 
 ConVar tf_weapon_criticals_nopred( "tf_weapon_criticals_nopred", "1.0", FCVAR_REPLICATED | FCVAR_CHEAT );
 
+ConVar cf_pre_toughbreak_switch( "cf_pre_toughbreak_switch", "0", FCVAR_NOTIFY | FCVAR_REPLICATED, "Use pre-Tough Break weapon switch time (0.67 sec instead of 0.5 sec)" );
+
 #ifdef _DEBUG
 ConVar tf_weapon_criticals_anticheat( "tf_weapon_criticals_anticheat", "1.0", FCVAR_REPLICATED );
 ConVar tf_weapon_criticals_debug( "tf_weapon_criticals_debug", "0.0", FCVAR_REPLICATED );
@@ -91,7 +95,8 @@ extern ConVar tf_weapon_criticals_bucket_bottom;
 
 #ifdef CLIENT_DLL
 extern ConVar cl_crosshair_file;
-extern ConVar cl_flipviewmodels;
+extern ConVar cl_muzzleflash_dlight_1st;
+ConVar cl_tf_ejectbrass( "cl_tf_ejectbrass", "1", FCVAR_ARCHIVE );
 #endif
 
 //=============================================================================
@@ -528,8 +533,9 @@ void CTFWeaponBase::Precache()
 
 	//MVM Versus - Legacy viewmodels
 	PrecacheModel("models/mvm/weapons/c_models/c_engineer_bot_gunslinger.mdl");
-	
 
+	// Ghostly dash particle
+	PrecacheParticleSystem( "ghost_smoke" );
 }
 
 // -----------------------------------------------------------------------------
@@ -1285,7 +1291,8 @@ bool CTFWeaponBase::Deploy( void )
 		if ( !pPlayer )
 			return false;
 
-		float flWeaponSwitchTime = 0.5f;
+		extern ConVar cf_pre_toughbreak_switch;
+		float flWeaponSwitchTime = cf_pre_toughbreak_switch.GetBool() ? 0.67f : 0.5f;
 
 		// Overrides the anim length for calculating ready time.
 		float flDeployTimeMultiplier = 1.0f;
@@ -1552,12 +1559,172 @@ void CTFWeaponBase::PrimaryAttack( void )
 //-----------------------------------------------------------------------------
 void CTFWeaponBase::SecondaryAttack( void )
 {
+	// Check if this weapon has the attribute to disable alt-fire
+	int iAltFireDisabled = 0;
+	CALL_ATTRIB_HOOK_INT( iAltFireDisabled, unimplemented_altfire_disabled );
+	if ( iAltFireDisabled )
+		return;
+
+	// Check for ghostly dash attribute
+	int iGhostlyDash = 0;
+	CALL_ATTRIB_HOOK_INT( iGhostlyDash, mod_ghostly_dash );
+	if ( iGhostlyDash )
+	{
+		CTFPlayer *pOwner = GetTFPlayerOwner();
+		if ( pOwner )
+		{
+			// Get the loadout position for this weapon
+			CEconItemView *pItem = GetAttributeContainer()->GetItem();
+			if ( pItem && pItem->GetStaticData() )
+			{
+				loadout_positions_t eLoadoutPosition = (loadout_positions_t)pItem->GetStaticData()->GetLoadoutSlot( pOwner->GetPlayerClass()->GetClassIndex() );
+				if ( eLoadoutPosition >= FIRST_LOADOUT_SLOT_WITH_CHARGE_METER && eLoadoutPosition <= LAST_LOADOUT_SLOT_WITH_CHARGE_METER )
+				{
+					float flCharge = pOwner->m_Shared.GetItemChargeMeter( eLoadoutPosition );
+					if ( flCharge >= 100.0f )
+					{
+						// Perform the dash
+						PerformGhostlyDash( pOwner, eLoadoutPosition );
+						m_flNextSecondaryAttack = gpGlobals->curtime + 0.5f; // Small cooldown
+						return;
+					}
+				}
+			}
+		}
+	}
+
 	// Set the weapon mode.
 	m_iWeaponMode = TF_WEAPON_SECONDARY_MODE;
 
 
 	// Don't hook secondary for now.
 	return;
+}
+
+//-----------------------------------------------------------------------------
+// Purpose: Perform the ghostly dash mechanic
+//-----------------------------------------------------------------------------
+void CTFWeaponBase::PerformGhostlyDash( CTFPlayer *pOwner, loadout_positions_t eLoadoutPosition )
+{
+	if ( !pOwner )
+		return;
+
+#ifdef GAME_DLL
+	// Get the direction the player is looking
+	Vector vecForward;
+	AngleVectors( pOwner->EyeAngles(), &vecForward );
+	
+	// Flatten to horizontal plane (no vertical component)
+	vecForward.z = 0.0f;
+	VectorNormalize( vecForward );
+	
+	// Dash distance: 512 Hammer Units
+	const float flDashDistance = 512.0f;
+	
+	// Calculate new position
+	Vector vecCurrentPos = pOwner->GetAbsOrigin();
+	Vector vecNewPos = vecCurrentPos + (vecForward * flDashDistance);
+	
+	// Perform trace to catch walls and geometry first
+	trace_t tr;
+	UTIL_TraceHull( vecCurrentPos, vecNewPos, pOwner->GetPlayerMins(), pOwner->GetPlayerMaxs(), 
+		MASK_PLAYERSOLID, pOwner, COLLISION_GROUP_PLAYER_MOVEMENT, &tr );
+	
+	// Now check along the path for respawn rooms we shouldn't enter
+	float flStepSize = 32.0f;
+	int nSteps = (int)(tr.fraction * flDashDistance / flStepSize);
+	Vector vecFinalPos = tr.endpos;
+	
+	for ( int i = 1; i <= nSteps; i++ )
+	{
+		Vector vecCheckPos = vecCurrentPos + (vecForward * (flStepSize * i));
+		
+		// Check all func_respawnroom entities
+		for ( int j = 0; j < IFuncRespawnRoomAutoList::AutoList().Count(); j++ )
+		{
+			CFuncRespawnRoom *pRespawnRoom = static_cast<CFuncRespawnRoom*>( IFuncRespawnRoomAutoList::AutoList()[j] );
+			if ( !pRespawnRoom || !pRespawnRoom->GetActive() )
+				continue;
+			
+			// Check if this point is in a respawn room
+			if ( pRespawnRoom->PointIsWithin( vecCheckPos ) )
+			{
+				// Check if it's an enemy respawn room
+				if ( pRespawnRoom->GetTeamNumber() != TEAM_UNASSIGNED && 
+					 pRespawnRoom->GetTeamNumber() != pOwner->GetTeamNumber() )
+				{
+					// Blocked by enemy spawn - stop before entering
+					vecFinalPos = vecCurrentPos + (vecForward * (flStepSize * (i - 1)));
+					goto dash_complete;
+				}
+			}
+		}
+	}
+	
+dash_complete:
+
+	// Telefrag anyone in the way
+	CBaseEntity *pEnts[256];
+	Vector mins, maxs;
+	Vector expand( 4, 4, 4 );
+
+	mins = vecFinalPos + VEC_HULL_MIN - expand;
+	maxs = vecFinalPos + VEC_HULL_MAX + expand;
+
+	CUtlVector<CBaseEntity*> hPlayersToKill;
+	bool bClear = true;
+
+	// Telefrag any players in the way
+	int numEnts = UTIL_EntitiesInBox( pEnts, 256, mins,	maxs, 0 );
+	if ( numEnts )
+	{
+		//Iterate through the list and check the results
+		for ( int i = 0; i < numEnts && bClear; i++ )
+		{
+			if ( pEnts[i] == NULL )
+				continue;
+
+			if ( pEnts[i] == this )
+				continue;
+
+			// kill players
+			if ( pEnts[i]->IsPlayer() && ( pEnts[i]->GetTeamNumber() >= FIRST_GAME_TEAM ) )
+			{
+				if ( !pOwner->InSameTeam( pEnts[i] ) && ( pOwner->GetTeamNumber() >= FIRST_GAME_TEAM ) )
+				{
+					hPlayersToKill.AddToTail( pEnts[i] );
+				}
+				continue;
+			}
+		}
+	}
+
+	// Telefrag all enemy players we've found
+	for ( int player = 0; player < hPlayersToKill.Count(); player++ )
+	{
+		hPlayersToKill[player]->TakeDamage( CTakeDamageInfo( pOwner, pOwner, 1000, DMG_CRUSH, TF_DMG_CUSTOM_TELEFRAG ) );
+	}
+
+	// Teleport to the final position
+	pOwner->SetAbsOrigin( vecFinalPos );
+	
+	// Clear velocity to prevent momentum carry-over
+	pOwner->SetAbsVelocity( vec3_origin );
+	
+	// Play a sound effect
+	pOwner->EmitSound( "Halloween.EyeballBossTeleport" );
+	
+	// Create particle effect at teleport destination
+	Vector vecParticleOrigin = vecFinalPos + Vector( 0, 0, 32 );
+	CPVSFilter filter( vecParticleOrigin );
+	TE_TFParticleEffect( filter, 0.0f, "ghost_smoke", vecParticleOrigin, vec3_angle );
+	
+	// Reset the charge meter
+	pOwner->m_Shared.SetItemChargeMeter( eLoadoutPosition, 0.0f );
+	
+	// Send animation event
+	pOwner->DoAnimationEvent( PLAYERANIMEVENT_ATTACK_SECONDARY );
+#endif
 }
 
 //-----------------------------------------------------------------------------
@@ -2135,6 +2302,9 @@ void CTFWeaponBase::IncrementAmmo( void )
 {
 	CTFPlayer *pPlayer = GetTFPlayerOwner();
 
+	int iInfiniteAmmo = 0;
+	CALL_ATTRIB_HOOK_INT( iInfiniteAmmo, has_infinite_ammo );
+
 	// If we have ammo, remove ammo and add it to clip
 	if ( !m_bReloadedThroughAnimEvent )
 	{
@@ -2144,10 +2314,11 @@ void CTFWeaponBase::IncrementAmmo( void )
 		}
 		else if ( !CheckReloadMisfire() ) 
 		{
-			if ( pPlayer && pPlayer->GetAmmoCount( m_iPrimaryAmmoType ) > 0 )
+			if ( pPlayer && pPlayer->GetAmmoCount( m_iPrimaryAmmoType ) > 0 && ( m_iClip1 < GetMaxClip1() ) )
 			{
-				m_iClip1 = MIN( ( m_iClip1 + 1 ), GetMaxClip1() );
-				pPlayer->RemoveAmmo( 1, m_iPrimaryAmmoType );
+				m_iClip1++;
+				if ( iInfiniteAmmo != 2 )
+					pPlayer->RemoveAmmo( 1, m_iPrimaryAmmoType );
 			}
 		}
 	}
@@ -2424,7 +2595,18 @@ void CTFWeaponBase::ItemBusyFrame( void )
 
 	if ( ( pOwner->m_nButtons & IN_ATTACK2 ) && /*m_bInReload == false &&*/ m_bInAttack2 == false )
 	{
-		pOwner->DoClassSpecialSkill();
+		// Check if this weapon has the ghostly dash attribute - if so, don't do class special skill
+		int iGhostlyDash = 0;
+		CALL_ATTRIB_HOOK_INT( iGhostlyDash, mod_ghostly_dash );
+		
+		// Check if this weapon has the attribute to disable alt-fire
+		int iAltFireDisabled = 0;
+		CALL_ATTRIB_HOOK_INT( iAltFireDisabled, unimplemented_altfire_disabled );
+		
+		if ( !iAltFireDisabled && !iGhostlyDash )
+		{
+			pOwner->DoClassSpecialSkill();
+		}
 		m_bInAttack2 = true;
 	}
 	else if ( !(pOwner->m_nButtons & IN_ATTACK2) && m_bInAttack2 )
@@ -3163,6 +3345,8 @@ void CTFWeaponBase::CreateMuzzleFlashEffects( C_BaseEntity *pAttachEnt, int nInd
 
 	int iMuzzleFlashAttachment = pAttachEnt->LookupAttachment( "muzzle" );
 
+	int iEjectBrassAttachment = pAttachEnt->LookupAttachment( "eject_brass" );
+
 	const char *pszMuzzleFlashEffect = NULL;
 	const char *pszMuzzleFlashModel = GetMuzzleFlashModel();
 	const char *pszMuzzleFlashParticleEffect = GetMuzzleFlashParticleEffect();
@@ -3182,12 +3366,11 @@ void CTFWeaponBase::CreateMuzzleFlashEffects( C_BaseEntity *pAttachEnt, int nInd
 	if ( iMuzzleFlashAttachment > 0 && (pszMuzzleFlashEffect || pszMuzzleFlashModel || pszMuzzleFlashParticleEffect ) )
 	{
 		pAttachEnt->GetAttachment( iMuzzleFlashAttachment, vecOrigin, angAngles );
-
 		// Muzzleflash light
-/*
+	if ( cl_muzzleflash_dlight_1st.GetBool() == true && IsFirstPersonView() ) {
 		CLocalPlayerFilter filter;
-		TE_DynamicLight( filter, 0.0f, &vecOrigin, 255, 192, 64, 5, 70.0f, 0.05f, 70.0f / 0.05f, LIGHT_INDEX_MUZZLEFLASH );
-*/
+		TE_DynamicLight( filter, 0.0f, &vecOrigin, 255, 192, 64, 5, RandomInt( 35, 105 ), 0.05f, 70.0f / 0.05f, LIGHT_INDEX_MUZZLEFLASH );
+	}
 
 		if ( pszMuzzleFlashEffect )
 		{
@@ -3225,6 +3408,25 @@ void CTFWeaponBase::CreateMuzzleFlashEffects( C_BaseEntity *pAttachEnt, int nInd
 		if ( pszMuzzleFlashParticleEffect ) 
 		{
 			DispatchMuzzleFlash( pszMuzzleFlashParticleEffect, pAttachEnt );
+		}
+
+		if ( ShouldEjectBrass() && ( cl_tf_ejectbrass.GetBool() == true ) ) {
+			const CTFWeaponInfo* pWpn = &GetTFWpnData();
+
+			if ( pWpn->m_bDoInstantEjectBrass )
+			{
+				if ( iEjectBrassAttachment > 0 )
+				{
+					Vector vecOrigin;
+					QAngle angAngles;
+					pAttachEnt->GetAttachment( iEjectBrassAttachment, vecOrigin, angAngles );
+					CEffectData data;
+					data.m_nHitBox = GetWeaponID();
+					data.m_vOrigin = vecOrigin;
+					data.m_vAngles = angAngles;
+					DispatchEffect("TF_EjectBrass", data);
+				}
+			}
 		}
 	}
 }
@@ -4627,14 +4829,17 @@ char const *CTFWeaponBase::GetShootSound( int iIndex ) const
 	const CEconItemView *pItem = GetAttributeContainer()->GetItem();
 	if ( pItem->IsValid() )
 	{
-		int nTeam = GetTeamNumber();
+		int iVisualOverride = 0;
+		CALL_ATTRIB_HOOK_INT( iVisualOverride, visuals_sound_override );
 
-		if ( TFGameRules() && TFGameRules()->IsMannVsMachineMode() && nTeam == TF_TEAM_PVE_INVADERS )
+		int nTeam = iVisualOverride ? iVisualOverride : GetTeamNumber();
+
+		if ( TFGameRules() && TFGameRules()->IsMannVsMachineMode() && nTeam == TF_TEAM_PVE_INVADERS && !iVisualOverride )
 		{
 			CTFPlayer *pPlayer = ToTFPlayer( GetOwner() );
 			if ( pPlayer && pPlayer->IsMiniBoss() )
 			{
-				// Not a real team - just a define used in replacing visuals via itemdefs ("visuals_mvm")
+				// Not a real team - just a define used in replacing visuals via itemdefs ("visuals_mvm_boss")
 				nTeam = TF_TEAM_PVE_INVADERS_GIANTS;
 			}
 		}
@@ -4928,7 +5133,13 @@ bool CTFWeaponBase::OnFireEvent( C_BaseViewModel *pViewModel, const Vector& orig
 		}
 		data.m_nDamageType = GetAttributeContainer()->GetItem() ? GetAttributeContainer()->GetItem()->GetItemDefIndex() : 0;
 		data.m_nHitBox = GetWeaponID();
+		
+		if ( ( data.m_nHitBox != TF_WEAPON_PISTOL && data.m_nHitBox != TF_WEAPON_PISTOL_SCOUT ) && ( cl_tf_ejectbrass.GetBool() == true ) ) //Disable Ejection for pistol, since that was added to the animation afterward.
+		{
 		DispatchEffect( "TF_EjectBrass", data );
+		} else if ( cl_tf_ejectbrass.GetBool() == false )
+		DispatchEffect( "TF_EjectBrass", data );
+
 		return true;
 	}
 	if ( event == AE_WPN_INCREMENTAMMO )
@@ -5025,6 +5236,7 @@ void CTFWeaponBase::ApplyOnHitAttributes( CBaseEntity *pVictimBaseEntity, CTFPla
 		if ( pVictim && 
 			 pVictim->IsPlayerClass( TF_CLASS_SPY ) && 
 			 pVictim->m_Shared.InCond( TF_COND_DISGUISED ) && 
+			 ( pVictim->m_Shared.GetDisguiseTeam() != pVictim->GetTeamNumber() ) &&
 			 !( pVictim->m_Shared.IsStealthed() || pVictim->m_Shared.InCond( TF_COND_STEALTHED_BLINK ) ) )
 		{
 			flPercentage = 0.0f;
@@ -5086,7 +5298,7 @@ void CTFWeaponBase::ApplyOnHitAttributes( CBaseEntity *pVictimBaseEntity, CTFPla
 		}
 
 		// On hit attributes don't work when you shoot disguised spies
-		if ( pVictim->m_Shared.InCond( TF_COND_DISGUISED ) )
+		if ( pVictim->m_Shared.InCond( TF_COND_DISGUISED ) && ( pVictim->m_Shared.GetDisguiseTeam() != pVictim->GetTeamNumber() ) )
 			return;
 	}
 
@@ -5649,7 +5861,7 @@ bool CTFWeaponBase::IsViewModelFlipped( void )
 		return true;
 	}
 #else
-	if ( m_bFlipViewModel != cl_flipviewmodels.GetBool() )
+	if ( m_bFlipViewModel != TeamFortress_ShouldFlipClientViewModel() )
 	{
 		return true;
 	}
@@ -5806,6 +6018,12 @@ QAngle CTFWeaponBase::GetSpreadAngles( void )
 bool CTFWeaponBase::CanPerformSecondaryAttack() const
 {
 	CTFPlayer *pOwner = ToTFPlayer( GetOwner() );
+
+	// Check if this weapon has the attribute to disable alt-fire
+	int iAltFireDisabled = 0;
+	CALL_ATTRIB_HOOK_INT( iAltFireDisabled, unimplemented_altfire_disabled );
+	if ( iAltFireDisabled )
+		return false;
 
 	// Demo shields are allowed to charge whenever
 	if ( pOwner->m_Shared.HasDemoShieldEquipped() )
@@ -6935,7 +7153,7 @@ void CTFWeaponBase::AddStatTrakModel( CEconItemView *pItem, int nStatTrakType, A
 				pStatTrakEnt->m_nSkin = nSkin;
 				m_viewmodelStatTrakAddon = pStatTrakEnt;
 				
-				if ( cl_flipviewmodels.GetBool() )
+				if ( TeamFortress_ShouldFlipClientViewModel() )
 				{
 					pStatTrakEnt->SetBodygroup( 1, 1 ); // use a special mirror-image stattrak module that appears correct for lefties
 					flScale *= -1.0f;					// flip scale

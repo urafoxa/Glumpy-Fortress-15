@@ -1,0 +1,6 @@
+"UnlitGeneric"
+{
+	"$baseTexture" "backpack/weapons/custommade/c_silencedpistol_large"
+	"$translucent" 1
+	"$vertexcolor" 1
+}

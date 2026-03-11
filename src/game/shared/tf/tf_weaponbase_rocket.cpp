@@ -63,12 +63,15 @@ END_NETWORK_TABLE()
 // Server specific.
 #ifdef GAME_DLL
 BEGIN_DATADESC( CTFBaseRocket )
+	DEFINE_THINKFUNC( FlyThink ),
 END_DATADESC()
 #endif
 
 #ifdef _DEBUG
 ConVar tf_rocket_show_radius( "tf_rocket_show_radius", "0", FCVAR_REPLICATED | FCVAR_CHEAT | FCVAR_DEVELOPMENTONLY, "Render rocket radius." );
 #endif
+
+ConVar cf_revert_airstrike( "cf_revert_airstrike", "0", FCVAR_NOTIFY | FCVAR_REPLICATED, "Revert Air Strike to pre-Tough Break mechanics. 0 = current mechanics (blast radius penalty when rocket jumping), 1 = pre-Tough Break (no penalty)." );
 
 //=============================================================================
 //
@@ -165,6 +168,7 @@ void CTFBaseRocket::Spawn( void )
 
 	// Setup the touch and think functions.
 	SetTouch( &CTFBaseRocket::RocketTouch );
+	SetThink( &CTFBaseRocket::FlyThink );
 	SetNextThink( gpGlobals->curtime );
 
 	AddFlag( FL_GRENADE );
@@ -349,6 +353,25 @@ void CTFBaseRocket::RocketTouch( CBaseEntity *pOther )
 }
 
 //-----------------------------------------------------------------------------
+// Purpose: Update rocket angles to match its velocity (for gravity-affected projectiles)
+//-----------------------------------------------------------------------------
+void CTFBaseRocket::FlyThink( void )
+{
+	// Update angles to face the direction we're moving
+	Vector vecVelocity = GetAbsVelocity();
+	
+	// Only update angles if we have significant velocity
+	if ( vecVelocity.LengthSqr() > 1.0f )
+	{
+		QAngle angles;
+		VectorAngles( vecVelocity, angles );
+		SetAbsAngles( angles );
+	}
+
+	SetNextThink( gpGlobals->curtime + 0.01f );
+}
+
+//-----------------------------------------------------------------------------
 // Purpose:
 //-----------------------------------------------------------------------------
 unsigned int CTFBaseRocket::PhysicsSolidMaskForEntity( void ) const
@@ -457,6 +480,7 @@ void CTFBaseRocket::Explode( trace_t *pTrace, CBaseEntity *pOther )
 	}
 
 	int iNoSelfBlastDamage = 0;
+	int iVisualOverride = 0;
 	CTFWeaponBase *pWeapon = dynamic_cast< CTFWeaponBase * >( GetOriginalLauncher() );
 	if ( pWeapon )
 	{
@@ -467,6 +491,9 @@ void CTFBaseRocket::Explode( trace_t *pTrace, CBaseEntity *pOther )
 		{
 			iCustomParticleIndex = GetParticleSystemIndex( "ExplosionCore_Wall_Jumper" );
 		}
+
+		//Override player rockets
+		CALL_ATTRIB_HOOK_INT_ON_OTHER( pWeapon, iVisualOverride, visuals_sound_override );
 	}
 	
 	int iLargeExplosion = 0;
@@ -477,7 +504,13 @@ void CTFBaseRocket::Explode( trace_t *pTrace, CBaseEntity *pOther )
 		DispatchParticleEffect( "fluidSmokeExpl_ring_mvm", GetAbsOrigin(), GetAbsAngles() );
 	}
 
-	TE_TFExplosion( filter, 0.0f, vecOrigin, pTrace->plane.normal, GetWeaponID(), pOther->entindex(), ownerWeaponDefIndex, SPECIAL1, iCustomParticleIndex );
+	int nTeam = iVisualOverride ? iVisualOverride : GetTeamNumber();
+	if ( TFGameRules() && TFGameRules()->IsMannVsMachineMode() && nTeam == TF_TEAM_PVE_INVADERS && !iVisualOverride )
+	{
+		nTeam = TF_TEAM_PVE_INVADERS_GIANTS;
+	}
+
+	TE_TFExplosion( filter, 0.0f, vecOrigin, pTrace->plane.normal, GetWeaponID(), pOther->entindex(), ownerWeaponDefIndex, SPECIAL1, iCustomParticleIndex, nTeam );
 
 	CSoundEnt::InsertSound ( SOUND_COMBAT, vecOrigin, 1024, 3.0 );
 
@@ -601,7 +634,8 @@ float CTFBaseRocket::GetRadius()
 
 		CTFPlayer *pTFPlayer = ToTFPlayer( pAttacker );
 		// Airstrike gets a small blast radius penalty while Rjing
-		if ( pTFPlayer && pTFPlayer->m_Shared.InCond( TF_COND_BLASTJUMPING ) )
+		extern ConVar cf_revert_airstrike;
+		if ( !cf_revert_airstrike.GetBool() && pTFPlayer && pTFPlayer->m_Shared.InCond( TF_COND_BLASTJUMPING ) )
 		{
 			// Using this attr to key in the AirStrike
 			float flRocketJumpAttackBonus = 1.0f;

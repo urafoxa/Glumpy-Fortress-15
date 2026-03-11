@@ -86,10 +86,11 @@ static void *Launcher_GetProcAddress( void *pHandle, const char *pszName )
 #define MessageBox( x, text, title, y) SDL_ShowSimpleMessageBox( SDL_MESSAGEBOX_ERROR, title, text, NULL )
 #endif
 
-static const AppId_t k_unSDK2013MPAppId = 243750;
+//static const AppId_t k_unSDK2013MPAppId = 243750;
+static const AppId_t k_unBetterFortressAppId = 3768450;
 
 #ifdef MOD_LAUNCHER
-static const AppId_t k_unMyModAppid = MOD_APPID;
+static const AppId_t k_unMyModAppid = k_unBetterFortressAppId;
 #else
 static const AppId_t k_unMyModAppid = k_unSDK2013MPAppId;
 #endif
@@ -145,8 +146,10 @@ static bool LoadSteam( const char *pRootDir )
 	#define STEAM_API_DLL_PATH	"%s\\" PLATFORM_BIN_DIR "\\steam_api64.dll"
 #elif defined( _WIN32 )
 	#define STEAM_API_DLL_PATH	"%s\\" PLATFORM_BIN_DIR "\\steam_api.dll"
+#elif defined( LINUX64 )
+	#define STEAM_API_DLL_PATH	"%s/bin/linux64/libsteam_api.so"
 #elif defined( POSIX )
-	#define STEAM_API_DLL_PATH	"%s/" PLATFORM_BIN_DIR "/libsteam_api.so"
+	#define STEAM_API_DLL_PATH	"%s/bin/libsteam_api.so"
 #endif
 
 	char szBuffer[4096];
@@ -217,9 +220,9 @@ static bool GetGameInstallDir( const char *pRootDir, char *pszBuf, int nBufSize 
 	}
 
 	uint32_t unLength = 0;
-	if ( pSteamApps->BIsAppInstalled( k_unSDK2013MPAppId ) )
+	if ( pSteamApps->BIsAppInstalled(3768450) )
 	{
-		unLength = pSteamApps->GetAppInstallDir( k_unSDK2013MPAppId, pszBuf, nBufSize );
+		unLength = pSteamApps->GetAppInstallDir(3768450, pszBuf, nBufSize );
 	}
 
 	UnloadSteam();
@@ -432,12 +435,11 @@ int APIENTRY WinMain( HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdL
 {
 	HandleRelaunching();
 
-	// Must add 'bin' to the path....
+	// Add our local bin dir to PATH
 	char* pPath = getenv("PATH");
-
 	char szBuffer[4096];
 
-	// Use the .EXE name to determine the root directory
+	// Get directory where this EXE is located
 	char moduleName[MAX_PATH];
 	if ( !GetModuleFileName( hInstance, moduleName, MAX_PATH ) )
 	{
@@ -445,50 +447,59 @@ int APIENTRY WinMain( HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdL
 		return 0;
 	}
 
-	// Get the root directory the .exe is in
-	char* pRootDir = GetBaseDir( moduleName );
-	const char *pBinaryGameDir = pRootDir;
-	char szGameInstallDir[4096];
-	if ( !GetGameInstallDir( pRootDir, szGameInstallDir, 4096 ) )
-	{
-		return 1;
-	}
-
-	pBinaryGameDir = szGameInstallDir;
-
-	SetEnvironmentVariableA( "SDK_EXEC_DIR", szGameInstallDir );
+	char* pBinaryGameDir = GetBaseDir( moduleName );
+	SetEnvironmentVariableA( "SDK_EXEC_DIR", pBinaryGameDir );
 
 #define LAUNCHER_DLL_PATH	"%s\\" PLATFORM_BIN_DIR "\\launcher.dll"
 #define LAUNCHER_PATH		"%s\\" PLATFORM_BIN_DIR
 
+	// Extend PATH with bin\x64 (or bin\win32)
 	_snprintf( szBuffer, sizeof( szBuffer ), "PATH=" LAUNCHER_PATH ";%s", pBinaryGameDir, pPath );
 	szBuffer[sizeof( szBuffer ) - 1] = '\0';
 	_putenv( szBuffer );
 
-	// Assemble the full path to our "launcher.dll"
+	// Full DLL path
 	_snprintf( szBuffer, sizeof( szBuffer ), LAUNCHER_DLL_PATH, pBinaryGameDir );
 	szBuffer[sizeof( szBuffer ) - 1] = '\0';
 
-	// STEAM OK ... filesystem not mounted yet
+	// Try to load the launcher DLL
 	HINSTANCE launcher = LoadLibraryEx( szBuffer, NULL, LOAD_WITH_ALTERED_SEARCH_PATH );
-
 	if ( !launcher )
 	{
-		char *pszError;
-		FormatMessage(FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_FROM_SYSTEM | FORMAT_MESSAGE_IGNORE_INSERTS, NULL, GetLastError(), MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT), (LPTSTR)&pszError, 0, NULL);
+		char *pszError = nullptr;
+		DWORD dwError = GetLastError();
 
-		char szBuf[1024];
-		_snprintf(szBuf, sizeof( szBuf ), "Failed to load the launcher DLL:\n\n%s", pszError);
-		szBuf[sizeof( szBuf ) - 1] = '\0';
-		MessageBox( 0, szBuf, "Launcher Error", MB_OK );
+		FormatMessageA(
+			FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_FROM_SYSTEM | FORMAT_MESSAGE_IGNORE_INSERTS,
+			NULL,
+			dwError,
+			MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT),
+			(LPSTR)&pszError,
+			0,
+			NULL
+		);
 
-		LocalFree(pszError);
+		char szBuf[2048];
+		_snprintf(
+			szBuf, sizeof(szBuf),
+			"Failed to load the DLL:\n\nPath: %s\n\nSystem Error: %s",
+			szBuffer,
+			pszError ? pszError : "Unknown error"
+		);
+		szBuf[sizeof(szBuf) - 1] = '\0';
+
+		MessageBoxA( 0, szBuf, "Launcher Error", MB_OK );
+
+		if ( pszError )
+			LocalFree( pszError );
+
 		return 0;
 	}
 
 	LauncherMain_t main = (LauncherMain_t)GetProcAddress( launcher, "LauncherMain" );
 	return main( hInstance, hPrevInstance, lpCmdLine, nCmdShow );
 }
+
 
 #elif defined (POSIX)
 
@@ -570,7 +581,7 @@ static void WaitForDebuggerConnect( int argc, char *argv[], int time )
 
 static const char *GetExecutableModName( char *pszExePath )
 {
-	static char s_szFinalFilename[ MAX_PATH + 1 ] = "hl2";
+	static char s_szFinalFilename[ MAX_PATH + 1 ] = "customfortress";
 
 	char szExePath[ MAX_PATH + 1 ];
 	strncpy( szExePath, pszExePath, sizeof( szExePath ) );
@@ -628,7 +639,7 @@ int main( int argc, char *argv[] )
 	}
 
 	char szExecutable[8192];
-	snprintf(szExecutable, sizeof(szExecutable), "%s/hl2.sh", szGameInstallDir );
+	snprintf(szExecutable, sizeof(szExecutable), "%s/customfortress.sh", szGameInstallDir );
 
 	std::vector<char *> new_argv;
 

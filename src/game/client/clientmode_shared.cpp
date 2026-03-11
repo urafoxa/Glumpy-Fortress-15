@@ -11,6 +11,7 @@
 #include "cbase.h"
 #include "clientmode_shared.h"
 #include "iinput.h"
+#include "input.h"
 #include "view_shared.h"
 #include "iviewrender.h"
 #include "hud_basechat.h"
@@ -35,6 +36,8 @@
 #include "cam_thirdperson.h"
 #include <vgui/ILocalize.h>
 #include "hud_vote.h"
+
+extern ConVar cam_freelook;
 #include "ienginevgui.h"
 #include "sourcevr/isourcevirtualreality.h"
 #if defined( _X360 )
@@ -65,6 +68,7 @@ extern ConVar replay_rendersetting_renderglow;
 #include "c_tf_player.h"
 #include "econ_item_description.h"
 #include "c_tf_team.h"
+#include "tf_hud_mainmenuoverride.h"
 #endif
 
 // memdbgon must be the last include file in a .cpp file!!!
@@ -317,7 +321,22 @@ void ClientModeShared::ReloadScheme( bool flushLowLevel )
 
 	BuildGroup::ClearResFileCache();
 
+	// Reload scheme fonts to pick up any changes
+	vgui::scheme()->ReloadFonts();
+
 	m_pViewport->ReloadScheme( "resource/ClientScheme.res" );
+
+#if defined( TF_CLIENT_DLL )
+	// Reload the main menu by forcing it to re-apply its scheme settings
+	CHudMainMenuOverride *pMMOverride = (CHudMainMenuOverride*)( gViewPortInterface->FindPanelByName( PANEL_MAINMENUOVERRIDE ) );
+	if ( pMMOverride )
+	{
+		vgui::HScheme pScheme = vgui::scheme()->LoadSchemeFromFileEx( enginevgui->GetPanel( PANEL_CLIENTDLL ), "resource/ClientScheme.res", "ClientScheme" );
+		pMMOverride->SetScheme( pScheme );
+		pMMOverride->SetProportional( true );
+		pMMOverride->InvalidateLayout( false, true );
+	}
+#endif
 }
 
 
@@ -440,6 +459,15 @@ void ClientModeShared::OverrideView( CViewSetup *pSetup )
 		return;
 
 	pPlayer->OverrideView( pSetup );
+	
+	// Override camera position and angles if freelook (camera lock) is enabled
+	if ( cam_freelook.GetBool() && ::input->CAM_IsThirdPerson() )
+	{
+		CInput *pInput = static_cast<CInput*>( ::input );
+		pSetup->origin = pInput->m_vecFreeLookOrigin;
+		pSetup->angles = pInput->m_angFreeLookAngles;
+		return;
+	}
 
 	if( ::input->CAM_IsThirdPerson() )
 	{
@@ -1019,7 +1047,7 @@ void ClientModeShared::FireGameEvent( IGameEvent *event )
 		if ( PlayerNameNotSetYet(event->GetString("name")) )
 			return;
 
-		if ( !IsInCommentaryMode() )
+		if ( !IsInCommentaryMode() && !engine->IsLevelMainMenuBackground() )
 		{
 			wchar_t wszLocalized[100];
 			wchar_t wszPlayerName[ MAX_PLAYER_NAME_LENGTH ];
@@ -1049,7 +1077,7 @@ void ClientModeShared::FireGameEvent( IGameEvent *event )
 		if ( PlayerNameNotSetYet( pszPlayerName ) )
 			return;
 
-		if ( !IsInCommentaryMode() )
+		if ( !IsInCommentaryMode() && !engine->IsLevelMainMenuBackground() )
 		{
 			wchar_t wszPlayerName[MAX_PLAYER_NAME_LENGTH];
 			g_pVGuiLocalize->ConvertANSIToUnicode( pszPlayerName, wszPlayerName, sizeof(wszPlayerName) );
@@ -1124,7 +1152,7 @@ void ClientModeShared::FireGameEvent( IGameEvent *event )
 			}
 #endif
 
-			if ( !IsInCommentaryMode() )
+			if ( !IsInCommentaryMode() && !engine->IsLevelMainMenuBackground() )
 			{
 				wchar_t wszLocalized[100];
 				if ( bAutoTeamed )
@@ -1233,7 +1261,7 @@ void ClientModeShared::FireGameEvent( IGameEvent *event )
 	}
 	else if ( Q_strcmp( "server_cvar", eventname ) == 0 )
 	{
-		if ( !IsInCommentaryMode() )
+		if ( !IsInCommentaryMode() && !engine->IsLevelMainMenuBackground() )
 		{
 			wchar_t wszCvarName[64];
 			g_pVGuiLocalize->ConvertANSIToUnicode( event->GetString("cvarname"), wszCvarName, sizeof(wszCvarName) );
@@ -1259,7 +1287,7 @@ void ClientModeShared::FireGameEvent( IGameEvent *event )
 		if ( !hudChat || !pPlayer )
 			return;
 
-		if ( !IsInCommentaryMode() )
+		if ( !IsInCommentaryMode() && !engine->IsLevelMainMenuBackground() )
 		{
 			CAchievementMgr *pAchievementMgr = dynamic_cast<CAchievementMgr *>( engine->GetAchievementMgr() );
 			if ( !pAchievementMgr )

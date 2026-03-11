@@ -280,6 +280,7 @@ IMPLEMENT_SERVERCLASS_ST_NOBASE( CBaseEntity, DT_BaseEntity )
 	SendPropInt		(SENDINFO(m_clrRender),	32, SPROP_UNSIGNED),
 	SendPropInt		(SENDINFO(m_iTeamNum),		TEAMNUM_NUM_BITS, 0),
 	SendPropInt		(SENDINFO(m_CollisionGroup), 5, SPROP_UNSIGNED),
+	SendPropFloat	(SENDINFO(m_flGravity)),
 	SendPropFloat	(SENDINFO(m_flElasticity), 0, SPROP_COORD),
 	SendPropFloat	(SENDINFO(m_flShadowCastDistance), 12, SPROP_UNSIGNED ),
 	SendPropEHandle (SENDINFO(m_hOwnerEntity)),
@@ -312,6 +313,26 @@ IMPLEMENT_SERVERCLASS_ST_NOBASE( CBaseEntity, DT_BaseEntity )
 
 END_SEND_TABLE()
 
+#ifdef SDK_TEMP_PATCH
+//Ficool2 Temp Fix
+static bool g_bInRegisterModelLoadCallback = false;
+static void MarkDynamicModelLoadedStringTable( const model_t* pModel )
+{
+	// engine bugfix: ensure this dynamic model is marked as loaded in the string table
+	// TODO remove this when the engine is updated
+	extern INetworkStringTable* g_pStringTableDynamicModels;
+	if ( g_pStringTableDynamicModels )
+	{
+		const char* pModelName = modelinfo->GetModelName( pModel );
+		int nIdx = g_pStringTableDynamicModels->FindStringIndex( pModelName );
+		if ( nIdx != INVALID_STRING_INDEX )
+		{
+			bool bLoaded = true;
+			g_pStringTableDynamicModels->SetStringUserData( nIdx, sizeof( bLoaded ), &bLoaded );
+		}
+	}
+}
+#endif
 
 // dynamic models
 class CBaseEntityModelLoadProxy
@@ -329,7 +350,16 @@ protected:
 public:
 	explicit CBaseEntityModelLoadProxy( CBaseEntity *pEntity ) : m_pHandler( new Handler( pEntity ) ) { }
 	~CBaseEntityModelLoadProxy() { delete m_pHandler; }
+#ifdef SDK_TEMP_PATCH
+	void Register( int nModelIndex ) const 
+	{ 
+		g_bInRegisterModelLoadCallback = true;
+		modelinfo->RegisterModelLoadCallback( nModelIndex, m_pHandler ); 
+		g_bInRegisterModelLoadCallback = false;
+	}
+#else
 	void Register( int nModelIndex ) const { modelinfo->RegisterModelLoadCallback( nModelIndex, m_pHandler ); }
+#endif
 	operator CBaseEntity * () const { return m_pHandler->m_pEntity; }
 
 private:
@@ -341,6 +371,9 @@ static CUtlHashtable< CBaseEntityModelLoadProxy, empty_t, PointerHashFunctor, Po
 
 void CBaseEntityModelLoadProxy::Handler::OnModelLoadComplete( const model_t *pModel )
 {
+#ifdef SDK_TEMP_PATCH
+	MarkDynamicModelLoadedStringTable( pModel );
+#endif
 	m_pEntity->OnModelLoadComplete( pModel );
 	sg_DynamicLoadHandlers.Remove( m_pEntity ); // NOTE: destroys *this!
 }
@@ -2421,8 +2454,22 @@ BEGIN_ENT_SCRIPTDESC_ROOT( CBaseEntity, "Root class of all server-side entities"
 	DEFINE_SCRIPTFUNC_NAMED( ScriptGetSolid, "GetSolid", "" )
 	DEFINE_SCRIPTFUNC_NAMED( ScriptSetSolid, "SetSolid", "" )
 	
-	DEFINE_SCRIPTFUNC_NAMED( ScriptMakePhysics, "MakePhysical", "Give the entity Physics" )
+	DEFINE_SCRIPTFUNC_NAMED( ScriptMakePhysics, "MakePhysics", "Give the entity Physics" )
 	DEFINE_SCRIPTFUNC_NAMED( ScriptDestroyPhysics, "DestroyPhysics", "Remove the entity Physics" )
+	DEFINE_SCRIPTFUNC_NAMED( ScriptSetMass, "SetMass", "Set the entity's Mass" )
+	DEFINE_SCRIPTFUNC_NAMED( ScriptGetMass, "GetMass", "Get the entity's Mass" )
+	DEFINE_SCRIPTFUNC_NAMED( ScriptSetBuoyancyRatio, "SetBuoyancyRatio", "Set the entity's Bouyancy, 0 = sink, 1 = float" )
+	DEFINE_SCRIPTFUNC_NAMED( ScriptSetElasticity, "SetElasticity", "Set the entity's Elasticity" )
+	DEFINE_SCRIPTFUNC_NAMED( ScriptGetElasticity, "GetElasticity", "Get the entity's Elasticity" )
+	DEFINE_SCRIPTFUNC_NAMED( ScriptToggleCollisionsOn, "ToggleCollisionsOn", "Toggle Collisions between 2 entities" )
+
+	//TF2 Specific
+	DEFINE_SCRIPTFUNC_NAMED( ScriptSetExplodeProjectilesOnTouch, "SetExplodeProjectilesOnTouch", "Make Some Projectiles explode on contact with this entity." )
+	DEFINE_SCRIPTFUNC_NAMED( ScriptCanStickProjectiles, "CanStickProjectiles", "Make Stickybombs attach with this entity." )
+	DEFINE_SCRIPTFUNC_NAMED( ScriptCanBeHealed, "CanBeHealed", "Make this entity Healable from Mediguns." )
+	DEFINE_SCRIPTFUNC_NAMED( ScriptSetTargetable, "SetTargetable", "UNFINISHED: Make this entity Targetable from Bots or Sentryguns." )
+	DEFINE_SCRIPTFUNC_NAMED( ScriptSetBurnable, "SetBurnable", "Make this entity catch fire from Pyro weapons.")
+	DEFINE_SCRIPTFUNC_NAMED( ScriptSetObservable, "SetObservable", "Make this entity Observable.")
 	
 	DEFINE_SCRIPTFUNC( TerminateScriptScope, "Clear the current script scope for this entity" )
 
@@ -2607,6 +2654,8 @@ void CBaseEntity::StartTouch( CBaseEntity *pOther )
 	// notify parent
 	if ( m_pParent != NULL )
 		m_pParent->StartTouch( pOther );
+
+	ScriptOnStartTouch( pOther );
 }
 
 void CBaseEntity::Touch( CBaseEntity *pOther )
@@ -2617,6 +2666,56 @@ void CBaseEntity::Touch( CBaseEntity *pOther )
 	// notify parent of touch
 	if ( m_pParent != NULL )
 		m_pParent->Touch( pOther );
+
+	ScriptOnTouch( pOther );
+}
+
+void CBaseEntity::ScriptOnStartTouch( CBaseEntity *pOther )
+{ 
+	if ( ScriptHookEnabled( "OnStartTouch" ) )
+	{		
+		IScriptVM *pVM = g_pScriptVM;
+
+		ScriptVariant_t varTable;
+		pVM->CreateTable( varTable );
+		
+		pVM->SetValue( varTable, "toucher_entity", ToHScript( pOther ) );  
+		pVM->SetValue( varTable, "touched_entity", ToHScript( this ) );
+
+		RunScriptHook( "OnStartTouch", varTable );
+	}
+}
+
+void CBaseEntity::ScriptOnTouch( CBaseEntity *pOther )
+{ 
+	if ( ScriptHookEnabled( "OnTouch" ) )
+	{		
+		IScriptVM *pVM = g_pScriptVM;
+
+		ScriptVariant_t varTable;
+		pVM->CreateTable( varTable );
+		
+		pVM->SetValue( varTable, "toucher_entity", ToHScript( pOther ) );  
+		pVM->SetValue( varTable, "touched_entity", ToHScript( this ) );
+
+		RunScriptHook( "OnTouch", varTable );
+	}
+}
+
+void CBaseEntity::ScriptOnEndTouch( CBaseEntity *pOther )
+{ 
+	if ( ScriptHookEnabled( "OnEndTouch" ) )
+	{		
+		IScriptVM *pVM = g_pScriptVM;
+
+		ScriptVariant_t varTable;
+		pVM->CreateTable( varTable );
+		
+		pVM->SetValue( varTable, "toucher_entity", ToHScript( pOther ) );  
+		pVM->SetValue( varTable, "touched_entity", ToHScript( this ) );
+
+		RunScriptHook( "OnEndTouch", varTable );
+	}
 }
 
 void CBaseEntity::EndTouch( CBaseEntity *pOther )
@@ -2626,6 +2725,8 @@ void CBaseEntity::EndTouch( CBaseEntity *pOther )
 	{
 		m_pParent->EndTouch( pOther );
 	}
+
+	ScriptOnEndTouch( pOther );
 }
 
 
@@ -4450,10 +4551,15 @@ bool CBaseEntity::AcceptInput( const char *szInputName, CBaseEntity *pActivator,
 
 							g_pScriptVM->SetValue( "activator", ( pActivator ) ? ScriptVariant_t( pActivator->GetScriptInstance() ) : SCRIPT_VARIANT_NULL );
 							g_pScriptVM->SetValue( "caller", ( pCaller ) ? ScriptVariant_t( pCaller->GetScriptInstance() ) : SCRIPT_VARIANT_NULL );
+							g_pScriptVM->SetValue( "input_value", Value.String() );
 
 							if( CallScriptFunction( szScriptFunctionName, &functionReturn ) )
 							{
 								bCallInputFunc = functionReturn;
+								// Allow reassignment of activator and caller of the input
+								IScriptVM *pVM = g_pScriptVM;
+								pVM->IfHas<HSCRIPT>		( m_ScriptScope, "activator",	[&](HSCRIPT value) { data.pActivator = ToEnt(value); } );
+								pVM->IfHas<HSCRIPT>		( m_ScriptScope, "caller",		[&](HSCRIPT value) { data.pCaller = ToEnt(value); } );
 							}
 						}
 
@@ -4466,6 +4572,7 @@ bool CBaseEntity::AcceptInput( const char *szInputName, CBaseEntity *pActivator,
 						{
 							g_pScriptVM->ClearValue( "activator" );
 							g_pScriptVM->ClearValue( "caller" );
+							g_pScriptVM->ClearValue( "input_value" );
 						}
 					}
 					else if ( dmap->dataDesc[i].flags & FTYPEDESC_KEY )
@@ -4650,6 +4757,20 @@ void CBaseEntity::InputKill( inputdata_t &inputdata )
 		SetOwnerEntity( NULL );
 	}
 
+	if ( IsPlayer() )
+	{
+		CBasePlayer *pPlayer = (CBasePlayer *) this;
+		if ( pPlayer->IsBot() )
+		{
+			if ( pPlayer )
+			{
+				pPlayer->Remove();
+				engine->ServerCommand( UTIL_VarArgs( "kickid %d\n", pPlayer->GetUserID() ) );
+			}
+		}
+		return;
+	}
+
 	UTIL_Remove( this );
 }
 
@@ -4668,6 +4789,20 @@ void CBaseEntity::InputKillHierarchy( inputdata_t &inputdata )
 	{
 		pOwner->DeathNotice( this );
 		SetOwnerEntity( NULL );
+	}
+
+	if ( IsPlayer() )
+	{
+		CBasePlayer *pPlayer = (CBasePlayer *) this;
+		if ( pPlayer->IsBot() )
+		{
+			if ( pPlayer )
+			{
+				pPlayer->Remove();
+				engine->ServerCommand( UTIL_VarArgs( "kickid %d\n", pPlayer->GetUserID() ) );
+			}
+		}
+		return;
 	}
 
 	UTIL_Remove( this );
@@ -5498,9 +5633,8 @@ HSCRIPT CBaseEntity::ScriptGetModelKeyValues( void )
 		// UNDONE: how does destructor get called on this
 		m_pScriptModelKeyValues = new CScriptKeyValues( pModelKeyValues );
 
-		// UNDONE: who calls ReleaseInstance on this??? Does name need to be unique???
-
 		hScript = g_pScriptVM->RegisterInstance( m_pScriptModelKeyValues );
+		m_pScriptModelKeyValues->m_hScriptInstance = hScript;
 		
 		/* 
 		KeyValues *pParticleEffects = pModelKeyValues->FindKey("Particles");
@@ -5723,12 +5857,35 @@ static ConCommand ent_viewoffset("ent_viewoffset", CC_Ent_ViewOffset, "Displays 
 //------------------------------------------------------------------------------
 void CC_Ent_Remove( const CCommand& args )
 {
-	CBaseEntity *pEntity = NULL;
+	//Check who is calling the command
+	CBasePlayer *pPlayer = UTIL_GetCommandClient();
+	if( !UTIL_HandleCheatCmdForPlayer(pPlayer) ) 
+		return;
 
+	CBaseEntity *pEntity = NULL;
+	
 	// If no name was given set bits based on the picked
 	if ( FStrEq( args[1],"") ) 
 	{
 		pEntity = FindPickerEntity( UTIL_GetCommandClient() );
+	}
+	if ( FStrEq( args[1], "worldspawn" ) || (pEntity && pEntity->IsWorld()) )
+	{
+		Msg( "You are not allowed to to remove worldspawn\n" );
+		return;
+	}
+	else if (( FStrEq( args[1], "player" ) ) || (pEntity && pEntity->IsPlayer()) )
+	{
+		return;
+	}
+	else if ( FStrEq( args[1], "!player" ) || (pEntity && pEntity->IsPlayer()) )
+	{
+		return;
+	}
+	else if ( FStrEq( args[1], "!activator" ) )
+	{
+		Msg( "%s erased themselves from the server.\n", pPlayer->GetPlayerName() );
+		engine->ServerCommand( UTIL_VarArgs( "kickid %d %s\n", pPlayer->GetUserID(), "You erased yourself from the server." ) );
 	}
 	else 
 	{
@@ -5757,22 +5914,51 @@ void CC_Ent_Remove( const CCommand& args )
 	// Found one?
 	if ( pEntity )
 	{
-		Msg( "Removed %s(%s)\n", STRING(pEntity->m_iClassname), pEntity->GetDebugName() );
-		UTIL_Remove( pEntity );
+		if ( !pEntity->IsPlayer() )
+		{
+			Msg( "Removed %s(%s)\n", STRING(pEntity->m_iClassname), pEntity->GetDebugName() );
+			UTIL_Remove( pEntity );
+		}
+		else	
+		{
+			CTFPlayer *pTarget = ToTFPlayer( pEntity );
+			if ( pTarget )
+			{
+				ClientPrint( pPlayer, HUD_PRINTCONSOLE, "You cannot remove players anymore...\n" );
+			}
+		}
 	}
 }
-static ConCommand ent_remove("ent_remove", CC_Ent_Remove, "Removes the given entity(s)\n\tArguments:   	{entity_name} / {class_name} / no argument picks what player is looking at ", FCVAR_CHEAT);
+static ConCommand ent_remove("ent_remove", CC_Ent_Remove, "Removes the given entity(s)\n\tArguments:   	{entity_name} / {class_name} / no argument picks what player is looking at ");
 
 //------------------------------------------------------------------------------
 void CC_Ent_RemoveAll( const CCommand& args )
 {
+	//Check who is calling the command
+	CBasePlayer *pPlayer = UTIL_GetCommandClient();
+	if( !UTIL_HandleCheatCmdForPlayer(pPlayer) ) 
+		return;
+
 	// If no name was given remove based on the picked
 	if ( args.ArgC() < 2 )
 	{
 		Msg( "Removes all entities of the specified type\n\tArguments:   	{entity_name} / {class_name}\n" );
+		return;
 	}
-	else 
+	else if ( FStrEq( args[1], "worldspawn" ) )
 	{
+		Msg( "You are not allowed to to remove worldspawn\n" );
+		return;
+	}
+	else if ( FStrEq( args[1], "player" ) )
+	{
+		Msg( "You are not allowed to to remove all players\n" );
+		return;
+	}
+	else
+	{
+
+
 		// Otherwise remove based on name or classname
 		int iCount = 0;
 		CBaseEntity *ent = NULL;
@@ -5804,12 +5990,12 @@ void CC_Ent_SetName( const CCommand& args )
 {
 	CBaseEntity *pEntity = NULL;
 
+	CBasePlayer *pPlayer = ToBasePlayer( UTIL_GetCommandClient() );
+	if( !UTIL_HandleCheatCmdForPlayer(pPlayer) ) 
+		return;
+
 	if ( args.ArgC() < 1 )
 	{
-		CBasePlayer *pPlayer = ToBasePlayer( UTIL_GetCommandClient() );
-		if (!pPlayer)
-			return;
-
 		ClientPrint( pPlayer, HUD_PRINTCONSOLE, "Usage:\n   ent_setname <new name> <entity name>\n" );
 	}
 	else
@@ -5843,7 +6029,7 @@ void CC_Ent_SetName( const CCommand& args )
 		}
 	}
 }
-static ConCommand ent_setname("ent_setname", CC_Ent_SetName, "Sets the targetname of the given entity(s)\n\tArguments:   	{new entity name} {entity_name} / {class_name} / no argument picks what player is looking at ", FCVAR_CHEAT);
+static ConCommand ent_setname("ent_setname", CC_Ent_SetName, "Sets the targetname of the given entity(s)\n\tArguments:   	{new entity name} {entity_name} / {class_name} / no argument picks what player is looking at ", FCVAR_NONE );
 
 //------------------------------------------------------------------------------
 void CC_Find_Ent( const CCommand& args )
@@ -6011,10 +6197,8 @@ public:
 	virtual void CommandCallback( const CCommand &command )
 	{
 		CBasePlayer *pPlayer = ToBasePlayer( UTIL_GetCommandClient() );
-		if (!pPlayer)
-		{
+		if( !UTIL_HandleCheatCmdForPlayer(pPlayer) ) 
 			return;
-		}
 
 		// fires a command from the console
 		if ( command.ArgC() < 2 )
@@ -6039,6 +6223,7 @@ public:
 			//	  ent_create point_servercommand; ent_setname mine; ent_fire mine command "rcon_password mynewpassword"
 			// So, I'm removing the ability for anyone to execute ent_fires on dedicated servers (we can't check to see if
 			// this command is going to connect with a point_servercommand entity here, because they could delay the event and create it later).
+			/*
 			if ( engine->IsDedicatedServer() )
 			{
 				// We allow people with disabled autokick to do it, because they already have rcon.
@@ -6055,6 +6240,8 @@ public:
 						return;
 				}
 			}
+			*/
+			
 
 			if ( command.ArgC() >= 3 )
 			{
@@ -6237,15 +6424,12 @@ private:
 };
 
 static CEntFireAutoCompletionFunctor g_EntFireAutoComplete;
-static ConCommand ent_fire("ent_fire", &g_EntFireAutoComplete, "Usage:\n   ent_fire <target> [action] [value] [delay]\n", FCVAR_CHEAT, &g_EntFireAutoComplete );
+static ConCommand ent_fire("ent_fire", &g_EntFireAutoComplete, "Usage:\n   ent_fire <target> [action] [value] [delay]\n", FCVAR_NONE, &g_EntFireAutoComplete );
 
 void CC_Ent_CancelPendingEntFires( const CCommand& args )
 {
-	if ( !UTIL_IsCommandIssuedByServerAdmin() )
-		return;
-
 	CBasePlayer *pPlayer = ToBasePlayer( UTIL_GetCommandClient() );
-	if (!pPlayer)
+	if( !UTIL_HandleCheatCmdForPlayer(pPlayer) ) 
 		return;
 
 	g_EventQueue.CancelEvents( pPlayer );
@@ -6260,10 +6444,8 @@ static ConCommand ent_cancelpendingentfires("ent_cancelpendingentfires", CC_Ent_
 void CC_Ent_Info( const CCommand& args )
 {
 	CBasePlayer *pPlayer = ToBasePlayer( UTIL_GetCommandClient() );
-	if (!pPlayer)
-	{
+	if( !UTIL_HandleCheatCmdForPlayer(pPlayer) ) 
 		return;
-	}
 	
 	if ( args.ArgC() < 2 )
 	{
@@ -6309,7 +6491,7 @@ void CC_Ent_Info( const CCommand& args )
 		}
 	}
 }
-static ConCommand ent_info("ent_info", CC_Ent_Info, "Usage:\n   ent_info <class name>\n", FCVAR_CHEAT);
+static ConCommand ent_info("ent_info", CC_Ent_Info, "Usage:\n   ent_info <class name>\n", FCVAR_NONE);
 
 
 //------------------------------------------------------------------------------
@@ -6319,9 +6501,12 @@ static ConCommand ent_info("ent_info", CC_Ent_Info, "Usage:\n   ent_info <class 
 //------------------------------------------------------------------------------
 void CC_Ent_Messages( const CCommand& args )
 {
+	CBasePlayer *pPlayer = UTIL_GetCommandClient();
+	if( !UTIL_HandleCheatCmdForPlayer(pPlayer) ) 
+		return;
 	SetDebugBits(UTIL_GetCommandClient(),args[1],OVERLAY_MESSAGE_BIT);
 }
-static ConCommand ent_messages("ent_messages", CC_Ent_Messages ,"Toggles input/output message display for the selected entity(ies).  The name of the entity will be displayed as well as any messages that it sends or receives.\n\tArguments:   	{entity_name} / {class_name} / no argument picks what player is looking at", FCVAR_CHEAT);
+static ConCommand ent_messages("ent_messages", CC_Ent_Messages ,"Toggles input/output message display for the selected entity(ies).  The name of the entity will be displayed as well as any messages that it sends or receives.\n\tArguments:   	{entity_name} / {class_name} / no argument picks what player is looking at", FCVAR_NONE);
 
 
 //------------------------------------------------------------------------------
@@ -6331,6 +6516,10 @@ static ConCommand ent_messages("ent_messages", CC_Ent_Messages ,"Toggles input/o
 //------------------------------------------------------------------------------
 void CC_Ent_Pause( void )
 {
+	CBasePlayer *pPlayer = UTIL_GetCommandClient();
+	if( !UTIL_HandleCheatCmdForPlayer(pPlayer) ) 
+		return;
+
 	if (CBaseEntity::Debug_IsPaused())
 	{
 		Msg( "Resuming entity I/O events\n" );
@@ -6342,7 +6531,7 @@ void CC_Ent_Pause( void )
 		CBaseEntity::Debug_Pause(true);
 	}
 }
-static ConCommand ent_pause("ent_pause", CC_Ent_Pause, "Toggles pausing of input/output message processing for entities.  When turned on processing of all message will stop.  Any messages displayed with 'ent_messages' will stop fading and be displayed indefinitely. To step through the messages one by one use 'ent_step'.", FCVAR_CHEAT);
+static ConCommand ent_pause("ent_pause", CC_Ent_Pause, "Toggles pausing of input/output message processing for entities.  When turned on processing of all message will stop.  Any messages displayed with 'ent_messages' will stop fading and be displayed indefinitely. To step through the messages one by one use 'ent_step'.", FCVAR_NONE);
 
 
 //------------------------------------------------------------------------------
@@ -6353,12 +6542,17 @@ static ConCommand ent_pause("ent_pause", CC_Ent_Pause, "Toggles pausing of input
 //------------------------------------------------------------------------------
 void CC_Ent_Picker( void )
 {
+	//Check who is calling the command
+	CBasePlayer *pPlayer = UTIL_GetCommandClient();
+	if( !UTIL_HandleCheatCmdForPlayer(pPlayer) ) 
+		return;
+
 	CBaseEntity::m_bInDebugSelect = CBaseEntity::m_bInDebugSelect ? false : true;
 
 	// Remember the player that's making this request
 	CBaseEntity::m_nDebugPlayer = UTIL_GetCommandClientIndex();
 }
-static ConCommand picker("picker", CC_Ent_Picker, "Toggles 'picker' mode.  When picker is on, the bounding box, pivot and debugging text is displayed for whatever entity the player is looking at.\n\tArguments:	full - enables all debug information", FCVAR_CHEAT);
+static ConCommand picker("picker", CC_Ent_Picker, "Toggles 'picker' mode.  When picker is on, the bounding box, pivot and debugging text is displayed for whatever entity the player is looking at.\n\tArguments:	full - enables all debug information", FCVAR_NONE);
 
 //------------------------------------------------------------------------------
 // Purpose : 
@@ -6367,9 +6561,13 @@ static ConCommand picker("picker", CC_Ent_Picker, "Toggles 'picker' mode.  When 
 //------------------------------------------------------------------------------
 void CC_Ent_Pivot( const CCommand& args )
 {
-	SetDebugBits(UTIL_GetCommandClient(),args[1],OVERLAY_PIVOT_BIT);
+	//Check who is calling the command
+	CBasePlayer *pPlayer = UTIL_GetCommandClient();
+	if( !UTIL_HandleCheatCmdForPlayer(pPlayer) ) 
+		return;
+	SetDebugBits(pPlayer,args[1],OVERLAY_PIVOT_BIT);
 }
-static ConCommand ent_pivot("ent_pivot", CC_Ent_Pivot, "Displays the pivot for the given entity(ies).\n\t(y=up=green, z=forward=blue, x=left=red). \n\tArguments:   	{entity_name} / {class_name} / no argument picks what player is looking at ", FCVAR_CHEAT);
+static ConCommand ent_pivot("ent_pivot", CC_Ent_Pivot, "Displays the pivot for the given entity(ies).\n\t(y=up=green, z=forward=blue, x=left=red). \n\tArguments:   	{entity_name} / {class_name} / no argument picks what player is looking at ", FCVAR_NONE);
 
 //------------------------------------------------------------------------------
 // Purpose : 
@@ -8539,11 +8737,10 @@ void CC_Ent_Create( const CCommand& args )
 {
 	MDLCACHE_CRITICAL_SECTION();
 
+	//Check who is calling the command
 	CBasePlayer *pPlayer = UTIL_GetCommandClient();
-	if (!pPlayer)
-	{
+	if( !UTIL_HandleCheatCmdForPlayer(pPlayer) ) 
 		return;
-	}
 
 	// Don't allow regular users to create point_servercommand entities for the same reason as blocking ent_fire
 	if ( !Q_stricmp( args[1], "point_servercommand" ) )
@@ -8561,6 +8758,12 @@ void CC_Ent_Create( const CCommand& args )
 			if ( pPlayer != pHostPlayer )
 				return;
 		}
+	}
+	//You can't create players
+	if ( !Q_stricmp( args[1], "player" ) || !Q_stricmp( args[1], "tf_bot" ) )
+	{
+		Msg( "You cannot create a player\n" );
+		return;
 	}
 
 	bool allowPrecache = CBaseEntity::IsPrecacheAllowed();
@@ -8601,7 +8804,7 @@ void CC_Ent_Create( const CCommand& args )
 	}
 	CBaseEntity::SetAllowPrecache( allowPrecache );
 }
-static ConCommand ent_create("ent_create", CC_Ent_Create, "Creates an entity of the given type where the player is looking.  Additional parameters can be passed in in the form: ent_create <entity name> <param 1 name> <param 1> <param 2 name> <param 2>...<param N name> <param N>", FCVAR_GAMEDLL | FCVAR_CHEAT);
+static ConCommand ent_create("ent_create", CC_Ent_Create, "Creates an entity of the given type where the player is looking.  Additional parameters can be passed in in the form: ent_create <entity name> <param 1 name> <param 1> <param 2 name> <param 2>...<param N name> <param N>", FCVAR_GAMEDLL );
 
 //------------------------------------------------------------------------------
 // Purpose: Teleport a specified entity to where the player is looking

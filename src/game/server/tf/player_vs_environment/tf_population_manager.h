@@ -71,8 +71,12 @@ public:
 	void StartCurrentWave( void );
 	void JumpToWave( uint32 waveNumber, float fCleanMoneyPercent = -1.0f );
 	void WaveEnd ( bool bSuccess );
+	void ScriptEndWave( bool bSuccess );
 
 	CWave *GetCurrentWave( void );
+
+	// MvM Versus bomb distribution
+	void GiveBombToRandomInvader( void );
 
 	int	 GetWaveNumber( void ) { return m_iCurrentWaveIndex; }
 	int GetTotalWaveCount( void ) { return m_waveVector.Count(); }

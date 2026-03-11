@@ -7,11 +7,13 @@
 #include "cbase.h"
 #include "tf_item_powerup_bottle.h"
 #include "tf_gamerules.h"
+#include "SoundEmitterSystem/isoundemittersystembase.h"
 
 #ifdef GAME_DLL
 #include "tf_player.h"
 #include "tf_obj_sentrygun.h"
 #include "tf_weapon_medigun.h"
+#include "recipientfilter.h"
 #endif
 
 // memdbgon must be the last include file in a .cpp file!!!
@@ -148,6 +150,19 @@ PowerupBottleType_t CTFPowerupBottle::GetPowerupType( void ) const
 		return POWERUP_BOTTLE_BUILDINGS_INSTANT_UPGRADE;
 	}
 
+	int iHasRadiusStealth = 0;
+	CALL_ATTRIB_HOOK_INT( iHasRadiusStealth, radius_stealth );
+	if ( iHasRadiusStealth )
+	{
+		return POWERUP_BOTTLE_RADIUS_STEALTH;
+	}
+
+	int iHasXrayCash = 0;
+	CALL_ATTRIB_HOOK_INT( iHasXrayCash, see_cash_through_walls );
+	if ( iHasXrayCash )
+	{
+		return POWERUP_BOTTLE_SEE_CASH_THROUGH_WALL;
+	}
 
 	return POWERUP_BOTTLE_NONE;
 }
@@ -368,6 +383,36 @@ void CTFPowerupBottle::ReapplyProvision( void )
 				}
 			}
 
+			int iHasRadiusStealth = 0;
+			CALL_ATTRIB_HOOK_INT( iHasRadiusStealth, radius_stealth );
+			if ( iHasRadiusStealth )
+			{
+				if ( m_bActive )
+				{
+					CBaseEntity *pObjects[MAX_PLAYERS_ARRAY_SAFE];
+					int nCount = UTIL_EntitiesInSphere( pObjects, ARRAYSIZE( pObjects ), pTFPlayer->GetAbsOrigin(), 128, FL_CLIENT );
+					for ( int i = 0; i < nCount; i++ )
+					{
+						CBaseCombatCharacter *pBaseTarget = NULL;
+						CTFPlayer *pTarget = ToTFPlayer( pObjects[i] );
+						if ( !pTarget )
+						{
+							pBaseTarget = dynamic_cast<CBaseCombatCharacter*>( pObjects[i] );
+						}
+						else
+						{
+							pBaseTarget = pTarget;
+						}
+
+						if ( !pBaseTarget || !pTarget || !pTarget->IsAlive() || pBaseTarget->GetTeamNumber() != pTFPlayer->GetTeamNumber() )
+							continue;
+
+						pTarget->m_Shared.AddCond( TF_COND_STEALTHED_USER_BUFF, 7, pTFPlayer );
+					}
+					pTFPlayer->m_Shared.AddCond( TF_COND_STEALTHED_USER_BUFF, 7, pTFPlayer );
+				}
+			}
+
 			// ACHIEVEMENT_TF_MVM_MEDIC_SHARE_BOTTLES
 			if ( bBottleShared )
 			{
@@ -442,12 +487,44 @@ bool CTFPowerupBottle::Use()
 
 		float flDuration = 0;
 		CALL_ATTRIB_HOOK_FLOAT( flDuration, powerup_duration );
-		
+	
 		// Add extra time?
 		CTFPlayer *pOwner = ToTFPlayer( GetOwnerEntity() );
 		if ( pOwner )
 		{
 			CALL_ATTRIB_HOOK_INT_ON_OTHER( pOwner, flDuration, canteen_specialist );
+
+			int iVoiceType = 0;
+			CALL_ATTRIB_HOOK_INT( iVoiceType, item_can_speak );
+
+			if ( iVoiceType )
+			{
+				const char *pEffectType = NULL;
+				const char *pVoiceChar = NULL;
+				switch ( GetPowerupType() )
+				{
+				case POWERUP_BOTTLE_CRITBOOST: pEffectType = "Crit"; break;
+				case POWERUP_BOTTLE_UBERCHARGE: pEffectType = "Uber"; break;
+				case POWERUP_BOTTLE_RECALL: pEffectType = "Recall"; break;
+				case POWERUP_BOTTLE_REFILL_AMMO: pEffectType = "Ammo"; break;
+				case POWERUP_BOTTLE_BUILDINGS_INSTANT_UPGRADE: pEffectType = "Build"; break;
+				case POWERUP_BOTTLE_RADIUS_STEALTH: pEffectType = "Stealth"; break;
+				case POWERUP_BOTTLE_SEE_CASH_THROUGH_WALL: pEffectType = "Xray"; break;
+				}
+				//Add more announcers if the community makes more!
+				switch ( iVoiceType )
+				{
+					case 1: pVoiceChar = "Merasmus"; break;
+				}
+				//Play the sound
+				if ( pVoiceChar != NULL && pEffectType != NULL )
+				{ 
+					CFmtStr iszCanteenSound( "MVM.CanteenVO_%s_%s", pEffectType, pVoiceChar );
+					PrecacheScriptSound( iszCanteenSound );
+					CReliableBroadcastRecipientFilter filter;
+					EmitSound( filter, entindex(), iszCanteenSound );
+				}
+			}
 		}
 		IGameEvent *event = gameeventmanager->CreateEvent( "player_used_powerup_bottle" );
 		if ( event )
@@ -622,10 +699,10 @@ const char* CTFPowerupBottle::GetEffectIconName( void )
 		return "../hud/ico_powerup_building_instant_red";
 
 	case POWERUP_BOTTLE_RADIUS_STEALTH:
-		return "../vgui/achievements/tf_soldier_kill_spy_killer";
+		return "../hud/ico_powerup_radius_stealth";
 
 	case POWERUP_BOTTLE_SEE_CASH_THROUGH_WALL:
-		return "../vgui/achievements/tf_mvm_earn_money_bonus";
+		return "../hud/ico_powerup_xray_cash";
 	}
 
 	return "../hud/ico_powerup_critboost_red";
@@ -673,6 +750,8 @@ int CTFPowerupBottle::GetWorldModelIndex( void )
 			return modelinfo->GetModelIndex( "models/player/items/mvm_loot/all_class/mvm_flask_build.mdl" );
 
 		case POWERUP_BOTTLE_RADIUS_STEALTH:
+			return modelinfo->GetModelIndex( "models/player/items/mvm_loot/all_class/mvm_flask_tele.mdl" );
+
 		case POWERUP_BOTTLE_SEE_CASH_THROUGH_WALL:
 			return modelinfo->GetModelIndex( "models/player/items/mvm_loot/all_class/mvm_flask_tele.mdl" );
 		}
@@ -721,12 +800,20 @@ void CEquipMvMCanteenNotification::Accept()
 	static CSchemaItemDefHandle pItemDef_Canteen( "Power Up Canteen (MvM)" );
 	static CSchemaItemDefHandle pItemDef_DefaultCanteen( "Default Power Up Canteen (MvM)" );
 
+	//Better Fortress
+	static CSchemaItemDefHandle pItemDef_MerasmusCanteen( "Misfortunate Canteen" );
+	static CSchemaItemDefHandle pItemDef_TuxCanteen( "Tux" );
+
 	CEconItemView *pCanteen= NULL;
 
 	Assert( pItemDef_Robo );
 	Assert( pItemDef_KritzOrTreat );
 	Assert( pItemDef_Canteen );
 	Assert( pItemDef_DefaultCanteen );
+
+	//Better Fortress
+	Assert( pItemDef_MerasmusCanteen );
+	Assert( pItemDef_TuxCanteen );
 	
 	for ( int i = 0; i < pLocalInv->GetItemCount(); ++i )
 	{
@@ -737,6 +824,8 @@ void CEquipMvMCanteenNotification::Accept()
 			|| pItem->GetItemDefinition() == pItemDef_KritzOrTreat
 			|| pItem->GetItemDefinition() == pItemDef_Canteen
 			|| pItem->GetItemDefinition() == pItemDef_DefaultCanteen
+			|| pItem->GetItemDefinition() == pItemDef_MerasmusCanteen
+			|| pItem->GetItemDefinition() == pItemDef_TuxCanteen
 		) {
 			pCanteen = pItem;
 			break;

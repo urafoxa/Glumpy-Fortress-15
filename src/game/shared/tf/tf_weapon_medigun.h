@@ -26,6 +26,7 @@ enum medigun_weapontypes_t
 	MEDIGUN_UBER,
 	MEDIGUN_QUICKFIX,
 	MEDIGUN_RESIST,
+	MEDIGUN_MEAN
 };
 
 enum medigun_resist_types_t
@@ -121,6 +122,7 @@ public:
 	void			ManageChargeEffect( void );
 
 	void			UpdateMedicAutoCallers( void );
+	void			UpdateCritHealIndicators( void );
 #else
 
 	void			HealTargetThink( void );
@@ -239,6 +241,8 @@ protected:
 
 	CUtlVector< int >	m_iAutoCallers;
 	float				m_flAutoCallerCheckTime;
+	CUtlVector< int >	m_iCritHealIndicators;
+	float				m_flCritHealCheckTime;
 #endif
 
 private:														

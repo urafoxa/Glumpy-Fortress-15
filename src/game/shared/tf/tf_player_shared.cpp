@@ -24,6 +24,7 @@
 #include "tf_weapon_wrench.h"
 #include "econ_wearable.h"
 #include "econ_item_system.h"
+#include "econ_item_schema.h"
 #include "tf_weapon_knife.h"
 #include "tf_weapon_syringegun.h"
 #include "tf_weapon_flamethrower.h"
@@ -37,6 +38,7 @@
 
 // Client specific.
 #ifdef CLIENT_DLL
+#include "c_baseviewmodel.h"
 #include "c_tf_player.h"
 #include "c_te_effect_dispatch.h"
 #include "c_tf_fx.h"
@@ -67,6 +69,7 @@
 
 // Server specific.
 #else
+#include "vscript_server.h"
 #include "tf_player.h"
 #include "te_effect_dispatch.h"
 #include "tf_fx.h"
@@ -123,15 +126,18 @@ ConVar tf_invuln_time( "tf_invuln_time", "1.0", FCVAR_DEVELOPMENTONLY | FCVAR_RE
 extern ConVar tf_player_movement_restart_freeze;
 extern ConVar mp_tournament_readymode_countdown;
 extern ConVar tf_max_charge_speed;
-ConVar tf_mvm_footstep_sounds( "tf_mvm_footstep_sounds", "1", FCVAR_REPLICATED, "Replaces the Giants footsteps with Unique unused ones" );
+ConVar cf_mvm_footstep_sounds( "cf_mvm_footstep_sounds", "1", FCVAR_REPLICATED, "Replaces the Giants footsteps with Unique unused ones" );
 
 ConVar tf_always_loser( "tf_always_loser", "0", FCVAR_CHEAT | FCVAR_REPLICATED, "Force loserstate to true." );
 
 ConVar tf_mvm_bot_flag_carrier_movement_penalty( "tf_mvm_bot_flag_carrier_movement_penalty", "0.5", FCVAR_REPLICATED | FCVAR_CHEAT );
 
+ConVar cf_player_parentables( "cf_player_parentables", "1", FCVAR_REPLICATED | FCVAR_NOTIFY, "Allow Parented entities to players to be visible without VALVe's OBSOLETE patch.");
+
 //ConVar tf_scout_dodge_move_penalty_duration( "tf_scout_dodge_move_penalty_duration", "3.0", FCVAR_DEVELOPMENTONLY | FCVAR_REPLICATED );
 //ConVar tf_scout_dodge_move_penalty( "tf_scout_dodge_move_penalty", "0.5", FCVAR_DEVELOPMENTONLY | FCVAR_REPLICATED );
 
+extern ConVar cf_condition_bombhead_bombinomicon;
 
 #ifdef GAME_DLL
 ConVar tf_boost_drain_time( "tf_boost_drain_time", "15.0", FCVAR_DEVELOPMENTONLY, "Time is takes for a full health boost to drain away from a player.", true, 0.1, false, 0 );
@@ -150,7 +156,6 @@ CON_COMMAND_F( tf_add_bombhead, "Add Merasmus Bomb Head Condition", 0 )
 		//playerVector[i]->m_Shared.AddCond( TF_COND_HALLOWEEN_BOMB_HEAD, 7 );
 	}
 }
-
 ConVar tf_debug_bullets( "tf_debug_bullets", "0", FCVAR_DEVELOPMENTONLY, "Visualize bullet traces." );
 #endif // _DEBUG
 
@@ -1094,6 +1099,31 @@ private:
 //-----------------------------------------------------------------------------
 void CTFPlayerShared::AddCond( ETFCond eCond, float flDuration /* = PERMANENT_CONDITION */, CBaseEntity *pProvider /*= NULL */)
 {
+#ifndef CLIENT_DLL
+	if ( ScriptHookEnabled( "OnAddCond" ) )
+	{
+		IScriptVM *pVM = g_pScriptVM;
+
+		ScriptVariant_t varTable;
+		pVM->CreateTable( varTable );
+
+		pVM->SetValue( varTable, "const_entity", ToHScript( m_pOuter ) );
+		pVM->SetValue( varTable, "provider", ToHScript( pProvider ) );
+		pVM->SetValue( varTable, "duration", flDuration );
+		pVM->SetValue( varTable, "condition", eCond );
+		pVM->SetValue( varTable, "cancel_condition", false );
+
+		if ( RunScriptHook( "OnAddCond", varTable ) )
+		{
+			if ( pVM->Get<bool>( varTable, "cancel_condition" ) )
+				return;
+			eCond = static_cast<ETFCond>( pVM->Get<int>( varTable, "condition" ) );
+			flDuration = pVM->Get<float>( varTable, "duration" );
+			pProvider = ToEnt( pVM->Get<HSCRIPT>( varTable, "provider" ) );
+		}
+	}
+#endif
+
 	Assert( eCond >= 0 && eCond < TF_COND_LAST );
 	Assert( eCond < m_ConditionData.Count() );
 
@@ -1162,6 +1192,29 @@ void CTFPlayerShared::AddCond( ETFCond eCond, float flDuration /* = PERMANENT_CO
 //-----------------------------------------------------------------------------
 void CTFPlayerShared::RemoveCond( ETFCond eCond, bool ignore_duration )
 {
+#ifndef CLIENT_DLL
+	if ( ScriptHookEnabled( "OnRemoveCond" ) )
+	{
+		IScriptVM *pVM = g_pScriptVM;
+
+		ScriptVariant_t varTable;
+		pVM->CreateTable( varTable );
+
+		pVM->SetValue( varTable, "const_entity", ToHScript( m_pOuter ) );
+		pVM->SetValue( varTable, "condition", eCond );
+		pVM->SetValue( varTable, "ignore_duration", ignore_duration );
+		pVM->SetValue( varTable, "cancel_removal", false );
+
+		if ( RunScriptHook( "OnRemoveCond", varTable ) )
+		{
+			if ( pVM->Get<bool>( varTable, "cancel_removal" ) )
+				return;
+			ignore_duration = pVM->Get<bool>( varTable, "ignoreDuration" );
+			eCond = static_cast<ETFCond>( pVM->Get<int>( varTable, "condition" ) );
+		}
+	}
+#endif
+
 	Assert( eCond >= 0 && eCond < TF_COND_LAST );
 	Assert( eCond < m_ConditionData.Count() );
 
@@ -1706,6 +1759,12 @@ void CTFPlayerShared::OnConditionAdded( ETFCond eCond )
 
 	case TF_COND_SPEED_BOOST:				OnAddSpeedBoost( false );		break;
 
+	case TF_COND_SPEEDPAD_BOOST_LV1:
+	case TF_COND_SPEEDPAD_BOOST_LV2:
+	case TF_COND_SPEEDPAD_BOOST_LV3:
+		OnAddSpeedPadBoost();
+		break;
+
 	case TF_COND_SAPPED:
 		OnAddSapped();
 		break;
@@ -2034,6 +2093,11 @@ void CTFPlayerShared::OnConditionRemoved( ETFCond eCond )
 
 	case TF_COND_SPEED_BOOST:					OnRemoveSpeedBoost( false );		break;
 		
+	case TF_COND_SPEEDPAD_BOOST_LV1:
+	case TF_COND_SPEEDPAD_BOOST_LV2:
+	case TF_COND_SPEEDPAD_BOOST_LV3:
+		OnRemoveSpeedPadBoost();
+		break;
 
 	case TF_COND_SAPPED:
 		OnRemoveSapped();
@@ -2972,6 +3036,7 @@ void CTFPlayerShared::ConditionGameRulesThink( void )
 	TestAndExpireChargeEffect( MEDIGUN_CHARGE_INVULN );
 	TestAndExpireChargeEffect( MEDIGUN_CHARGE_CRITICALBOOST );
 	TestAndExpireChargeEffect( MEDIGUN_CHARGE_MEGAHEAL );
+	TestAndExpireChargeEffect( MEDIGUN_CHARGE_CLOAK );
 	//TestAndExpireChargeEffect( MEDIGUN_CHARGE_BULLET_RESIST );
 	//TestAndExpireChargeEffect( MEDIGUN_CHARGE_BLAST_RESIST );
 	//TestAndExpireChargeEffect( MEDIGUN_CHARGE_FIRE_RESIST );
@@ -3862,6 +3927,33 @@ void CTFPlayerShared::OnRemoveMadMilk( void )
 //-----------------------------------------------------------------------------
 CTFPlayerShared::taunt_particle_state_t CTFPlayerShared::GetClientTauntParticleDesiredState() const
 {
+	CEconItemAttributeDefinition *pAttrib = GetItemSchema()->GetAttributeDefinitionByName( "bf taunt attach particle index" );
+	CAttributeList *pAttrList = m_pOuter->GetAttributeList();
+	uint32 unUnusualEffectIndex;
+	if ( ::FindAttribute_UnsafeBitwiseCast<attrib_value_t>( pAttrList, pAttrib, &unUnusualEffectIndex ) )
+	{
+		const attachedparticlesystem_t *pParticleSystem = GetItemSchema()->GetAttributeControlledParticleSystem( unUnusualEffectIndex );
+		if ( pParticleSystem )
+		{
+			// TF Team Color Particles
+			if ( m_pOuter->GetTeamNumber() == TF_TEAM_BLUE && V_stristr( pParticleSystem->pszSystemName, "_teamcolor_red" ) )
+			{
+				static char pBlue[256];
+				V_StrSubst( pParticleSystem->pszSystemName, "_teamcolor_red", "_teamcolor_blue", pBlue, 256 );
+				pParticleSystem = GetItemSchema()->FindAttributeControlledParticleSystem( pBlue );
+			}
+			else if ( m_pOuter->GetTeamNumber() == TF_TEAM_RED && V_stristr( pParticleSystem->pszSystemName, "_teamcolor_blue" ) )
+			{
+				// Guard against accidentally giving out the blue team color (support tool)
+				static char pRed[256];
+				V_StrSubst( pParticleSystem->pszSystemName, "_teamcolor_blue", "_teamcolor_red", pRed, 256 );
+				pParticleSystem = GetItemSchema()->FindAttributeControlledParticleSystem( pRed );
+			}
+
+			return taunt_particle_state_t( pParticleSystem->pszSystemName, pParticleSystem->fRefireTime );
+		}
+	}
+
 	const itemid_t unTauntSourceItemID = GetTauntSourceItemID();
 	if ( unTauntSourceItemID != INVALID_ITEM_ID )
 	{
@@ -4385,6 +4477,53 @@ void CTFPlayerShared::OnRemoveSpeedBoost( bool IsNonCombat )
 	{
 		m_pOuter->EmitSound( "DisciplineDevice.PowerDown" );
 	}
+#else // !CLIENT_DLL
+	m_pOuter->TeamFortress_SetSpeed();
+#endif // CLIENT_DLL
+}
+
+//-----------------------------------------------------------------------------
+// Purpose: Speed Pad boost particle effects
+//-----------------------------------------------------------------------------
+void CTFPlayerShared::OnAddSpeedPadBoost( void )
+{
+#ifdef CLIENT_DLL
+	const char* strBuffName = "speed_boost_trail";
+
+	if ( !m_pOuter->m_pSpeedBoostEffect )
+	{
+		// No speedlines at all for stealth or feign death 
+		if ( !InCond( TF_COND_STEALTHED ) && !InCond(TF_COND_FEIGN_DEATH) )
+		{
+			m_pOuter->m_pSpeedBoostEffect = m_pOuter->ParticleProp()->Create( strBuffName, PATTACH_ABSORIGIN_FOLLOW );
+		}
+	}
+	
+	if ( m_pOuter->IsLocalPlayer())
+	{
+		m_pOuter->EmitSound( "DisciplineDevice.PowerUp" );
+	}
+#else // !CLIENT_DLL
+	m_pOuter->TeamFortress_SetSpeed();
+#endif // CLIENT_DLL
+}
+
+//-----------------------------------------------------------------------------
+// Purpose: 
+//-----------------------------------------------------------------------------
+void CTFPlayerShared::OnRemoveSpeedPadBoost( void )
+{
+#ifdef CLIENT_DLL
+	if ( m_pOuter->m_pSpeedBoostEffect )
+	{
+		m_pOuter->ParticleProp()->StopEmission( m_pOuter->m_pSpeedBoostEffect );
+		m_pOuter->m_pSpeedBoostEffect = NULL;
+	}
+
+	if ( m_pOuter->IsLocalPlayer() )
+	{
+		m_pOuter->EmitSound( "DisciplineDevice.PowerDown" );
+	}
 	else
 	{
 		m_pOuter->EmitSound( "Building_Speedpad.BoostStop" );
@@ -4459,7 +4598,22 @@ void CTFPlayerShared::OnAddHalloweenBombHead( void )
 {
 #ifdef CLIENT_DLL
 	m_pOuter->HalloweenBombHeadUpdate();
-	m_pOuter->CreateBombonomiconHint();
+	//Some mappers don't want him.
+	ConVarRef book( "cf_condition_bombhead_bombinomicon" );
+	if ( book.IsValid() && book.GetBool() )
+	{
+		m_pOuter->CreateBombonomiconHint();
+	}
+
+	C_TFPlayer *pLocalPlayer = C_TFPlayer::GetLocalTFPlayer(); //Thriller port
+	if ( !TFGameRules()->IsHalloweenScenario( CTFGameRules::HALLOWEEN_SCENARIO_DOOMSDAY ) )
+	{
+		if ( pLocalPlayer == m_pOuter )
+		{
+			m_pOuter->EmitSound( "Player.bomb_attach" );
+			m_pOuter->EmitSound( "Player.bomb_fuse" );	
+		}
+	}
 #else
 	if ( InCond( TF_COND_HALLOWEEN_KART ) )
 	{
@@ -4476,6 +4630,15 @@ void CTFPlayerShared::OnRemoveHalloweenBombHead( void )
 #ifdef CLIENT_DLL
 	m_pOuter->HalloweenBombHeadUpdate();
 	m_pOuter->DestroyBombonomiconHint();
+
+	C_TFPlayer *pLocalPlayer = C_TFPlayer::GetLocalTFPlayer(); //Thriller port
+	if ( !TFGameRules()->IsHalloweenScenario( CTFGameRules::HALLOWEEN_SCENARIO_DOOMSDAY ) )
+	{
+		if ( pLocalPlayer == m_pOuter )
+		{
+			m_pOuter->StopSound( "Player.bomb_fuse" );	
+		}
+	}
 #else
 	if ( InCond( TF_COND_HALLOWEEN_KART ) )
 	{
@@ -4659,6 +4822,16 @@ void CTFPlayerShared::OnAttack( void )
 			AddCond( TF_COND_MARKEDFORDEATH_SILENT, flMarkedForDeathTime );
 		}
 	}
+
+	// Remove Speed Pad boost when attacking
+	if ( InCond( TF_COND_SPEEDPAD_BOOST_LV1 ) ||
+		 InCond( TF_COND_SPEEDPAD_BOOST_LV2 ) ||
+		 InCond( TF_COND_SPEEDPAD_BOOST_LV3 ) )
+	{
+		RemoveCond( TF_COND_SPEEDPAD_BOOST_LV1 );
+		RemoveCond( TF_COND_SPEEDPAD_BOOST_LV2 );
+		RemoveCond( TF_COND_SPEEDPAD_BOOST_LV3 );
+	}
 }
 
 #ifdef GAME_DLL
@@ -4800,14 +4973,8 @@ static void RemoveResistParticle( CTFPlayer* pPlayer, medigun_resist_types_t nRe
 	if ( bKeep )
 		return;
 	
-	if ( pPlayer->m_Shared.GetDisplayedTeam() == TF_TEAM_RED )
-	{
-		pPlayer->RemoveOverheadEffect( s_pszRedResistOverheadEffectName[ nResistType ], true );
-	}
-	else
-	{
-		pPlayer->RemoveOverheadEffect( s_pszBlueResistOverheadEffectName[ nResistType ], true );
-	}
+	pPlayer->RemoveOverheadEffect( s_pszRedResistOverheadEffectName[ nResistType ], true );
+	pPlayer->RemoveOverheadEffect( s_pszBlueResistOverheadEffectName[ nResistType ], true );
 }
 
 //-----------------------------------------------------------------------------
@@ -5710,6 +5877,7 @@ void CTFPlayerShared::OnAddHalloweenKartCage( void )
 		m_pOuter->m_hHalloweenKartCage->FollowEntity( m_pOuter, true );
 	}
 #else
+	CTFPlayer::PrecacheKart();
 	AddCond( TF_COND_FREEZE_INPUT );
 #endif // CLIENT_DLL
 }
@@ -6170,7 +6338,14 @@ void CTFPlayerShared::OnAddShieldCharge( void )
 	m_pOuter->TeamFortress_SetSpeed();
 
 #ifdef CLIENT_DLL
-	m_pOuter->EmitSound( "DemoCharge.Charging" );
+	//MvM Versus - Robots scream with their filter!
+	bool bMvM = TFGameRules()->IsMannVsMachineMode() && m_pOuter->GetTeamNumber() == TF_TEAM_PVE_INVADERS || TFGameRules()->IsMannVsMachineMode() && m_pOuter->GetTeamNumber() == TF_TEAM_PVE_DEFENDERS || m_pOuter->IsRobot();
+	if ( bMvM && TFObjectiveResource()->GetMvMEventPopfileType() != MVM_EVENT_POPFILE_HALLOWEEN )
+	{
+		m_pOuter->EmitSound( m_pOuter->IsMiniBoss() ? "Demo_MVM_M_Charge.Charging" : "Demo_MVM_Charge.Charging" );
+	}
+	else
+		m_pOuter->EmitSound( "DemoCharge.Charging" );
 #else
 	m_hPlayersVisibleAtChargeStart.Purge();
 
@@ -8850,6 +9025,7 @@ void CTFPlayerShared::RecalculateChargeEffects( bool bInstantRemove )
 	SetChargeEffect( MEDIGUN_CHARGE_BULLET_RESIST,	aCharges[MEDIGUN_CHARGE_BULLET_RESIST].bActive,	bInstantRemove, g_MedigunEffects[ MEDIGUN_CHARGE_BULLET_RESIST ],	0.0f,						aCharges[MEDIGUN_CHARGE_BULLET_RESIST].pProvider );
 	SetChargeEffect( MEDIGUN_CHARGE_BLAST_RESIST,	aCharges[MEDIGUN_CHARGE_BLAST_RESIST].bActive,	bInstantRemove, g_MedigunEffects[ MEDIGUN_CHARGE_BLAST_RESIST ],	0.0f,						aCharges[MEDIGUN_CHARGE_BLAST_RESIST].pProvider );
 	SetChargeEffect( MEDIGUN_CHARGE_FIRE_RESIST,	aCharges[MEDIGUN_CHARGE_FIRE_RESIST].bActive,	bInstantRemove, g_MedigunEffects[ MEDIGUN_CHARGE_FIRE_RESIST ],		0.0f,						aCharges[MEDIGUN_CHARGE_FIRE_RESIST].pProvider );
+	SetChargeEffect( MEDIGUN_CHARGE_CLOAK,	        aCharges[MEDIGUN_CHARGE_CLOAK].bActive,     	bInstantRemove, g_MedigunEffects[ MEDIGUN_CHARGE_CLOAK ],			0.5f,					aCharges[MEDIGUN_CHARGE_CLOAK].pProvider );
 }
 
 //-----------------------------------------------------------------------------
@@ -10093,6 +10269,14 @@ void CTFPlayer::GetHorriblyHackedRailgunPosition( const Vector& vStart, Vector *
 	Vector vForward, vRight, vUp;
 	AngleVectors( EyeAngles(), &vForward, &vRight, &vUp );
 
+#ifdef CLIENT_DLL
+	// Flips the horizontal position.
+	if ( TeamFortress_ShouldFlipClientViewModel() )
+	{
+		vRight *= -1;
+	}
+#endif // CLIENT_DLL
+
 	*out_pvStartPos = vStart
 					+ (vForward * 60.9f)
 					+ (vRight * 13.1f)
@@ -10474,8 +10658,7 @@ void CTFPlayer::FireBullet( CTFWeaponBase *pWpn, const FireBulletsInfo_t &info, 
 				MaybeDrawRailgunBeam( NULL, pWpn, vStartPos, trace.endpos );
 			}
 
-			static int	tracerCount;
-			if ( ( ( info.m_iTracerFreq != 0 ) && ( tracerCount++ % info.m_iTracerFreq ) == 0 ) || (ePenetrateType == TF_DMG_CUSTOM_PENETRATE_ALL_PLAYERS) )
+			if ( ( ( info.m_iTracerFreq != 0 ) && ( m_iTracerCount++ % info.m_iTracerFreq ) == 0 ) || (ePenetrateType == TF_DMG_CUSTOM_PENETRATE_ALL_PLAYERS) )
 			{
 				// if this is a local player, start at attachment on view model
 				// else start on attachment on weapon model
@@ -10861,6 +11044,29 @@ float CTFPlayer::TeamFortress_CalculateMaxSpeed( bool bIgnoreSpecialAbility /*= 
 		if ( maxfbspeed > 0.0f )
 		{
 			maxfbspeed += MIN( maxfbspeed * 0.4f, tf_whip_speed_increase.GetFloat() );
+		}
+	}
+
+	// Speed Pad boost conditions with variable multipliers
+	if ( m_Shared.InCond( TF_COND_SPEEDPAD_BOOST_LV1 ) )
+	{
+		if ( maxfbspeed > 0.0f )
+		{
+			maxfbspeed *= 1.33f; // 33% speed increase
+		}
+	}
+	else if ( m_Shared.InCond( TF_COND_SPEEDPAD_BOOST_LV2 ) )
+	{
+		if ( maxfbspeed > 0.0f )
+		{
+			maxfbspeed *= 1.50f; // 50% speed increase
+		}
+	}
+	else if ( m_Shared.InCond( TF_COND_SPEEDPAD_BOOST_LV3 ) )
+	{
+		if ( maxfbspeed > 0.0f )
+		{
+			maxfbspeed *= 1.80f; // 80% speed increase
 		}
 	}
 #endif
@@ -11284,7 +11490,31 @@ int CTFPlayer::CanBuild( int iObjectType, int iObjectMode )
 
 	if ( !bHasSubType && pCls && pCls->CanBuildObject( iObjectType ) == false )
 	{
-		return CB_CANNOT_BUILD;
+		// Check if this is a pad type and we have the pda_builds_pads attribute
+		bool bCanBuildPad = false;
+		if ( iObjectType == OBJ_SPEEDPAD || iObjectType == OBJ_JUMPPAD )
+		{
+			// Find the PDA weapon in the player's inventory
+			for ( int i = 0; i < MAX_WEAPONS; i++ )
+			{
+				CTFWeaponBase *pWeapon = dynamic_cast<CTFWeaponBase*>( GetWeapon( i ) );
+				if ( pWeapon && pWeapon->GetWeaponID() == TF_WEAPON_PDA_ENGINEER_BUILD )
+				{
+					int iBuildsPads = 0;
+					CALL_ATTRIB_HOOK_INT_ON_OTHER( pWeapon, iBuildsPads, pda_builds_pads );
+					if ( iBuildsPads != 0 )
+					{
+						bCanBuildPad = true;
+					}
+					break;
+				}
+			}
+		}
+		
+		if ( !bCanBuildPad )
+		{
+			return CB_CANNOT_BUILD;
+		}
 	}
 #endif
 
@@ -11996,9 +12226,10 @@ void CTFPlayer::SetStepSoundTime( stepsoundtimes_t iStepSoundTime, bool bWalking
 const char *CTFPlayer::GetOverrideStepSound( const char *pszBaseStepSoundName )
 {
 
-	if( TFGameRules() && TFGameRules()->IsMannVsMachineMode() && GetTeamNumber() == TF_TEAM_PVE_INVADERS && !IsMiniBoss() && !m_Shared.InCond( TF_COND_DISGUISED ) )
+	if( TFGameRules() && TFGameRules()->IsMannVsMachineMode() && GetTeamNumber() == TF_TEAM_PVE_INVADERS || TFGameRules()->IsMannVsMachineMode() && GetTeamNumber() == TF_TEAM_PVE_DEFENDERS || IsRobot() )
 	{
-		return "MVM.BotStep";
+		if ( !IsMiniBoss() && !m_Shared.InCond( TF_COND_DISGUISED ) )
+			return "MVM.BotStep";
 	}
 
 	Assert( pszBaseStepSoundName );
@@ -12022,7 +12253,7 @@ const char *CTFPlayer::GetOverrideStepSound( const char *pszBaseStepSoundName )
 
 	int iOverrideFootstepSoundSet = kFootstepSoundSet_Default;
 	CALL_ATTRIB_HOOK_INT( iOverrideFootstepSoundSet, override_footstep_sound_set );
-	bool MVMUnusedFootsteps = tf_mvm_footstep_sounds.GetBool();
+	bool MVMUnusedFootsteps = cf_mvm_footstep_sounds.GetBool();
 
 	// we need to do this here or it does not function otherwise.
 	switch( iOverrideFootstepSoundSet )
@@ -12421,6 +12652,9 @@ bool CTFPlayer::CanPickupBuilding( CBaseObject *pPickupObject )
 	if ( pPickupObject->GetUpgradeLevel() != pPickupObject->GetHighestUpgradeLevel() )
 		return false;
 
+	if ( !IsAlive() )
+		return false;
+
 	if ( m_Shared.IsCarryingObject() )
 		return false;
 
@@ -12802,6 +13036,16 @@ bool CTFPlayer::Weapon_CanSwitchTo( CBaseCombatWeapon *pWeapon )
 	return bCanSwitch;
 }
 
+void CTFPlayer::PlayStepSound( Vector &vecOrigin, surfacedata_t *psurface, float fvol, bool force )
+{
+#ifdef CLIENT_DLL
+	// Don't make predicted footstep sounds in third person, animevents will take care of that.
+	if ( prediction->InPrediction() && C_BasePlayer::ShouldDrawLocalPlayer() )
+		return;
+#endif
+
+	BaseClass::PlayStepSound( vecOrigin, psurface, fvol, force );
+}
 
 //-----------------------------------------------------------------------------
 // Purpose: Gives the player an opportunity to abort a double jump.
@@ -13183,6 +13427,35 @@ void CTFPlayer::SetTauntYaw( float flTauntYaw )
 //-----------------------------------------------------------------------------
 void CTFPlayer::StartBuildingObjectOfType( int iType, int iMode )
 {
+	// Check if we should replace teleporters with pads
+	int iBuildsPads = 0;
+	
+	// Find the PDA weapon in the player's inventory
+	for ( int i = 0; i < MAX_WEAPONS; i++ )
+	{
+		CTFWeaponBase *pWeapon = dynamic_cast<CTFWeaponBase*>( GetWeapon( i ) );
+		if ( pWeapon && pWeapon->GetWeaponID() == TF_WEAPON_PDA_ENGINEER_BUILD )
+		{
+			CALL_ATTRIB_HOOK_INT_ON_OTHER( pWeapon, iBuildsPads, pda_builds_pads );
+			break;
+		}
+	}
+	
+	// If we have the pads attribute, replace teleporter types with pad types
+	if ( iBuildsPads != 0 && iType == OBJ_TELEPORTER )
+	{
+		if ( iMode == MODE_TELEPORTER_ENTRANCE )
+		{
+			iType = OBJ_SPEEDPAD;
+			iMode = 0;
+		}
+		else if ( iMode == MODE_TELEPORTER_EXIT )
+		{
+			iType = OBJ_JUMPPAD;
+			iMode = 0;
+		}
+	}
+
 	// early out if we can't build this type of object
 	if ( CanBuild( iType, iMode ) != CB_CAN_BUILD )
 		return;
@@ -13669,6 +13942,22 @@ void CTFPlayerShared::RecalculatePlayerBodygroups( void )
 	// Leaving bits on from previous player classes can have weird effects
 	// like if we switch to a class that uses those bits for other things.
 	m_pOuter->m_nBody = 0;
+
+#ifdef CLIENT_DLL
+	// Reset bodygroups to their schema-defined default values
+	// This is especially important when cosmetics are disabled/enabled to restore default bodygroups
+	const CEconItemSchema::BodygroupStateMap_t& mapBodygroupState = GetItemSchema()->GetDefaultBodygroupStateMap();
+	FOR_EACH_DICT_FAST( mapBodygroupState, i )
+	{
+		const char *pszBodygroupName = mapBodygroupState.GetElementName(i);
+		int iBodyGroup = m_pOuter->FindBodygroupByName( pszBodygroupName );
+		if ( iBodyGroup > -1 )
+		{
+			int iState = mapBodygroupState[i];
+			m_pOuter->SetBodygroup( iBodyGroup, iState );
+		}
+	}
+#endif
 
 	// Update our weapon bodygroups that change state purely based on whether they're
 	// equipped or not.
@@ -14671,6 +14960,27 @@ CTFWeaponBuilder *CTFPlayerSharedUtils::GetBuilderForObjectType( CTFPlayer *pTFP
 	if ( !pTFPlayer )
 		return NULL;
 
+	// Check if we're looking for pads with the pda_builds_pads attribute
+	bool bLookingForPadWithAttribute = false;
+	if ( iObjectType == OBJ_SPEEDPAD || iObjectType == OBJ_JUMPPAD )
+	{
+		// Check if player has the attribute
+		for ( int i = 0; i < MAX_WEAPONS; i++ )
+		{
+			CTFWeaponBase *pWeapon = dynamic_cast<CTFWeaponBase*>( pTFPlayer->GetWeapon( i ) );
+			if ( pWeapon && pWeapon->GetWeaponID() == TF_WEAPON_PDA_ENGINEER_BUILD )
+			{
+				int iBuildsPads = 0;
+				CALL_ATTRIB_HOOK_INT_ON_OTHER( pWeapon, iBuildsPads, pda_builds_pads );
+				if ( iBuildsPads != 0 )
+				{
+					bLookingForPadWithAttribute = true;
+				}
+				break;
+			}
+		}
+	}
+
 	for ( int i = 0; i < MAX_WEAPONS; i++ )
 	{
 		CTFWeaponBuilder *pBuilder = dynamic_cast< CTFWeaponBuilder* >( pTFPlayer->GetWeapon( i ) );
@@ -14679,6 +14989,10 @@ CTFWeaponBuilder *CTFPlayerSharedUtils::GetBuilderForObjectType( CTFPlayer *pTFP
 
 		// Any builder will do - return first
 		if ( iObjectType == OBJ_ANY )
+			return pBuilder;
+
+		// If looking for pads with attribute, return the teleporter builder
+		if ( bLookingForPadWithAttribute && pBuilder->CanBuildObjectType( OBJ_TELEPORTER ) )
 			return pBuilder;
 
 		// Requires a specific builder for this type

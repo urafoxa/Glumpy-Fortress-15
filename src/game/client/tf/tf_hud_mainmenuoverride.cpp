@@ -20,6 +20,7 @@
 #include "gcsdk/gcclientjob.h"
 #include "econ_item_system.h"
 #include <vgui_controls/AnimationController.h>
+#include <vgui_controls/CheckButton.h>
 #include "store/store_panel.h"
 #include "gc_clientsystem.h"
 #include <vgui_controls/ScrollBarSlider.h>
@@ -58,10 +59,17 @@
 #include "tf_quest_map_utils.h"
 #include "tf_matchmaking_dashboard.h"
 #include "tf_pvp_rank_panel.h"
+#include "cf_workshop_manager.h"
+#include "cf_workshop_panel.h"
 
 #include "econ_paintkit.h"
 #include "ienginevgui.h"
+#include <vgui_controls/Label.h>
+#include <cmath>
 
+#ifndef M_PI
+#define M_PI 3.14159265358979323846
+#endif
 
 #include "c_tf_gamestats.h"
 
@@ -74,6 +82,7 @@ void AddSubKeyNamed( KeyValues *pKeys, const char *pszName );
 
 extern const char *g_sImagesBlue[];
 extern int EconWear_ToIntCategory( float flWear );
+extern ConVar cf_disable_holiday_themes;
 
 void cc_tf_safemode_toggle( IConVar *pConVar, const char *pOldString, float flOldValue )
 {
@@ -101,6 +110,7 @@ ConVar tf_training_has_prompted_for_offline_practice( "tf_training_has_prompted_
 ConVar tf_training_has_prompted_for_forums( "tf_training_has_prompted_for_forums", "0", FCVAR_ARCHIVE, "Whether the user has been prompted to view the new user forums." );
 ConVar tf_training_has_prompted_for_options( "tf_training_has_prompted_for_options", "0", FCVAR_ARCHIVE, "Whether the user has been prompted to view the TF2 advanced options." );
 ConVar tf_training_has_prompted_for_loadout( "tf_training_has_prompted_for_loadout", "0", FCVAR_ARCHIVE, "Whether the user has been prompted to equip something in their loadout." );
+ConVar cf_beta_warning_accepted( "cf_beta_warning_accepted", "0", FCVAR_ARCHIVE, "Whether the user has accepted the beta warning" );
 ConVar cl_ask_bigpicture_controller_opt_out( "cl_ask_bigpicture_controller_opt_out", "0", FCVAR_ARCHIVE, "Whether the user has opted out of being prompted for controller support in Big Picture." );
 ConVar cl_mainmenu_operation_motd_start( "cl_mainmenu_operation_motd_start", "0", FCVAR_ARCHIVE | FCVAR_HIDDEN );
 ConVar cl_mainmenu_operation_motd_reset( "cl_mainmenu_operation_motd_reset", "0", FCVAR_ARCHIVE | FCVAR_HIDDEN );
@@ -164,6 +174,7 @@ CHudMainMenuOverride::CHudMainMenuOverride( IViewPort *pViewPort ) : BaseClass( 
 	m_pMOTDPanel = NULL;
 	m_pMOTDShowPanel = NULL;
 	m_pMOTDURLButton = NULL;
+	m_pMOTDURLButton2 = NULL;
 	m_pMOTDNextButton = NULL;
 	m_pMOTDPrevButton = NULL;
 	m_iNotiPanelWide = 0;
@@ -187,6 +198,11 @@ CHudMainMenuOverride::CHudMainMenuOverride( IViewPort *pViewPort ) : BaseClass( 
 	m_flCheckTrainingAt = 0;
 	m_bWasInTraining = false;
 
+	m_pWorkshopPanel = NULL;
+
+	m_pBetaNotificationPanel = NULL;
+	m_pBetaCheckbox = NULL;
+
 	ScheduleItemCheck();
 
  	m_pToolTip = new CMainMenuToolTip( this );
@@ -203,6 +219,9 @@ CHudMainMenuOverride::CHudMainMenuOverride( IViewPort *pViewPort ) : BaseClass( 
 	ListenForGameEvent( "gameui_activated" );
 	ListenForGameEvent( "party_updated" );
 	ListenForGameEvent( "server_spawn" );
+	ListenForGameEvent( "client_disconnect" );
+	ListenForGameEvent( "game_end" );
+	ListenForGameEvent( "server_disconnect" );
 
 	m_pRankPanel = new CPvPRankPanel( this, "rankpanel" );
 	m_pRankModelPanel = new CPvPRankPanel( this, "rankmodelpanel" );
@@ -245,6 +264,13 @@ CHudMainMenuOverride::CHudMainMenuOverride( IViewPort *pViewPort ) : BaseClass( 
 
 	//m_pWatchStreamsPanel = new CTFStreamListPanel( this, "StreamListPanel" );
 	m_pCharacterImagePanel = new ImagePanel( this, "TFCharacterImage" );
+
+	// Initialize splash text system
+	m_pSplashTextLabel = NULL; // Will be found in ApplySchemeSettings
+	m_flNextSplashTextChange = 0.0f;
+	m_flSplashAnimationTime = 0.0f;
+	m_bSplashAnimatingIn = true;
+	LoadSplashTexts();
 
 	vgui::ivgui()->AddTickSignal( GetVPanel(), 50 );
 }
@@ -315,7 +341,53 @@ void CHudMainMenuOverride::OnTick()
 		}
 	}
 
+	// Check beta notification visibility (do this every tick to ensure config is loaded)
+	static bool s_bBetaNotificationChecked = false;
+	if ( !s_bBetaNotificationChecked && m_pBetaNotificationPanel )
+	{
+		// Check if config has been loaded by verifying any archive convar has a non-default value
+		// or just check after a few frames to ensure config.cfg has been executed
+		static int s_nCheckFrames = 0;
+		s_nCheckFrames++;
+		
+		if ( s_nCheckFrames > 1 )  // Wait a few frames for config to load
+		{
+			s_bBetaNotificationChecked = true;
+			
+			bool bAccepted = ( cf_beta_warning_accepted.GetInt() != 0 );
+			
+			if ( bAccepted )
+			{
+				// Hide the panel if already accepted
+				m_pBetaNotificationPanel->SetVisible( false );
+				
+				// Show matchmaking dashboard
+				CTFMatchmakingDashboard *pDashboard = GetMMDashboard();
+				if ( pDashboard )
+				{
+					pDashboard->SetVisible( true );
+				}
+			}
+			else
+			{
+				// Show the panel if not accepted yet
+				m_pBetaNotificationPanel->SetVisible( true );
+				m_pBetaNotificationPanel->SetMouseInputEnabled( true );
+				m_pBetaNotificationPanel->SetKeyBoardInputEnabled( true );
+				m_pBetaNotificationPanel->MoveToFront();
+				
+				// Hide matchmaking dashboard
+				CTFMatchmakingDashboard *pDashboard = GetMMDashboard();
+				if ( pDashboard )
+				{
+					pDashboard->SetVisible( false );
+				}
+			}
+		}
+	}
 
+	// Update splash text animation
+	UpdateSplashText();
 }
 
 //-----------------------------------------------------------------------------
@@ -433,6 +505,20 @@ void CHudMainMenuOverride::FireGameEvent( IGameEvent *event )
 			NotifyNeedsToChooseMostHelpfulFriend();
 		}
 	}
+	else if ( Q_strcmp( type, "server_spawn" ) == 0 || 
+			  Q_strcmp( type, "client_disconnect" ) == 0 || 
+			  Q_strcmp( type, "game_end" ) == 0 || 
+			  Q_strcmp( type, "server_disconnect" ) == 0 )
+	{
+		// Change splash text when connecting/disconnecting from servers
+		if ( m_pSplashTextLabel && m_vecSplashTexts.Count() > 0 )
+		{
+			ChangeSplashText();
+			m_flNextSplashTextChange = gpGlobals->curtime + 8.0f; // Reset timer
+			m_flSplashAnimationTime = gpGlobals->curtime;
+			m_bSplashAnimatingIn = true;
+		}
+	}
 }
 
 //-----------------------------------------------------------------------------
@@ -474,6 +560,11 @@ void CHudMainMenuOverride::ApplySchemeSettings( IScheme *scheme )
 	KeyValues *pConditions = NULL;
 	const char *pszHoliday = UTIL_GetActiveHolidayString();
 
+	// Check if holiday themes are disabled
+	if ( cf_disable_holiday_themes.GetBool() )
+	{
+		pszHoliday = NULL; // Force no holiday theme
+	}
 
 	if ( pszHoliday && pszHoliday[0] )
 	{
@@ -570,6 +661,7 @@ void CHudMainMenuOverride::ApplySchemeSettings( IScheme *scheme )
 	m_pMOTDPrevButton = dynamic_cast<CExImageButton*>( m_pMOTDPanel->FindChildByName("MOTD_PrevButton") );
 	m_pMOTDNextButton = dynamic_cast<CExImageButton*>( m_pMOTDPanel->FindChildByName("MOTD_NextButton") );
 	m_pMOTDURLButton = dynamic_cast<CExButton*>( m_pMOTDPanel->FindChildByName("MOTD_URLButton") );
+	m_pMOTDURLButton2 = dynamic_cast<CExButton*>( m_pMOTDPanel->FindChildByName("MOTD_URLButton2") );
 
 	// m_pNotificationsShowPanel shows number of unread notifications. Pressing it pops up the first notification.
 	m_pNotificationsShowPanel = dynamic_cast<vgui::EditablePanel*>( FindChildByName("Notifications_ShowButtonPanel") );
@@ -651,6 +743,66 @@ void CHudMainMenuOverride::ApplySchemeSettings( IScheme *scheme )
 
 	GetMMDashboard();
 	GetCompRanksTooltip();
+
+	// Reload splash texts from file (for hud_reloadscheme support)
+	LoadSplashTexts();
+
+	// Initialize splash text label
+	m_pSplashTextLabel = dynamic_cast<vgui::Label*>( FindChildByName("SplashTextLabel") );
+	if ( m_pSplashTextLabel && m_vecSplashTexts.Count() > 0 )
+	{
+		// Set initial splash text and start animation
+		ChangeSplashText();
+		m_flNextSplashTextChange = gpGlobals->curtime + 5.0f; // Change every 5 seconds
+		m_flSplashAnimationTime = gpGlobals->curtime;
+		m_bSplashAnimatingIn = true;
+	}
+
+	// Initialize beta notification panel
+	m_pBetaNotificationPanel = dynamic_cast<vgui::EditablePanel*>( FindChildByName("BetaNotificationPanel") );
+	if ( m_pBetaNotificationPanel )
+	{
+		// Find the checkbox control
+		m_pBetaCheckbox = dynamic_cast<vgui::CheckButton*>( m_pBetaNotificationPanel->FindChildByName("DontShowAgainCheckbox") );
+
+		// Find and hook up the confirm button
+		CExButton *pConfirmButton = dynamic_cast<CExButton*>( m_pBetaNotificationPanel->FindChildByName("ConfirmButton") );
+		if ( pConfirmButton )
+		{
+			pConfirmButton->AddActionSignalTarget( this );
+		}
+
+		// Check if user has already accepted the beta warning
+		bool bAccepted = ( cf_beta_warning_accepted.GetInt() != 0 );
+		
+		if ( bAccepted )
+		{
+			// Hide the panel if already accepted
+			m_pBetaNotificationPanel->SetVisible( false );
+			
+			// Show matchmaking dashboard
+			CTFMatchmakingDashboard *pDashboard = GetMMDashboard();
+			if ( pDashboard )
+			{
+				pDashboard->SetVisible( true );
+			}
+		}
+		else
+		{
+			// Show the panel if not accepted yet
+			m_pBetaNotificationPanel->SetVisible( true );
+			m_pBetaNotificationPanel->SetMouseInputEnabled( true );
+			m_pBetaNotificationPanel->SetKeyBoardInputEnabled( true );
+			m_pBetaNotificationPanel->MoveToFront();
+			
+			// Hide matchmaking dashboard
+			CTFMatchmakingDashboard *pDashboard = GetMMDashboard();
+			if ( pDashboard )
+			{
+				pDashboard->SetVisible( false );
+			}
+		}
+	}
 }
 
 //-----------------------------------------------------------------------------
@@ -725,7 +877,15 @@ void CHudMainMenuOverride::LoadCharacterImageFile( void )
 			}
 			else if ( eHoliday != kHoliday_None )
 			{
-				iWeight = UTIL_IsHolidayActive( eHoliday ) ? MAX( iWeight, 6 ) : 0;
+				// Check if holiday themes are disabled
+				if ( cf_disable_holiday_themes.GetBool() )
+				{
+					iWeight = 0; // Disable holiday character images
+				}
+				else
+				{
+					iWeight = UTIL_IsHolidayActive( eHoliday ) ? MAX( iWeight, 6 ) : 0;
+				}
 			}
 			else if ( bActiveOperation && !bIsOperationCharacter )
 			{
@@ -734,7 +894,8 @@ void CHudMainMenuOverride::LoadCharacterImageFile( void )
 			else
 			{
 				// special cases for summer, halloween, fullmoon, and christmas...turn off anything not covered above
-				if ( UTIL_IsHolidayActive( kHoliday_Summer ) || UTIL_IsHolidayActive( kHoliday_HalloweenOrFullMoon ) || UTIL_IsHolidayActive( kHoliday_Christmas ) )
+				// Unless the user has disabled holiday themes
+				if ( !cf_disable_holiday_themes.GetBool() && ( UTIL_IsHolidayActive( kHoliday_Summer ) || UTIL_IsHolidayActive( kHoliday_HalloweenOrFullMoon ) || UTIL_IsHolidayActive( kHoliday_Christmas ) ) )
 				{
 					iWeight = 0;
 				}
@@ -965,7 +1126,7 @@ void CHudMainMenuOverride::OnUpdateMenu( void )
 	// So try and do the least amount of work if nothing has changed.
 
 	bool bSomethingChanged = false;
-	bool bInGame = engine->IsInGame();
+	bool bInGame = engine->IsInGame() && !engine->IsLevelMainMenuBackground();
 #if defined( REPLAY_ENABLED )
 	bool bInReplay = g_pEngineClientReplay->IsPlayingReplayDemo();
 #else
@@ -1370,6 +1531,11 @@ void CHudMainMenuOverride::UpdateMOTD( bool bNewMOTDs )
 		{
 			const char *pszURL = pMOTD->GetURL();
 			m_pMOTDURLButton->SetVisible( (pszURL && pszURL[0]) );
+		}
+		if ( m_pMOTDURLButton2 )
+		{
+			const char *pszURL2 = pMOTD->GetURL2();
+			m_pMOTDURLButton2->SetVisible( (pszURL2 && pszURL2[0]) );
 		}
 		if ( m_pMOTDPrevButton )
 		{
@@ -1830,6 +1996,23 @@ void CHudMainMenuOverride::OnCommand( const char *command )
 		}
 		return;
 	}
+	//Custom Fortress 2 - MOTD 2nd Button
+	else if ( !Q_stricmp( command, "motd_viewurl_secondary" ) )
+	{
+		CMOTDEntryDefinition *pMOTD = GetMOTDManager().GetMOTDByIndex( m_iCurrentMOTD );
+		if ( pMOTD )
+		{
+			const char *pszURL2 = pMOTD->GetURL2();
+			if ( pszURL2 && pszURL2[0] )
+			{
+				if ( steamapicontext && steamapicontext->SteamFriends() )
+				{
+					steamapicontext->SteamFriends()->ActivateGameOverlayToWebPage( pszURL2 );
+				}
+			}
+		}
+		return;
+	}
 	else if ( !Q_stricmp( command, "view_newuser_forums" ) )
 	{
 		if ( steamapicontext && steamapicontext->SteamFriends() )
@@ -1906,6 +2089,31 @@ void CHudMainMenuOverride::OnCommand( const char *command )
 	else if ( !Q_stricmp( command, "armory_open" ) )
 	{
 		GetClientModeTFNormal()->GameUI()->SendMainMenuCommand( "engine open_charinfo_armory" );
+	}
+	else if ( !Q_stricmp( command, "workshop" ) || !Q_stricmp( command, "engine workshop" ) )
+	{
+		// Create workshop panel if it doesn't exist (DHANDLE auto-nulls when panel is deleted)
+		if ( m_pWorkshopPanel.Get() == NULL )
+		{
+			m_pWorkshopPanel = new vgui::CCFWorkshopBrowserPanel( NULL, "WorkshopBrowserPanel" );
+		}
+		
+		// Show the workshop browser panel
+		if ( m_pWorkshopPanel.Get() )
+		{
+			m_pWorkshopPanel->ShowPanel( true );
+		}
+		
+		// Also show workshop status in console
+		if ( CFWorkshop() )
+		{
+			CFWorkshop()->PrintStatus();
+		}
+	}
+	else if ( !Q_stricmp( command, "find_game" ) )
+	{
+		// Open the server browser (using engine command since custom browser was removed)
+		engine->ClientCmd_Unrestricted( "openserverbrowser\n" );
 	}
 	else if ( !Q_stricmp( command, "engine disconnect" ) && engine->IsInGame() && TFGameRules() && ( TFGameRules()->IsMannVsMachineMode() || TFGameRules()->IsCompetitiveMode() ) )
 	{
@@ -2000,6 +2208,33 @@ void CHudMainMenuOverride::OnCommand( const char *command )
 		}
 		return;
 	}
+	else if ( FStrEq( "confirmbeta", command ) )
+	{
+		// Check if the checkbox is checked
+		if ( m_pBetaCheckbox && m_pBetaCheckbox->IsSelected() )
+		{
+			// Set the ConVar to remember user's choice (don't show again)
+			cf_beta_warning_accepted.SetValue( 1 );
+			
+			// Force save to config
+			engine->ClientCmd_Unrestricted( "host_writeconfig\n" );
+		}
+
+		// Hide the beta notification panel
+		if ( m_pBetaNotificationPanel )
+		{
+			m_pBetaNotificationPanel->SetVisible( false );
+		}
+		
+		// Show the matchmaking dashboard
+		CTFMatchmakingDashboard *pDashboard = GetMMDashboard();
+		if ( pDashboard )
+		{
+			pDashboard->SetVisible( true );
+		}
+		
+		return;
+	}
 	else if ( FStrEq( "OpenMutePlayerDialog", command ) )
 	{
 		if ( !m_hMutePlayerDialog.Get() )
@@ -2077,6 +2312,11 @@ void CHudMainMenuOverride::OnCommand( const char *command )
 	else if(!Q_stricmp(command,"openmodcredits"))
 	{
 		GetClientModeTFNormal()->GameUI()->SendMainMenuCommand("engine openmodcredits");
+	}
+	else if (FStrEq("create_server", command))
+	{
+		GetMMDashboard()->OnCreateServer();
+		return;
 	}
 	else
 	{
@@ -2446,3 +2686,133 @@ void CMainMenuToolTip::SetText(const char *pszText)
 //-----------------------------------------------------------------------------
 // Purpose: Reload the .res file
 //-----------------------------------------------------------------------------
+
+//-----------------------------------------------------------------------------
+// Purpose: Load splash texts from file
+//-----------------------------------------------------------------------------
+void CHudMainMenuOverride::LoadSplashTexts()
+{
+	m_vecSplashTexts.Purge();
+	
+	KeyValues *pSplashTexts = new KeyValues( "SplashTexts" );
+	if ( pSplashTexts->LoadFromFile( g_pFullFileSystem, "scripts/better_splashes.txt", "GAME" ) )
+	{
+		for ( KeyValues *pCurItem = pSplashTexts->GetFirstValue(); pCurItem; pCurItem = pCurItem->GetNextValue() )
+		{
+			const char *pName = pCurItem->GetName();
+			m_vecSplashTexts.AddToTail( CUtlString( pName ) );
+		}
+		pSplashTexts->deleteThis();
+		
+		// the code below might be a tad bit over-engineered, keeping it around as it seems useful
+		/*
+		// Read the file as text
+		CUtlBuffer buffer;
+		if ( g_pFullFileSystem->ReadFile( "scripts/better_splashes.txt", "GAME", buffer ) )
+		{
+			char *pText = (char*)buffer.Base();
+			
+			// Split by newlines
+			char *pLine = strtok( pText, "\n\r" );
+			while ( pLine != NULL )
+			{
+				// Trim whitespace
+				while ( *pLine == ' ' || *pLine == '\t' )
+					pLine++;
+				
+				// Skip empty lines, comments, "SplashTexts" line, and curly brackets
+				if ( *pLine != '\0' && *pLine != '#' && 
+					 strcmp(pLine, "\"SplashTexts\"") != 0 && 
+					 strcmp(pLine, "{") != 0 && 
+					 strcmp(pLine, "}") != 0 )
+				{
+					// Remove trailing whitespace
+					char *pEnd = pLine + strlen(pLine) - 1;
+					while ( pEnd > pLine && (*pEnd == ' ' || *pEnd == '\t' || *pEnd == '\n' || *pEnd == '\r') )
+						*pEnd-- = '\0';
+						
+					// Check if line starts and ends with quotes, and remove them
+					if ( strlen(pLine) > 2 && pLine[0] == '\"' && pLine[strlen(pLine)-1] == '\"' )
+					{
+						// Remove quotes
+						pLine[strlen(pLine)-1] = '\0';
+						pLine++;
+					}
+						
+					if ( strlen(pLine) > 0 )
+					{
+						m_vecSplashTexts.AddToTail( CUtlString( pLine ) );
+					}
+				}
+				pLine = strtok( NULL, "\n\r" );
+			}
+		}*/
+	}
+	else
+	{
+		pSplashTexts->deleteThis();
+		
+		// Fallback splash texts if file doesn't exist
+		m_vecSplashTexts.AddToTail( CUtlString( "Better than the original!" ) );
+		m_vecSplashTexts.AddToTail( CUtlString( "Now with 100% more fortress!" ) );
+		m_vecSplashTexts.AddToTail( CUtlString( "Built different!" ) );
+		m_vecSplashTexts.AddToTail( CUtlString( "Community-driven experience!" ) );
+		m_vecSplashTexts.AddToTail( CUtlString( "The fortress evolved!" ) );
+	}
+}
+
+//-----------------------------------------------------------------------------
+// Purpose: Change to a new random splash text
+//-----------------------------------------------------------------------------
+void CHudMainMenuOverride::ChangeSplashText()
+{
+	if ( !m_pSplashTextLabel || m_vecSplashTexts.Count() == 0 )
+		return;
+		
+	int randomIndex = RandomInt( 0, m_vecSplashTexts.Count() - 1 );
+	m_pSplashTextLabel->SetText( m_vecSplashTexts[randomIndex].Get() );
+}
+
+//-----------------------------------------------------------------------------
+// Purpose: Update splash text animations and timing
+//-----------------------------------------------------------------------------
+void CHudMainMenuOverride::UpdateSplashText()
+{
+	if ( !m_pSplashTextLabel || m_vecSplashTexts.Count() == 0 )
+		return;
+	
+	// Change splash text every 8 seconds
+	if ( gpGlobals->curtime >= m_flNextSplashTextChange )
+	{
+		ChangeSplashText();
+		m_flNextSplashTextChange = gpGlobals->curtime + 8.0f;
+		m_flSplashAnimationTime = gpGlobals->curtime;
+		m_bSplashAnimatingIn = true;
+	}
+	
+	// Animate splash text (zoom in/out effect)
+	AnimateSplashText();
+}
+
+//-----------------------------------------------------------------------------
+// Purpose: Animate the splash text with a zoom in/out effect
+//-----------------------------------------------------------------------------
+void CHudMainMenuOverride::AnimateSplashText()
+{
+	if ( !m_pSplashTextLabel )
+		return;
+		
+	// Animation cycle time (2 seconds)
+	float animTime = fmod( gpGlobals->curtime * 2.0f, 2.0f );
+	
+	// Create a smooth scaling effect using sine wave
+	float scale = 1.0f + 0.15f * sin( animTime * M_PI );
+	
+	// Apply yellow color with slight alpha variation for more life
+	int alpha = (int)(255.0f * (0.9f + 0.1f * sin( animTime * M_PI * 0.5f )));
+	Color yellowColor( 255, 255, 0, alpha );
+	m_pSplashTextLabel->SetFgColor( yellowColor );
+	
+	// We can't directly scale text, but we can create the illusion with position offset
+	// The text will appear to "breathe" slightly
+}

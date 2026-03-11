@@ -123,6 +123,7 @@ private:
 	CSpawnLocation m_where;
 
 	bool UpdateMissionDestroySentries( void );
+	bool SelectHumanSentryBuster( CObjectSentrygun *pTargetSentry );
 	bool UpdateMission( CTFBot::MissionType mission );
 
 	enum StateType
@@ -334,6 +335,7 @@ public:
 	string_t GetClassIconName( int nIndex ) const;
 	unsigned int GetClassFlags( int nIndex ) const;
 
+	bool HasTanks( void ) const;
 	int NumTanksSpawned( void ) const;
 	void IncrementTanksSpawned( void );
 
@@ -345,6 +347,12 @@ public:
 
 	int NumEngineersTeleportSpawned( void ) const;
 	void IncrementEngineerTeleportSpawned( void );
+
+	//Vscript function; Arbitary forces the win senario. Doesn't compenstates for money unearned
+	void ForceWin();
+	// Access to wave spawners for popfile mode
+	int GetNumWaveSpawns( void ) const { return m_waveSpawnVector.Count(); }
+	CWaveSpawnPopulator *GetWaveSpawn( int index ) const { return m_waveSpawnVector[index]; }
 
 private:
 	bool IsDoneWithNonSupportWaves( void );
@@ -358,6 +366,7 @@ private:
 	bool m_isStarted;
 	bool m_bFiredInitWaveOutput;
 	int m_iEnemyCount;
+	bool m_bHasTanks;
 	int m_nTanksSpawned;
 	int m_nSentryBustersSpawned;
 	int m_nNumEngineersTeleportSpawned;
@@ -417,6 +426,12 @@ inline unsigned int CWave::GetClassFlags( int nIndex ) const
 {
 	return m_nWaveClassCounts[ nIndex ].iFlags;
 }
+
+inline bool CWave::HasTanks( void ) const
+{
+	return m_bHasTanks;
+}
+
 
 inline int CWave::NumTanksSpawned( void ) const
 {

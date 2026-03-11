@@ -1566,11 +1566,11 @@ Rule MvMTauntSoldier
 
 Response MvMWaveWinSoldier
 {
-	scene "scenes/Player/Soldier/low/4231.vcd" 
-	scene "scenes/Player/Soldier/low/4232.vcd" 
-	scene "scenes/Player/Soldier/low/4233.vcd" 
-	scene "scenes/Player/Soldier/low/4234.vcd" 
-	scene "scenes/Player/Soldier/low/4235.vcd" 
+	scene "scenes/Player/Soldier/low/4231.vcd" predelay "1.5"
+	scene "scenes/Player/Soldier/low/4232.vcd" predelay "1.5"
+	scene "scenes/Player/Soldier/low/4233.vcd" predelay "1.5"
+	scene "scenes/Player/Soldier/low/4234.vcd" predelay "1.5"
+	scene "scenes/Player/Soldier/low/4235.vcd" predelay "1.5"
 }
 Rule MvMWaveWinSoldier
 {
@@ -1580,11 +1580,11 @@ Rule MvMWaveWinSoldier
 
 Response MvMWaveLoseSoldier
 {
-	scene "scenes/Player/Soldier/low/4236.vcd" 
-	scene "scenes/Player/Soldier/low/4237.vcd" 
-	scene "scenes/Player/Soldier/low/4238.vcd" 
-	scene "scenes/Player/Soldier/low/4239.vcd" 
-	scene "scenes/Player/Soldier/low/4240.vcd" 
+	scene "scenes/Player/Soldier/low/4236.vcd" predelay "1.5"
+	scene "scenes/Player/Soldier/low/4237.vcd" predelay "1.5"
+	scene "scenes/Player/Soldier/low/4238.vcd" predelay "1.5" 
+	scene "scenes/Player/Soldier/low/4239.vcd" predelay "1.5"
+	scene "scenes/Player/Soldier/low/4240.vcd" predelay "1.5" 
 }
 Rule MvMWaveLoseSoldier
 {

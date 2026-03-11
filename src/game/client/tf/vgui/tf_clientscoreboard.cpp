@@ -24,6 +24,7 @@
 #include <filesystem.h>
 #include "IGameUIFuncs.h" // for key bindings
 #include "VGuiMatSurface/IMatSystemSurface.h"
+#include "engine/IEngineTrace.h"
 
 #include "tf_controls.h"
 #include "tf_shareddefs.h"
@@ -66,7 +67,7 @@ using namespace vgui;
 ConVar tf_scoreboard_mouse_mode( "tf_scoreboard_mouse_mode", "2", FCVAR_ARCHIVE );
 ConVar sv_vote_issue_kick_allowed( "sv_vote_issue_kick_allowed", "0", FCVAR_REPLICATED, "Can players call votes to kick players from the server?" );
 
-ConVar tf_show_all_scoreboard_elements( "tf_show_all_scoreboard_elements", "0", FCVAR_DEVELOPMENTONLY );
+ConVar tf_show_all_scoreboard_elements( "tf_show_all_scoreboard_elements", "0", FCVAR_CHEAT, "Show all elements in the scoreboard." );
 
 void cc_scoreboard_convar_changed( IConVar *pConVar, const char *pOldString, float flOldValue )
 {
@@ -76,7 +77,7 @@ void cc_scoreboard_convar_changed( IConVar *pConVar, const char *pOldString, flo
 		pScoreboard->Reset();
 	}
 }
-ConVar tf_scoreboard_ping_as_text( "tf_scoreboard_ping_as_text", "0", FCVAR_ARCHIVE, "Show ping values as text in the scoreboard.", cc_scoreboard_convar_changed );
+ConVar tf_scoreboard_ping_as_text( "tf_scoreboard_ping_as_text", "1", FCVAR_ARCHIVE, "Show ping values as text in the scoreboard.", cc_scoreboard_convar_changed );
 ConVar tf_scoreboard_alt_class_icons( "tf_scoreboard_alt_class_icons", "0", FCVAR_ARCHIVE, "Show alternate class icons in the scoreboard." );
 
 extern bool IsInCommentaryMode( void );
@@ -257,13 +258,6 @@ void CTFClientScoreBoardDialog::UpdatePlayerModel()
 	int nClass = pPlayer->GetPlayerClass()->GetClassIndex();
 	int nTeam = pPlayer->GetTeamNumber();
 	int nItemSlot = ( pPlayer->IsAlive() && pPlayer->GetActiveTFWeapon() ) ? pPlayer->GetActiveTFWeapon()->GetAttributeContainer()->GetItem()->GetStaticData()->GetLoadoutSlot( nClass ) : LOADOUT_POSITION_PRIMARY;
-	CEconItemView *pWeapon = NULL;
-
-	CTFWeaponBase *pEnt = dynamic_cast<CTFWeaponBase*>( pPlayer->GetEntityForLoadoutSlot( nItemSlot ) );
-	if ( pEnt )
-	{
-		pWeapon = pEnt->GetAttributeContainer()->GetItem();
-	}
 
 	m_pPlayerModelPanel->ClearCarriedItems();
 	if ( pPlayer->GetPlayerClass()->HasCustomModel() )
@@ -277,9 +271,19 @@ void CTFClientScoreBoardDialog::UpdatePlayerModel()
 	}
 	m_pPlayerModelPanel->SetTeam( nTeam );
 
-	if ( pWeapon )
+	for ( int wpn = 0; wpn < pPlayer->WeaponCount(); wpn++ )
 	{
-		m_pPlayerModelPanel->AddCarriedItem( pWeapon );
+		C_TFWeaponBase *pWpn = dynamic_cast<C_TFWeaponBase *>( pPlayer->GetWeapon( wpn ) );
+		if ( !pWpn )
+			continue;
+
+		CAttributeContainer *pCont = pWpn->GetAttributeContainer();
+		CEconItemView *pEconItemView = pCont ? pCont->GetItem() : NULL;
+
+		if ( pEconItemView && pEconItemView->IsValid() )
+		{
+			m_pPlayerModelPanel->AddCarriedItem( pEconItemView );
+		}
 	}
 
 	for ( int wbl = pPlayer->GetNumWearables() - 1; wbl >= 0; wbl-- )
@@ -912,13 +916,14 @@ void CTFClientScoreBoardDialog::InitPlayerList( SectionedListPanel *pPlayerList 
 	}
 	
 	// the player avatar is always a fixed size, so as we change resolutions we need to vary the size of the name column to adjust the total width of all the columns
-	m_nExtraSpace = pPlayerList->GetWide() - m_iMedalColumnWidth - m_iAvatarWidth - m_iSpacerWidth - m_iNameWidth - m_iKillstreakWidth - m_iKillstreakImageWidth - m_iNemesisWidth - m_iNemesisWidth - m_iScoreWidth - m_iClassWidth - m_iPingWidth - m_iSpacerWidth - ( 2 * SectionedListPanel::COLUMN_DATA_INDENT ); // the SectionedListPanel will indent the columns on either end by SectionedListPanel::COLUMN_DATA_INDENT 
+	m_nExtraSpace = pPlayerList->GetWide() - m_iMedalColumnWidth - m_iAvatarWidth - m_iSpacerWidth - m_iNameWidth - m_iKillstreakWidth - m_iKillstreakImageWidth - m_iNemesisWidth - m_iNemesisWidth - m_iScoreWidth - m_iServerHostWidth - m_iClassWidth - m_iPingWidth - m_iSpacerWidth - ( 2 * SectionedListPanel::COLUMN_DATA_INDENT ); // the SectionedListPanel will indent the columns on either end by SectionedListPanel::COLUMN_DATA_INDENT 
 
 	pPlayerList->AddColumnToSection( 0, "name", "#TF_Scoreboard_Name", 0, m_iNameWidth + m_nExtraSpace );
 	pPlayerList->AddColumnToSection( 0, "killstreak", "", SectionedListPanel::COLUMN_RIGHT, m_iKillstreakWidth );
 	pPlayerList->AddColumnToSection( 0, "killstreak_image", "", SectionedListPanel::COLUMN_IMAGE, m_iKillstreakImageWidth );
 	pPlayerList->AddColumnToSection( 0, "dominating", "", SectionedListPanel::COLUMN_IMAGE | SectionedListPanel::COLUMN_CENTER, m_iNemesisWidth );
 	pPlayerList->AddColumnToSection( 0, "nemesis", "", SectionedListPanel::COLUMN_IMAGE | SectionedListPanel::COLUMN_CENTER, m_iNemesisWidth );
+	pPlayerList->AddColumnToSection( 0, "serverhost", "", SectionedListPanel::COLUMN_IMAGE | SectionedListPanel::COLUMN_CENTER, m_iServerHostWidth );
 	pPlayerList->AddColumnToSection( 0, "score", "#TF_Scoreboard_Score", SectionedListPanel::COLUMN_RIGHT, m_iScoreWidth );
 	pPlayerList->AddColumnToSection( 0, "class", "", SectionedListPanel::COLUMN_IMAGE | SectionedListPanel::COLUMN_RIGHT, m_iClassWidth );
 
@@ -1456,6 +1461,23 @@ void CTFClientScoreBoardDialog::UpdatePlayerList()
 						pKeyValues->SetInt( "ping", bAlive ? m_iImagePing[iIndex] : m_iImagePingDead[iIndex] );
 					}
 				}
+			}
+
+			// Check if this player is the server host (only on listen servers)
+			bool bIsServerHost = false;
+			if ( gpGlobals->maxClients > 1 && playerIndex == 1 )
+			{
+				bIsServerHost = true;
+			}
+
+			// Set server host icon if applicable
+			if ( bIsServerHost )
+			{
+				pKeyValues->SetInt( "serverhost", bAlive ? m_iImageServerHost : m_iImageServerHostDead );
+			}
+			else
+			{
+				pKeyValues->SetInt( "serverhost", 0 );
 			}
 
 			if ( TFGameRules() && TFGameRules()->IsHolidayActive( kHoliday_Halloween ) && TFGameRules()->ArePlayersInHell() )

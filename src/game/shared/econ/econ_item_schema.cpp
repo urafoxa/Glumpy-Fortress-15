@@ -115,6 +115,7 @@ const char *g_AttributeDescriptionFormats[] =
 	"value_is_or",						// ATTDESCFORM_VALUE_IS_OR
 	"value_is_date",					// ATTDESCFORM_VALUE_IS_DATE
 	"value_is_account_id",				// ATTDESCFORM_VALUE_IS_ACCOUNT_ID
+	"value_is_steamid3",				// ATTDESCFORM_VALUE_IS_STEAMID3
 	"value_is_particle_index",			// ATTDESCFORM_VALUE_IS_PARTICLE_INDEX -> Could change to "string index"
 	"value_is_killstreakeffect_index",	// ATTDESCFORM_VALUE_IS_KILLSTREAKEFFECT_INDEX -> Could change to "string index"
 	"value_is_killstreak_idleeffect_index",  // ATTDESCFORM_VALUE_IS_KILLSTREAK_IDLEEFFECT_INDEX
@@ -129,6 +130,8 @@ const char *g_EffectTypes[NUM_EFFECT_TYPES] =
 	"neutral",		// ATTRIB_EFFECT_NEUTRAL = 0,
 	"positive",		// ATTRIB_EFFECT_POSITIVE,
 	"negative",		// ATTRIB_EFFECT_NEGATIVE,
+	"community",	// ATTRIB_EFFECT_COMMUNITY,
+	"scrapped",     // ATTRIB_EFFECT_SCRAPPED,
 };
 
 //-----------------------------------------------------------------------------
@@ -2875,31 +2878,6 @@ void CEconStyleInfo::BInitFromKV( KeyValues *pKVStyle, CUtlVector<CUtlString> *p
 		m_iBodygroupSubmodelIndex = pKVBodygroup->GetInt( "submodel_index", -1 );
 		Assert( m_iBodygroupSubmodelIndex != -1 );
 	}
-
-	// Tossable Bread - Styles can now change pose parameters!
-	//TODO: Make this actually work please
-	perteamvisuals_t *pVisData = new perteamvisuals_t();
-	KeyValues *pKVPose_Player = pKVStyle->FindKey( "player_poseparam" );
-	if ( pKVPose_Player )
-	{
-		FOR_EACH_SUBKEY( pKVPose_Player, pKVSubKey )
-		{
-			poseparamtable_t *pPoseParam = pVisData->m_PlayerPoseParams.AddToTailGetPtr();
-			pPoseParam->strName = pKVSubKey->GetName();
-			pPoseParam->flValue = pKVSubKey->GetFloat();
-		}
-	}
-
-	KeyValues *pKVPose_Item = pKVStyle->FindKey( "item_poseparam" );
-	if ( pKVPose_Item )
-	{
-		FOR_EACH_SUBKEY( pKVPose_Item, pKVSubKey )
-		{
-			poseparamtable_t *pPoseParam = pVisData->m_ItemPoseParams.AddToTailGetPtr();
-			pPoseParam->strName = pKVSubKey->GetName();
-			pPoseParam->flValue = pKVSubKey->GetFloat();
-		}
-	}
 }
 
 #if defined(CLIENT_DLL) || defined(GAME_DLL)
@@ -4434,17 +4412,11 @@ bool CEconItemSchema::BInitBinaryBuffer( CUtlBuffer &buffer, CUtlVector<CUtlStri
 	return false;
 }
 
-unsigned char g_sha1ItemSchemaText[ k_cubHash ];
-
 //-----------------------------------------------------------------------------
 // Initializes the schema, given KV in text form
 //-----------------------------------------------------------------------------
 bool CEconItemSchema::BInitTextBuffer( CUtlBuffer &buffer, CUtlVector<CUtlString> *pVecErrors /* = NULL */ )
 {
-	// Save off the hash into a global variable, so VAC can check it
-	// later
-	GenerateHash( g_sha1ItemSchemaText, buffer.Base(), buffer.TellPut() );
-
 	Reset();
 	m_pKVRawDefinition = new KeyValues( "CEconItemSchema" );
 	//if ( m_pKVRawDefinition->LoadFromBuffer( NULL, buffer ) )

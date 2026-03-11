@@ -331,7 +331,7 @@ bool CTFWeaponPDA_Spy::Deploy( void )
 {
 	bool bDeploy = BaseClass::Deploy();
 
-	if ( bDeploy )
+	if ( bDeploy && prediction->IsFirstTimePredicted() )
 	{
 		// let the spy pda menu know to reset
 		IGameEvent *event = gameeventmanager->CreateEvent( "spy_pda_reset" );
@@ -389,6 +389,23 @@ void CTFWeaponPDA::Equip(CBaseCombatCharacter* pOwner)
 				pDispenser->DetonateObject();
 			}
 		}
+		
+		// If switching to pads, blow up teleporters
+		int iBuildsPads = 0;
+		CALL_ATTRIB_HOOK_INT(iBuildsPads, pda_builds_pads);
+		if (iBuildsPads)
+		{
+			CBaseObject* pTeleporter = pPlayer->GetObjectOfType(OBJ_TELEPORTER, 0);
+			if (pTeleporter)
+			{
+				pTeleporter->DetonateObject();
+			}
+			pTeleporter = pPlayer->GetObjectOfType(OBJ_TELEPORTER, 1);
+			if (pTeleporter)
+			{
+				pTeleporter->DetonateObject();
+			}
+		}
 	}
 #endif
 	BaseClass::Equip( pOwner );
@@ -408,7 +425,8 @@ void CTFWeaponPDA::Detach(void)
 		// In MvM mode, leave engineer's buildings after he dies
 		if (TFGameRules() && TFGameRules()->IsMannVsMachineMode())
 		{
-			if (pPlayer->GetTeamNumber() != TF_TEAM_PVE_DEFENDERS)
+			// In Versus, we detonate objects on blue if you're not a bot.
+			if (pPlayer->GetTeamNumber() != TF_TEAM_PVE_DEFENDERS && pPlayer->IsBot())
 			{
 				bDetonateObjects = false;
 			}
@@ -427,6 +445,23 @@ void CTFWeaponPDA::Detach(void)
 				if (pDispenser)
 				{
 					pDispenser->DetonateObject();
+				}
+			}
+			
+			// If switching off of pads, blow up pads
+			int iBuildsPads = 0;
+			CALL_ATTRIB_HOOK_INT(iBuildsPads, pda_builds_pads);
+			if (iBuildsPads)
+			{
+				CBaseObject* pSpeedPad = pPlayer->GetObjectOfType(OBJ_SPEEDPAD);
+				if (pSpeedPad)
+				{
+					pSpeedPad->DetonateObject();
+				}
+				CBaseObject* pJumpPad = pPlayer->GetObjectOfType(OBJ_JUMPPAD);
+				if (pJumpPad)
+				{
+					pJumpPad->DetonateObject();
 				}
 			}
 		}

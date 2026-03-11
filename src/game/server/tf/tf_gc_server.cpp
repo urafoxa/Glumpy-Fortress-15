@@ -227,6 +227,8 @@ ConVar tf_mvm_allow_abandon_below_players( "tf_mvm_allow_abandon_below_players",
 
 ConVar tf_allow_server_hibernation( "tf_allow_server_hibernation", "1", FCVAR_NONE, "Allow the server to hibernate when empty." );
 
+extern ConVar tf_respawn_on_loadoutchanges;
+
 
 //DEFINE_LOGGING_CHANNEL_NO_TAGS( LOG_CONSOLE, "Console" );
 
@@ -1584,6 +1586,8 @@ void CTFGCServerSystem::PreClientUpdate( )
 		}
 
 		int playerCount = tf_mvm_defenders_team_size.GetInt() + spectatorCount;
+		// Clamp to prevent byte overflow in server browser
+		playerCount = Min( playerCount, 254 );
 		if ( sv_visiblemaxplayers.GetInt() <= 0 || sv_visiblemaxplayers.GetInt() != playerCount )
 		{
 			MMLog( "Setting sv_visiblemaxplayers to %d for MvM\n", playerCount );
@@ -4026,7 +4030,7 @@ ConVar tf_mm_trusted( "tf_mm_trusted", "0", FCVAR_NOTIFY | FCVAR_HIDDEN,
 	"Set to 1 on Valve servers to requested trusted status.  (Yes, it is authenticated on the backend, and attempts by non-valve servers are logged.)\n",
 	OnMMServerModeTrustedChanged );
 
-// Backoff api
+/* Backoff api
 void CTFGCServerSystem::WebapiEquipmentState_t::Backoff()
 {
 	if ( m_nBackoffSec == 0 )
@@ -4047,6 +4051,7 @@ bool CTFGCServerSystem::WebapiEquipmentState_t::IsBackingOff()
 {
 	return m_rtNextRequest != 0 && CRTime::RTime32TimeCur() <= m_rtNextRequest;
 }
+*/
 
 CTFGCServerSystem::WebapiEquipmentState_t& CTFGCServerSystem::FindOrCreateWebapiEquipmentState( CSteamID steamID )
 {
@@ -4074,8 +4079,8 @@ void CTFGCServerSystem::WebapiEquipmentThinkRequest( CSteamID steamID, WebapiEqu
 	WebapiEquipmentState_t& state = *pState;
 
 	// If we are waiting on timer/rate limit, don't do anything
-	if ( state.IsBackingOff() )
-		return;
+	//if ( state.IsBackingOff() )
+	//	return;
 
 	switch( state.m_eState )
 	{
@@ -4093,7 +4098,7 @@ void CTFGCServerSystem::WebapiEquipmentThinkRequest( CSteamID steamID, WebapiEqu
 
 		if ( state.m_hEquipmentRequest != INVALID_HTTPREQUEST_HANDLE )
 		{
-			SteamHTTP()->ReleaseHTTPRequest( state.m_hEquipmentRequest );
+			SteamGameServerHTTP()->ReleaseHTTPRequest( state.m_hEquipmentRequest );
 			state.m_hEquipmentRequest = INVALID_HTTPREQUEST_HANDLE;
 		}
 
@@ -4117,14 +4122,14 @@ void CTFGCServerSystem::WebapiEquipmentThinkRequest( CSteamID steamID, WebapiEqu
 		Assert( state.m_pKVCurrentRequest != nullptr );
 		KeyValues* pKV = state.m_pKVCurrentRequest;
 
-		if ( !SteamHTTP() )
+		if ( !SteamGameServerHTTP() )
 			return;
 
 		// Request inventory from teamfortress.com webapi
 		CFmtStr strUrl( "%swebapi/ISDK/GetEquipment/v0001", GetWebBaseUrl() );
 
 		state.m_EquipmentRequestCompleted.Cancel();
-		state.m_hEquipmentRequest = SteamHTTP()->CreateHTTPRequest( k_EHTTPMethodGET, strUrl.Get() );
+		state.m_hEquipmentRequest = SteamGameServerHTTP()->CreateHTTPRequest( k_EHTTPMethodGET, strUrl.Get() );
 		if ( state.m_hEquipmentRequest == INVALID_HTTPREQUEST_HANDLE )
 		{
 			// try again next frame
@@ -4132,18 +4137,18 @@ void CTFGCServerSystem::WebapiEquipmentThinkRequest( CSteamID steamID, WebapiEqu
 		}
 
 		// This mod's appid (NOT tf2's appid)
-		SteamHTTP()->SetHTTPRequestGetOrPostParameter( state.m_hEquipmentRequest, "appid", CNumStr( engine->GetAppID() ) );
+		SteamGameServerHTTP()->SetHTTPRequestGetOrPostParameter( state.m_hEquipmentRequest, "appid", CNumStr( engine->GetAppID() ) );
 
 		// Item list
-		SteamHTTP()->SetHTTPRequestGetOrPostParameter( state.m_hEquipmentRequest, "msg", pKV->GetString( "msg", nullptr ) );
+		SteamGameServerHTTP()->SetHTTPRequestGetOrPostParameter( state.m_hEquipmentRequest, "msg", pKV->GetString( "msg", nullptr ) );
 
 		// Authentication token
-		SteamHTTP()->SetHTTPRequestGetOrPostParameter( state.m_hEquipmentRequest, "ticket", pKV->GetString( "ticket", nullptr ) );
+		SteamGameServerHTTP()->SetHTTPRequestGetOrPostParameter( state.m_hEquipmentRequest, "ticket", pKV->GetString( "ticket", nullptr ) );
 
 		if ( GetUniverse() != k_EUniversePublic )
 		{
 			// use beta tf2 appid on non public universes
-			SteamHTTP()->SetHTTPRequestGetOrPostParameter( state.m_hEquipmentRequest, "game_appid", "810" );
+			SteamGameServerHTTP()->SetHTTPRequestGetOrPostParameter( state.m_hEquipmentRequest, "game_appid", "810" );
 		}
 
 		// Is there a way we can validate the existing so cache?  We could only request the new items.
@@ -4156,13 +4161,13 @@ void CTFGCServerSystem::WebapiEquipmentThinkRequest( CSteamID steamID, WebapiEqu
 		//CGCClientSharedObjectCache* pExistingSOCache = GetSOCache( steamID );
 		//if ( pExistingSOCache && pExistingSOCache->BIsSubscribed() )
 		//{
-		//	SteamHTTP()->SetHTTPRequestGetOrPostParameter( state.m_hInventoryRequest, "version", CNumStr( pExistingSOCache->GetVersion() ) );
+		//	SteamGameServerHTTP()->SetHTTPRequestGetOrPostParameter( state.m_hInventoryRequest, "version", CNumStr( pExistingSOCache->GetVersion() ) );
 		//}
 
 		SteamAPICall_t callResult;
-		if ( !SteamHTTP()->SendHTTPRequest( state.m_hEquipmentRequest, &callResult ) )
+		if ( !SteamGameServerHTTP()->SendHTTPRequest( state.m_hEquipmentRequest, &callResult ) )
 		{
-			state.Backoff();
+			//state.Backoff();
 			return;
 		}
 
@@ -4184,8 +4189,8 @@ void CTFGCServerSystem::WebapiEquipmentThinkRequest( CSteamID steamID, WebapiEqu
 		}
 
 		// Don't allow spamming this api -- wait 20 seconds before we ask gc for items again
-		state.RequestSucceeded();
-		state.Backoff();
+		//state.RequestSucceeded();
+		//state.Backoff();
 		state.m_eState = kWebapiEquipmentState_WaitingForClientRequest;
 		break;
 
@@ -4226,10 +4231,10 @@ void CTFGCServerSystem::OnWebapiEquipmentReceived( CSteamID steamID, HTTPRequest
 		return;
 
 	// Assume failure, we'll correct this change if we succeeded
-	state.Backoff();
+	//state.Backoff();
 	state.m_eState = kWebapiEquipmentState_RequestInventory;
 
-	if ( !SteamHTTP() )
+	if ( !SteamGameServerHTTP() )
 		return;
 
 	if( bIOFailure || !pInfo || state.m_hEquipmentRequest != pInfo->m_hRequest )
@@ -4237,7 +4242,7 @@ void CTFGCServerSystem::OnWebapiEquipmentReceived( CSteamID steamID, HTTPRequest
 		Assert( false );
 		if( state.m_hEquipmentRequest != INVALID_HTTPREQUEST_HANDLE )
 		{
-			SteamHTTP()->ReleaseHTTPRequest( state.m_hEquipmentRequest );
+			SteamGameServerHTTP()->ReleaseHTTPRequest( state.m_hEquipmentRequest );
 		}
 		return;
 	}
@@ -4245,20 +4250,20 @@ void CTFGCServerSystem::OnWebapiEquipmentReceived( CSteamID steamID, HTTPRequest
 	// request failed -- backoff and retry
 	if ( !pInfo->m_bRequestSuccessful || pInfo->m_eStatusCode != k_EHTTPStatusCode200OK )
 	{
-		SteamHTTP()->ReleaseHTTPRequest( state.m_hEquipmentRequest );
+		SteamGameServerHTTP()->ReleaseHTTPRequest( state.m_hEquipmentRequest );
 		return;
 	}
 
 	// Extract the result
 	uint32 unBytes;
-	Verify( SteamHTTP()->GetHTTPResponseBodySize( pInfo->m_hRequest, &unBytes ) );
+	Verify( SteamGameServerHTTP()->GetHTTPResponseBodySize( pInfo->m_hRequest, &unBytes ) );
 	CUtlBuffer bufInventory;
 	bufInventory.EnsureCapacity( unBytes );
 	bufInventory.SeekPut( CUtlBuffer::SEEK_HEAD, unBytes );
-	Verify( SteamHTTP()->GetHTTPResponseBodyData( pInfo->m_hRequest, ( uint8* )bufInventory.Base(), unBytes ) );
+	Verify( SteamGameServerHTTP()->GetHTTPResponseBodyData( pInfo->m_hRequest, ( uint8* )bufInventory.Base(), unBytes ) );
 
 	// We're done with the request now
-	SteamHTTP()->ReleaseHTTPRequest( pInfo->m_hRequest );
+	SteamGameServerHTTP()->ReleaseHTTPRequest( pInfo->m_hRequest );
 
 	// Parse it to json and extract the data
 	GCSDK::CWebAPIValues* pValues = GCSDK::CWebAPIValues::ParseJSON( bufInventory );
@@ -4332,7 +4337,7 @@ void CTFGCServerSystem::OnWebapiEquipmentReceived( CSteamID steamID, HTTPRequest
 	}
 
 	// We were successful, clear backoff timers
-	state.RequestSucceeded();
+	//state.RequestSucceeded();
 	state.m_eState = kWebapiEquipmentState_InventoryReceived;
 }
 
@@ -4400,6 +4405,12 @@ void CTFGCServerSystem::SDK_ApplyLocalLoadout(CGCClientSharedObjectCache* pCache
 			}*/
 		}
 	}
+	//BetaM patch + My for bools
+	//if ( CTFPlayer* pPlayer = ToTFPlayer( UTIL_PlayerBySteamID(pCache->GetOwner() ) ) )
+	//{
+	//	if ( tf_respawn_on_loadoutchanges.GetBool() )
+	//		pPlayer->CheckInstantLoadoutRespawn();
+	//}
 }
 
 #endif // #ifdef ENABLE_GC_MATCHMAKING

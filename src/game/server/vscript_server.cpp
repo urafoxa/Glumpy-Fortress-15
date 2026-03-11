@@ -39,6 +39,11 @@
 #include "bot/tf_bot.h"
 #endif
 
+#ifdef CLIENT_DLL
+#include "c_tf_player.h"
+#include "econ/econ_notifications.h"
+#endif 
+
 #if defined( _WIN32 ) || defined( POSIX )
 #include "vscript_server_nut.h"
 #endif
@@ -51,6 +56,9 @@
 #ifdef DOTA_DLL
 #include "dota_animation.h"
 #endif
+
+#include "networkstringtable_gamedll.h"
+INetworkStringTable *g_StringTableDownloadables = NULL;
 
 extern ScriptClassDesc_t * GetScriptDesc( CBaseEntity * );
 
@@ -74,6 +82,7 @@ ConVar script_connect_debugger_on_mapspawn( "script_connect_debugger_on_mapspawn
 
 ConVar script_attach_debugger_at_startup( "script_attach_debugger_at_startup", "0" );
 ConVar script_break_in_native_debugger_on_error( "script_break_in_native_debugger_on_error", "0" );
+ConVar cf_vscript_allow_notifications( "cf_vscript_allow_notifications", "1", FCVAR_NOTIFY | FCVAR_REPLICATED, "Max time after a voice command until player can do another one");
 
 #define VSCRIPT_CONVAR_ALLOWLIST_NAME "cfg/vscript_convar_allowlist.txt"
 
@@ -158,7 +167,8 @@ ScriptVariant_t CScriptConvarAccessor::GetStr( const char *cvar )
 		if ( cref.IsFlagSet( FCVAR_SCRIPT_NONO ) )
 		{
 			// the funny.
-			return "hunter2";
+			// In my own terms.
+			return "Nice try you gugu gaga";
 		}
 		return cref.GetString();
 	}
@@ -223,7 +233,7 @@ void CScriptConvarAccessor::LevelInitPreEntity()
 	m_AllowedConVars.RemoveAll();
 
 	KeyValues *kv = new KeyValues( "vscript_convar_allowlist" );
-	bool bLoaded = kv->LoadFromFile( g_pFullFileSystem, VSCRIPT_CONVAR_ALLOWLIST_NAME, "MOD" );
+	bool bLoaded = kv->LoadFromFile( g_pFullFileSystem, VSCRIPT_CONVAR_ALLOWLIST_NAME, "GAME" );
 	if ( bLoaded )
 	{
 		for ( KeyValues *pCurItem = kv->GetFirstValue(); pCurItem; pCurItem = pCurItem->GetNextValue() )
@@ -900,6 +910,13 @@ BEGIN_SCRIPTDESC_ROOT( CScriptKeyValues, "Wrapper class over KeyValues instance"
 	DEFINE_SCRIPTFUNC_NAMED( ScriptGetKeyValueFloat, "GetKeyFloat", "Given a KeyValues object and a key name, return associated float value" );
 	DEFINE_SCRIPTFUNC_NAMED( ScriptGetKeyValueBool, "GetKeyBool", "Given a KeyValues object and a key name, return associated bool value" );
 	DEFINE_SCRIPTFUNC_NAMED( ScriptGetKeyValueString, "GetKeyString", "Given a KeyValues object and a key name, return associated string value" );
+	DEFINE_SCRIPTFUNC_NAMED( ScriptGetInt, "GetInt", "Given a KeyValues object, return associated integer value" );
+	DEFINE_SCRIPTFUNC_NAMED( ScriptGetFloat, "GetFloat", "Given a KeyValues object, return associated float value" );
+	DEFINE_SCRIPTFUNC_NAMED( ScriptGetBool, "GetBool", "Given a KeyValues object, return associated bool value" );
+	DEFINE_SCRIPTFUNC_NAMED( ScriptGetString, "GetString", "Given a KeyValues object, return associated string value" );
+	DEFINE_SCRIPTFUNC_NAMED( ScriptGetName, "GetName", "Given a KeyValues object, return associated name" );
+	DEFINE_SCRIPTFUNC_NAMED( ScriptGetDataType, "GetDataType", "Given a KeyValues object, return associated datatype" );
+	DEFINE_SCRIPTFUNC_NAMED( ScriptIsEmpty, "IsEmpty", "Given a KeyValues object, return true if key name has no value" );
 	DEFINE_SCRIPTFUNC_NAMED( ScriptIsKeyValueEmpty, "IsKeyEmpty", "Given a KeyValues object and a key name, return true if key name has no value" );
 	DEFINE_SCRIPTFUNC_NAMED( ScriptReleaseKeyValues, "ReleaseKeyValues", "Given a root KeyValues object, release its contents" );
 END_SCRIPTDESC();
@@ -912,8 +929,8 @@ HSCRIPT CScriptKeyValues::ScriptFindKey( const char *pszName )
 
 	CScriptKeyValues *pScriptKey = new CScriptKeyValues( pKeyValues );
 
-	// UNDONE: who calls ReleaseInstance on this??
 	HSCRIPT hScriptInstance = g_pScriptVM->RegisterInstance( pScriptKey );
+	pScriptKey->m_hScriptInstance = hScriptInstance;
 	return hScriptInstance;
 }
 
@@ -925,8 +942,8 @@ HSCRIPT CScriptKeyValues::ScriptGetFirstSubKey( void )
 
 	CScriptKeyValues *pScriptKey = new CScriptKeyValues( pKeyValues );
 
-	// UNDONE: who calls ReleaseInstance on this??
 	HSCRIPT hScriptInstance = g_pScriptVM->RegisterInstance( pScriptKey );
+	pScriptKey->m_hScriptInstance = hScriptInstance;
 	return hScriptInstance;
 }
 
@@ -938,8 +955,8 @@ HSCRIPT CScriptKeyValues::ScriptGetNextKey( void )
 
 	CScriptKeyValues *pScriptKey = new CScriptKeyValues( pKeyValues );
 
-	// UNDONE: who calls ReleaseInstance on this??
 	HSCRIPT hScriptInstance = g_pScriptVM->RegisterInstance( pScriptKey );
+	pScriptKey->m_hScriptInstance = hScriptInstance;
 	return hScriptInstance;
 }
 
@@ -973,9 +990,54 @@ bool CScriptKeyValues::ScriptGetKeyValueBool( const char *pszName )
 	return b;
 }
 
+int CScriptKeyValues::ScriptGetInt()
+{
+	int i = m_pKeyValues->GetInt();
+	return i;
+}
+
+float CScriptKeyValues::ScriptGetFloat()
+{
+	float f = m_pKeyValues->GetFloat();
+	return f;
+}
+
+const char *CScriptKeyValues::ScriptGetString()
+{
+	const char *psz = m_pKeyValues->GetString();
+	return psz;
+}
+
+const char *CScriptKeyValues::ScriptGetName()
+{
+	const char *psz = m_pKeyValues->GetName();
+	return psz;
+}
+
+bool CScriptKeyValues::ScriptGetBool()
+{
+	bool b = m_pKeyValues->GetBool();
+	return b;
+}
+
+int CScriptKeyValues::ScriptGetDataType()
+{
+	int i = m_pKeyValues->GetDataType();
+	return i;
+}
+
+bool CScriptKeyValues::ScriptIsEmpty()
+{
+	bool b = m_pKeyValues->IsEmpty();
+	return b;
+}
+
 void CScriptKeyValues::ScriptReleaseKeyValues( )
 {
-	m_pKeyValues->deleteThis();
+	if (m_pKeyValues)
+	{
+		m_pKeyValues->deleteThis();
+	}
 	m_pKeyValues = NULL;
 }
 
@@ -986,6 +1048,7 @@ CScriptKeyValues::CScriptKeyValues( KeyValues *pKeyValues )
 	m_pKeyValues = pKeyValues;
 }
 
+// TODO: Find out if this ever gets called.
 // destructor
 CScriptKeyValues::~CScriptKeyValues( )
 {
@@ -994,6 +1057,12 @@ CScriptKeyValues::~CScriptKeyValues( )
 		m_pKeyValues->deleteThis();
 	}
 	m_pKeyValues = NULL;
+
+	if( m_hScriptInstance )
+	{
+		g_pScriptVM->RemoveInstance( m_hScriptInstance );
+		m_hScriptInstance = NULL;
+	}
 }
 
 
@@ -1286,7 +1355,7 @@ CBaseEntity *ScriptCreateEntityFromTable( const char *pszClassname, HSCRIPT hSpa
 }
 
 //-----------------------------------------------------------------------------
-static HSCRIPT Script_SpawnEntityFromTable( const char *pszName, HSCRIPT spawn_table )
+static HSCRIPT Script_SpawnEntityFromTable( const char *pszName, HSCRIPT spawn_table, bool dispatch_spawn = true )
 {
 	if ( !pszName || !*pszName )
 		return NULL;
@@ -1296,8 +1365,11 @@ static HSCRIPT Script_SpawnEntityFromTable( const char *pszName, HSCRIPT spawn_t
 		return 0;
 
 	pEntity->Precache();
-	DispatchSpawn( pEntity );
-	pEntity->Activate();
+	if ( dispatch_spawn )
+	{ 
+		DispatchSpawn( pEntity );
+		pEntity->Activate();
+	}
 
 	return ToHScript( pEntity );
 }
@@ -1777,6 +1849,42 @@ static const char *Script_FileToString( const char *pszFileName )
 	return fileReadBuf;
 }
 
+HSCRIPT Script_FileToKeyValues( const char *pszFileName )
+{
+	if ( !pszFileName || !*pszFileName )
+	{
+		Log_Warning( LOG_VScript, "Script_FileToKeyValues: NULL/empty file name\n" );
+		return NULL;
+	}
+
+	if ( V_strstr( pszFileName, "..") )
+	{
+		Log_Warning( LOG_VScript, "FileToKeyValues() file name cannot contain '..'\n" );
+		return NULL;
+	}
+
+	char szFilePath[MAX_PATH];
+	if ( !CreateAndValidateFileLocation( szFilePath, pszFileName ) )
+		return NULL;
+
+	FileHandle_t hFile = g_pFullFileSystem->Open( szFilePath, "r", "DEFAULT_WRITE_PATH" );
+	if (hFile == FILESYSTEM_INVALID_HANDLE )
+		return NULL;
+
+	KeyValues *pKeyValues = new KeyValues("");
+	HSCRIPT hScriptInstance = NULL;
+
+	if ( pKeyValues->LoadFromFile( g_pFullFileSystem, szFilePath, "MOD" ) )
+	{
+		CScriptKeyValues *pScriptKey = new CScriptKeyValues( pKeyValues );
+
+		hScriptInstance = g_pScriptVM->RegisterInstance( pScriptKey );
+		pScriptKey->m_hScriptInstance = hScriptInstance;
+
+	}
+	return hScriptInstance;
+}
+
 void TraceToScriptVM( HSCRIPT hTable, Vector vStart, Vector vEnd, trace_t& tr )
 {
 	g_pScriptVM->SetValue( hTable, "fraction", tr.fraction );
@@ -1915,6 +2023,40 @@ static void Script_ClientPrint( HSCRIPT hPlayer, int iDest, const char *pText )
 	}
 }
 
+
+static void Script_SendNotification( HSCRIPT hPlayer, float flLifetime, const char *pText, const char *iszSound )
+{
+
+	if ( !cf_vscript_allow_notifications.GetBool() ) 
+	{
+		Msg( "Server needs cf_vscript_allow_notifications set to 1 for sending custom notifications to players\n" );
+		return;
+	}
+
+
+	CBaseEntity *pBaseEntity = ToEnt( hPlayer );
+	CBasePlayer *pPlayer = dynamic_cast<CBasePlayer*>( pBaseEntity );
+	CRecipientFilter filter;
+	
+	if( hPlayer )
+	{
+		filter.AddRecipient( pPlayer );
+	}
+	else
+	{
+		filter.AddAllPlayers();
+	}
+
+	filter.MakeReliable();
+
+	UserMessageBegin( filter, "VS_SendNotification" );
+		WRITE_FLOAT( flLifetime );
+		WRITE_STRING( pText );
+		WRITE_STRING( iszSound );
+	MessageEnd();
+}
+
+
 static void ScriptEmitAmbientSoundOn( const char *soundname, float volume, int soundlevel, int pitch, HSCRIPT entity )
 {
 	if ( !soundname || !*soundname )
@@ -1983,6 +2125,11 @@ static void Script_ScreenFade( HSCRIPT hEntity, int r, int g, int b, int a, floa
 	{
 		UTIL_ScreenFadeAll( color, fadeTime, fadeHold, flags );
 	}
+}
+
+static void Script_ChangeLevel( const char* iszMapName, int r, int g, int b, int a, float fadeTime, float fadeHold, int flags )
+{
+	engine->ChangeLevel( iszMapName, NULL );
 }
 
 int Script_PrecacheModel( const char *modelname )
@@ -2317,6 +2464,82 @@ static float ScriptTraceLinePlayersIncluded( const Vector &vecStart, const Vecto
 		return tr.fraction;
 	}
 }
+bool ScriptAddFileToDownloadsTable( const char *pszFileName )
+{
+	if ( !pszFileName || !*pszFileName )
+	{
+		Log_Warning( LOG_VScript, "ScriptAddFileToDownloadsTable: NULL/empty file name\n" );
+		return false;
+	}
+	
+	if ( filesystem->FileExists( pszFileName ) )
+	{
+		//DevMsg( "ScriptAddFileToDownloadsTable: Adding file '%s' to downloadables table.\n", pszFileName );
+		
+		bool save = engine->LockNetworkStringTables( false );
+		g_StringTableDownloadables->AddString( true, pszFileName );
+		engine->LockNetworkStringTables( save );
+		return true;
+	}
+	else
+	{
+		DevMsg( "ScriptAddFileToDownloadsTable: Could not find file '%s'. Ignoring...\n", pszFileName );
+		return false;
+	}
+
+	return false;
+}
+
+bool ScriptIsFileInDownloadsTable( const char *pszFileName )
+{
+	if ( !pszFileName || !*pszFileName )
+	{
+		Log_Warning( LOG_VScript, "ScriptIsFileInDownloadsTable: NULL/empty file name\n" );
+		return false;
+	}
+	int nIndex = g_StringTableDownloadables->FindStringIndex( pszFileName );
+	if ( nIndex != INVALID_STRING_INDEX )
+		return true;
+
+	return false;
+}
+
+int ScriptGetDownloadsTableLength()
+{
+	return g_StringTableDownloadables->GetNumStrings();
+}
+
+static const char *ScriptGetStringFromDownloadsTable( int id )
+{
+	int nStrings = g_StringTableDownloadables->GetNumStrings();
+	if ( id < nStrings )
+	{
+		return g_StringTableDownloadables->GetString( id );
+	}
+	return NULL;
+}
+
+// Reference: https://forums.alliedmods.net/showthread.php?p=1438773
+bool ScriptRemoveFileFromDownloadsTable( const char* pszFileToRemove )
+{
+	if ( !pszFileToRemove || !*pszFileToRemove )
+	{
+		Log_Warning( LOG_VScript, "ScriptRemoveFileFromDownloadsTable: NULL/empty file name\n" );
+		return false;
+	}
+
+	int nIndex = g_StringTableDownloadables->FindStringIndex( pszFileToRemove );
+	if ( nIndex != INVALID_STRING_INDEX )
+	{
+		DevMsg( "ScriptRemoveFileFromDownloadsTable: Removing file '%s' from the downloadables table.\n", pszFileToRemove );
+		bool save = engine->LockNetworkStringTables( false );
+		g_StringTableDownloadables->SetStringUserData( nIndex, 0, NULL );
+		engine->LockNetworkStringTables( save );
+		return true;
+	}
+
+	return false;
+}
 
 #include "usermessages.h"
 
@@ -2589,6 +2812,7 @@ bool VScriptServerInit()
 
 				ScriptRegisterFunctionNamed( g_pScriptVM, Script_StringToFile, "StringToFile", "Store a string to a file for later reading" );
 				ScriptRegisterFunctionNamed( g_pScriptVM, Script_FileToString, "FileToString", "Reads a string from a file to send to script" );
+				ScriptRegisterFunctionNamed( g_pScriptVM, Script_FileToKeyValues, "FileToKeyValues", "Read KeyValues from a file to send to script" );
 
 				ScriptRegisterFunctionNamed( g_pScriptVM, Script_TraceLineEx, "TraceLineEx", "Pass table - Inputs: start, end, mask, ignore  -- outputs: pos, fraction, hit, enthit, allsolid, startpos, endpos, startsolid, plane_normal, plane_dist, surface_name, surface_flags, surface_props" );
 				ScriptRegisterFunctionNamed( g_pScriptVM, Script_TraceHull, "TraceHull", "Pass table - Inputs: start, end, hullmin, hullmax, mask, ignore  -- outputs: pos, fraction, hit, enthit, allsolid, startpos, endpos, startsolid, plane_normal, plane_dist, surface_name, surface_flags, surface_props" );
@@ -2596,12 +2820,13 @@ bool VScriptServerInit()
 				ScriptRegisterFunctionNamed( g_pScriptVM, Script_GetFrameCount, "GetFrameCount", "Returns the engines current frame count" );
 
 				ScriptRegisterFunctionNamed( g_pScriptVM, Script_ClientPrint, "ClientPrint", "Print a client message" );
+				ScriptRegisterFunctionNamed( g_pScriptVM, Script_SendNotification, "SendNotification", "Send a notification" );
 				ScriptRegisterFunctionNamed( g_pScriptVM, ScriptEmitAmbientSoundOn, "EmitAmbientSoundOn", "Play named ambient sound on an entity." );
 				ScriptRegisterFunctionNamed( g_pScriptVM, ScriptStopAmbientSoundOn, "StopAmbientSoundOn", "Stop named ambient sound on an entity." );
 				ScriptRegisterFunctionNamed( g_pScriptVM, Script_SetFakeClientConVarValue, "SetFakeClientConVarValue", "Sets a USERINFO client ConVar for a fakeclient" );
 				ScriptRegisterFunctionNamed( g_pScriptVM, Script_ScreenShake, "ScreenShake", "Start a screenshake with the following parameters. vecCenter, flAmplitude, flFrequency, flDuration, flRadius, eCommand( SHAKE_START = 0, SHAKE_STOP = 1 ), bAirShake" );
 				ScriptRegisterFunctionNamed( g_pScriptVM, Script_ScreenFade, "ScreenFade", "Start a screenfade with the following parameters. player, red, green, blue, alpha, flFadeTime, flFadeHold, flags" );
-//				ScriptRegisterFunctionNamed( g_pScriptVM, Script_ChangeLevel, "ChangeLevel", "Tell engine to change level." );
+				ScriptRegisterFunctionNamed( g_pScriptVM, Script_ChangeLevel, "ChangeLevel", "Tell engine to change level." );
 				ScriptRegisterFunctionNamed( g_pScriptVM, Script_PrecacheModel, "PrecacheModel", "Precache a model. Returns the modelindex." );
 				ScriptRegisterFunctionNamed( g_pScriptVM, Script_PrecacheSound, "PrecacheSound", "Precache a sound." );
 				ScriptRegisterFunctionNamed( g_pScriptVM, Script_PrecacheScriptSound, "PrecacheScriptSound", "Precache a sound." );
@@ -2632,6 +2857,11 @@ bool VScriptServerInit()
 				ScriptRegisterFunctionNamed( g_pScriptVM, ScriptDispatchParticleEffect, "DispatchParticleEffect", "Dispatches a one-off particle system" );
 				ScriptRegisterFunctionNamed( g_pScriptVM, ScriptDispatchEffect, "DispatchEffect", "Dispatches a client effect");
 				ScriptRegisterFunctionNamed( g_pScriptVM, ScriptSetSkyboxTexture, "SetSkyboxTexture", "Sets the current skybox texture" );
+				ScriptRegisterFunctionNamed( g_pScriptVM, ScriptAddFileToDownloadsTable, "AddFileToDownloadsTable", "Adds a file to the downloads table, returns false if the file does not exist." );
+				ScriptRegisterFunctionNamed( g_pScriptVM, ScriptIsFileInDownloadsTable, "IsFileInDownloadsTable", "Checks if the file is in the downloads table." );
+				ScriptRegisterFunctionNamed( g_pScriptVM, ScriptGetDownloadsTableLength, "GetDownloadsTableLength", "Get the length of the downloads table." );
+				ScriptRegisterFunctionNamed( g_pScriptVM, ScriptGetStringFromDownloadsTable, "GetStringFromDownloadsTable", "Get a string from the downloads table by id, returns null if a string is not found." );
+				ScriptRegisterFunctionNamed( g_pScriptVM, ScriptRemoveFileFromDownloadsTable, "RemoveFileFromDownloadsTable", "Removes a file in the downloads table ( WARNING: EXPENSIVE! )." );
 
 #if defined ( PORTAL2 )
 				ScriptRegisterFunction( g_pScriptVM, SetDucking, "Set the level of an audio ducking channel" );
@@ -2848,6 +3078,7 @@ DECLARE_SCRIPT_CONST_NAMED( FTFBotAttributeType, "BLAST_IMMUNE", CTFBot::Attribu
 DECLARE_SCRIPT_CONST_NAMED( FTFBotAttributeType, "FIRE_IMMUNE", CTFBot::AttributeType::FIRE_IMMUNE )
 DECLARE_SCRIPT_CONST_NAMED( FTFBotAttributeType, "PARACHUTE", CTFBot::AttributeType::PARACHUTE )
 DECLARE_SCRIPT_CONST_NAMED( FTFBotAttributeType, "PROJECTILE_SHIELD", CTFBot::AttributeType::PROJECTILE_SHIELD )
+DECLARE_SCRIPT_CONST_NAMED( FTFBotAttributeType, "USE_DIFFICULTY_BASED_AIM", CTFBot::AttributeType::USE_DIFFICULTY_BASED_AIM )
 REGISTER_SCRIPT_CONST_TABLE( FTFBotAttributeType )
 
 DECLARE_SCRIPT_CONST_TABLE( ETFBotDifficultyType )
@@ -3400,9 +3631,17 @@ DECLARE_SCRIPT_CONST( ETFDmgCustom, TF_DMG_CUSTOM_RUNE_REFLECT )
 DECLARE_SCRIPT_CONST( ETFDmgCustom, TF_DMG_CUSTOM_DRAGONS_FURY_IGNITE )
 DECLARE_SCRIPT_CONST( ETFDmgCustom, TF_DMG_CUSTOM_DRAGONS_FURY_BONUS_BURNING )
 DECLARE_SCRIPT_CONST( ETFDmgCustom, TF_DMG_CUSTOM_SLAP_KILL )
+DECLARE_SCRIPT_CONST( ETFDmgCustom, TF_DMG_CUSTOM_MARLIN_KILL )
 DECLARE_SCRIPT_CONST( ETFDmgCustom, TF_DMG_CUSTOM_CROC )
 DECLARE_SCRIPT_CONST( ETFDmgCustom, TF_DMG_CUSTOM_TAUNTATK_GASBLAST )
 DECLARE_SCRIPT_CONST( ETFDmgCustom, TF_DMG_CUSTOM_AXTINGUISHER_BOOSTED )
+DECLARE_SCRIPT_CONST( ETFDmgCustom, TF_DMG_CUSTOM_TAUNTATK_TRICKSHOT )
+
+// START OF BF2 SPECIFIC DMG
+DECLARE_SCRIPT_CONST( ETFDmgCustom, TF_DMG_CUSTOM_DECAPITATION_BOSS_HAMMER ) // BF2 - Hwn2014 HHH
+DECLARE_SCRIPT_CONST( ETFDmgCustom, TF_DMG_CUSTOM_MVM_BOSS_TANK ) 
+// END OF BF2 SPECIFIC DMG
+
 DECLARE_SCRIPT_CONST( ETFDmgCustom, TF_DMG_CUSTOM_END )
 REGISTER_SCRIPT_CONST_TABLE( ETFDmgCustom )
 
@@ -3521,6 +3760,18 @@ DECLARE_SCRIPT_CONST_NAMED( Math, "Sqrt3", 1.732050808f)
 DECLARE_SCRIPT_CONST_NAMED( Math, "GoldenRatio", 1.618033989f)
 REGISTER_SCRIPT_CONST_TABLE( Math )
 
+DECLARE_SCRIPT_CONST_TABLE( EKeyValueType )
+DECLARE_SCRIPT_CONST_NAMED( EKeyValueType, "TYPE_NONE", KeyValues::TYPE_NONE)
+DECLARE_SCRIPT_CONST_NAMED( EKeyValueType, "TYPE_STRING", KeyValues::TYPE_STRING)
+DECLARE_SCRIPT_CONST_NAMED( EKeyValueType, "TYPE_INT", KeyValues::TYPE_INT)
+DECLARE_SCRIPT_CONST_NAMED( EKeyValueType, "TYPE_FLOAT", KeyValues::TYPE_FLOAT)
+DECLARE_SCRIPT_CONST_NAMED( EKeyValueType, "TYPE_PTR", KeyValues::TYPE_PTR)
+DECLARE_SCRIPT_CONST_NAMED( EKeyValueType, "TYPE_WSTRING", KeyValues::TYPE_WSTRING)
+DECLARE_SCRIPT_CONST_NAMED( EKeyValueType, "TYPE_COLOR", KeyValues::TYPE_COLOR)
+DECLARE_SCRIPT_CONST_NAMED( EKeyValueType, "TYPE_UINT64", KeyValues::TYPE_UINT64)
+DECLARE_SCRIPT_CONST_NAMED( EKeyValueType, "TYPE_NUMTYPES", KeyValues::TYPE_NUMTYPES)
+REGISTER_SCRIPT_CONST_TABLE( EKeyValueType )
+
 DECLARE_SCRIPT_CONST_TABLE( Server )
 DECLARE_SCRIPT_CONST( Server, MAX_EDICTS )
 DECLARE_SCRIPT_CONST( Server, MAX_PLAYERS )
@@ -3529,6 +3780,8 @@ DECLARE_SCRIPT_CONST_NAMED( Server, "ConstantNamingConvention", "Constants are n
 REGISTER_SCRIPT_CONST_TABLE( Server )
 #endif
 				g_pScriptVM->SetValue( "Constants", vConstantsTable );
+				// Store the Downloads String Table.
+				g_StringTableDownloadables = networkstringtable->FindTable( "downloadables" );
 
 				if ( scriptLanguage == SL_SQUIRREL )
 				{

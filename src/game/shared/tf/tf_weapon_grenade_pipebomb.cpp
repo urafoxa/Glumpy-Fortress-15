@@ -31,9 +31,11 @@
 #include "tf_ammo_pack.h"
 #include "takedamageinfo.h"
 #include "tf_team.h"
+#include "tf_obj.h"
 #include "physics_collisionevent.h"
 #ifdef TF_RAID_MODE
 #include "player_vs_environment/boss_alpha/boss_alpha.h"
+#include "bot_npc/bot_npc_minion.h"
 #endif // TF_RAID_MODE
 #include "tf_weapon_medigun.h"
 #endif
@@ -49,6 +51,7 @@
 extern ConVar tf_grenadelauncher_max_chargetime;
 ConVar tf_grenadelauncher_chargescale( "tf_grenadelauncher_chargescale", "1.0", FCVAR_CHEAT | FCVAR_REPLICATED | FCVAR_DEVELOPMENTONLY );
 ConVar tf_grenadelauncher_livetime( "tf_grenadelauncher_livetime", "0.8", FCVAR_CHEAT | FCVAR_REPLICATED | FCVAR_DEVELOPMENTONLY );
+ConVar cf_demoman_wall_bounce_directs( "cf_demoman_wall_bounce_directs", "0", FCVAR_REPLICATED | FCVAR_NOTIFY, "If enabled, Demoman's grenades will still explode on contact with players even after bouncing off surfaces." );
 extern ConVar tf_sticky_radius_ramp_time;
 extern ConVar tf_sticky_airdet_radius;
 extern ConVar friendlyfire;
@@ -410,6 +413,7 @@ int CTFGrenadePipebombProjectile::DrawModel( int flags )
 #define TF_WEAPON_PIPEBOMB2_MODEL		"models/weapons/w_models/w_stickybomb2.mdl"
 #define TF_WEAPON_PIPEBOMBD_MODEL		"models/weapons/w_models/w_stickybomb_d.mdl"
 #define TF_WEAPON_PIPEBOMB_BOUNCE_SOUND	"Weapon_Grenade_Pipebomb.Bounce"
+#define TF_WEAPON_PIPEBOMB_DUD_SOUND	"Weapon_LocknLoad.Dud"
 #define TF_WEAPON_CANNON_IMPACT_SOUND	"Weapon_LooseCannon.BallImpact"
 #define TF_WEAPON_GRENADE_DETONATE_TIME		2.0f
 #define TF_WEAPON_GRENADE_XBOX_DAMAGE 112
@@ -579,6 +583,7 @@ void CTFGrenadePipebombProjectile::Precache()
 	PrecacheParticleSystem( "stickybombtrail_red" );
 
 	PrecacheScriptSound( TF_WEAPON_PIPEBOMB_BOUNCE_SOUND );
+	PrecacheScriptSound( TF_WEAPON_PIPEBOMB_DUD_SOUND );
 	PrecacheScriptSound( TF_WEAPON_CANNON_IMPACT_SOUND );
 
 	BaseClass::Precache();
@@ -705,6 +710,7 @@ void CTFGrenadePipebombProjectile::CreatePipebombGibs( void )
 //-----------------------------------------------------------------------------
 void CTFGrenadePipebombProjectile::Fizzle( void )
 {
+	EmitSound( TF_WEAPON_PIPEBOMB_DUD_SOUND );
 	m_bFizzle = true;
 }
 
@@ -715,16 +721,16 @@ void CTFGrenadePipebombProjectile::StickybombTouch( CBaseEntity *pOther )
 {
 #ifdef GAME_DLL
 #ifdef TF_RAID_MODE
-	if ( TFGameRules()->IsRaidMode() )
-	{
-		if ( dynamic_cast< CBossAlpha * >( pOther ) != NULL )
-		{
-			// stickies stick to the boss
-			m_bTouched = true;
-			VPhysicsGetObject()->EnableMotion( false );
 
-			SetParent( pOther );
-		}
+	if	 ( ( dynamic_cast< CBossAlpha * >( pOther ) != NULL )
+		|| ( dynamic_cast< CBotNPCMinion * >( pOther ) != NULL )
+		 )
+	{
+		//Stick it
+		m_bTouched = true;
+		VPhysicsGetObject()->EnableMotion( false );
+
+		SetParent( pOther );
 	}
 #endif
 #endif
@@ -771,7 +777,7 @@ void CTFGrenadePipebombProjectile::PipebombTouch( CBaseEntity *pOther )
 	bool bExploded = false;
 
 	// Blow up if we hit an enemy we can damage
-	if ( pOther->GetTeamNumber() && ( pOther->GetTeamNumber() != GetTeamNumber() || friendlyfire.GetBool() ) && pOther->m_takedamage != DAMAGE_NO)
+	if ( pOther->GetTeamNumber() && ( pOther->GetTeamNumber() != GetTeamNumber() || friendlyfire.GetBool() ) && pOther->m_takedamage != DAMAGE_NO || pOther->m_bExplodesProjectiles )
 	{
 		// Check to see if this is a respawn room.
 		if ( !pOther->IsPlayer() )
@@ -889,10 +895,14 @@ void CTFGrenadePipebombProjectile::VPhysicsCollision( int index, gamevcollisione
 			}
 		}
 		// Blow up if we hit an enemy we can damage
-		else if ( pHitEntity->GetTeamNumber() && ( pHitEntity->GetTeamNumber() != GetTeamNumber() || friendlyfire.GetBool() ) && pHitEntity->m_takedamage != DAMAGE_NO)
+		else if ( pHitEntity->GetTeamNumber() && ( pHitEntity->GetTeamNumber() != GetTeamNumber() || friendlyfire.GetBool() ) && pHitEntity->m_takedamage != DAMAGE_NO || pHitEntity->m_bExplodesProjectiles )
 		{
-			SetThink( &CTFGrenadePipebombProjectile::Detonate );
-			SetNextThink( gpGlobals->curtime );
+			// Check if we should allow direct hits after bouncing
+			if ( m_bTouched == false || cf_demoman_wall_bounce_directs.GetBool() )
+			{
+				SetThink( &CTFGrenadePipebombProjectile::Detonate );
+				SetNextThink( gpGlobals->curtime );
+			}
 		}
 
 		if ( m_bTouched == false )
@@ -940,9 +950,12 @@ void CTFGrenadePipebombProjectile::VPhysicsCollision( int index, gamevcollisione
 	}
 
 	// Pipebombs stick to the world when they touch it
-	if ( pHitEntity && ( pHitEntity->IsWorld() || bIsDynamicProp ) && gpGlobals->curtime > m_flMinSleepTime )
+	if ( pHitEntity && ( pHitEntity->IsWorld() || bIsDynamicProp || pHitEntity->m_bSticksProjectiles ) && gpGlobals->curtime > m_flMinSleepTime )
 	{
 		m_bTouched = true;
+
+		if ( pHitEntity->m_bSticksProjectiles )
+			SetParent( pHitEntity );
 
 		g_PostSimulationQueue.QueueCall( VPhysicsGetObject(), &IPhysicsObject::EnableMotion, false );
 
@@ -1156,6 +1169,18 @@ void CTFGrenadePipebombProjectile::DetonateThink( void )
 
 void CTFGrenadePipebombProjectile::PreArmThink( void )
 {
+	// Check for floating stickies - make them float on water
+	int iFloatingStickies = 0;
+	CALL_ATTRIB_HOOK_INT_ON_OTHER( GetLauncher(), iFloatingStickies, mod_floating_stickies );
+	if ( iFloatingStickies && GetWaterLevel() > 0 )
+	{
+		// Apply upward force to keep sticky floating
+		Vector vecVelocity = GetAbsVelocity();
+		vecVelocity.z = Max( vecVelocity.z, 50.0f ); // Minimum upward velocity
+		SetAbsVelocity( vecVelocity );
+		SetGravity( 0.1f ); // Very low gravity in water
+	}
+
 	SetContextThink( &CTFGrenadePipebombProjectile::ArmThink, gpGlobals->curtime + GetLiveTime(), "ARM_THINK" );
 }
 
@@ -1185,6 +1210,54 @@ void CTFGrenadePipebombProjectile::ArmThink( void )
 			// We didn't find the medic.  What provided TF_COND_CRITBOOSTED?
 			Assert( m_CritMedics.Count() );
 		}
+	}
+
+	// Check for proximity detonation
+	int iProximityStickies = 0;
+	CALL_ATTRIB_HOOK_INT_ON_OTHER( GetLauncher(), iProximityStickies, mod_proximity_stickies );
+	if ( iProximityStickies && HasStickyEffects() && m_bTouched )
+	{
+		// Check for nearby enemies, owner, and enemy buildings
+		CTFPlayer *pOwner = ToTFPlayer( GetThrower() );
+		if ( pOwner )
+		{
+			const float flProximityRadius = 150.0f; // Proximity detection radius
+			CBaseEntity *pEntity = NULL;
+			for ( CEntitySphereQuery sphere( GetAbsOrigin(), flProximityRadius ); ( pEntity = sphere.GetCurrentEntity() ) != NULL; sphere.NextEntity() )
+			{
+				if ( !pEntity || !pEntity->IsAlive() )
+					continue;
+
+				// Check for players
+				if ( pEntity->IsPlayer() )
+				{
+					CTFPlayer *pPlayer = ToTFPlayer( pEntity );
+					if ( !pPlayer )
+						continue;
+
+					// Detonate if owner gets near or if enemy is in range
+					if ( pPlayer == pOwner || pPlayer->GetTeamNumber() != pOwner->GetTeamNumber() )
+					{
+						Detonate();
+						return;
+					}
+				}
+				// Check for enemy buildings (Sentry Guns, Dispensers, Teleporters)
+				else if ( pEntity->IsBaseObject() )
+				{
+					CBaseObject *pObject = dynamic_cast<CBaseObject*>( pEntity );
+					if ( pObject && pObject->GetTeamNumber() != pOwner->GetTeamNumber() )
+					{
+						// Detonate if enemy building is in range
+						Detonate();
+						return;
+					}
+				}
+			}
+		}
+
+		// Continue checking for proximity on next frame
+		SetContextThink( &CTFGrenadePipebombProjectile::ArmThink, gpGlobals->curtime + 0.1f, "ARM_THINK" );
 	}
 
 	if ( m_bDetonateOnPulse )
@@ -1238,6 +1311,9 @@ void CTFGrenadePipebombProjectile::Deflected( CBaseEntity *pDeflectedBy, Vector&
 	if ( HasStickyEffects() )
 	{
 		CTakeDamageInfo info;
+
+		if ( GetParent() )
+			SetParent( NULL );
 
 		float flForceMultiplier = 1.0f;
 		ITFChargeUpWeapon *pWeapon = dynamic_cast<ITFChargeUpWeapon*>( pTFDeflector->GetActiveWeapon() );

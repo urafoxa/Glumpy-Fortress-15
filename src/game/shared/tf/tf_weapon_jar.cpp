@@ -82,7 +82,7 @@ LINK_ENTITY_TO_CLASS( tf_projectile_cleaver, CTFProjectile_Cleaver );
 PRECACHE_WEAPON_REGISTER( tf_projectile_cleaver );
 
 #define TF_JAR_LAUNCH_SPEED		1000.f
-#define TF_CLEAVER_LAUNCH_SPEED		7000.f
+#define TF_CLEAVER_LAUNCH_SPEED		3000.f	//7000.f Unused??
 #define TF_WEAPON_PEEJAR_MODEL	"models/weapons/c_models/urinejar.mdl"
 #define TF_WEAPON_FESTIVE_PEEJAR_MODEL	"models/weapons/c_models/c_xms_urinejar.mdl"
 #define TF_WEAPON_MILKJAR_MODEL	"models/workshop/weapons/c_models/c_madmilk/c_madmilk.mdl"
@@ -105,7 +105,10 @@ CTFJar::CTFJar()
 
 float CTFJar::GetProjectileSpeed( void )
 {
-	return TF_JAR_LAUNCH_SPEED;
+	float flLaunchSpeed = TF_JAR_LAUNCH_SPEED;
+	CALL_ATTRIB_HOOK_FLOAT_ON_OTHER( GetOwner(), flLaunchSpeed, mult_projectile_speed );
+	return flLaunchSpeed;
+	//return TF_JAR_LAUNCH_SPEED;
 }
 
 //-----------------------------------------------------------------------------
@@ -199,11 +202,31 @@ void CTFJar::TossJarThink( void )
 	{
 		pProjectile->SetCritical( IsCurrentAttackACrit() );
 		pProjectile->SetLauncher( this );
+		
+		// Check for gravity attribute
+		float fGravitationalProjectiles = 0;
+		CALL_ATTRIB_HOOK_FLOAT( fGravitationalProjectiles, projectile_has_gravity );
+		if ( fGravitationalProjectiles )
+		{
+			pProjectile->SetMoveType( MOVETYPE_FLYGRAVITY, MOVECOLLIDE_FLY_CUSTOM );
+			pProjectile->SetGravity( fGravitationalProjectiles );
+		}
 	}
 
 	if ( ShouldSpeakWhenFiring() )
 	{
 		pPlayer->SpeakWeaponFire( MP_CONCEPT_JARATE_LAUNCH );
+	}
+
+	if ( pProjectile->ExplodesOnHit() )
+	{
+		Vector vecEnd = pProjectile->GetAbsOrigin() + ( vecVelocity.Normalized() * 32.0f );
+		UTIL_TraceHull( pProjectile->GetAbsOrigin(), vecEnd, -Vector( 8, 8, 8 ), Vector( 8, 8, 8 ), MASK_SOLID_BRUSHONLY, &traceFilter, &trace );
+
+		if ( trace.fraction < 1.0 )
+		{
+			pProjectile->Explode( &trace, pProjectile->GetDamageType() );
+		}
 	}
 
 #endif
@@ -503,7 +526,7 @@ void CTFProjectile_Jar::PipebombTouch( CBaseEntity *pOther )
 	if ( !pOther->IsSolid() || pOther->IsSolidFlagSet( FSOLID_VOLUME_CONTENTS ) )
 		return;
 
-	if ( !pOther->IsWorld() && !pOther->IsPlayer() )
+	if ( !pOther->IsWorld() && !pOther->IsPlayer() && !pOther->m_bExplodesProjectiles )
 		return;
 
 	// Don't collide with teammate if we're still in the grace period.
@@ -902,7 +925,8 @@ Vector CTFCleaver::GetVelocityVector( const Vector &vecForward, const Vector &ve
 	// Calculate the initial impulse on the item.
 	vecVelocity = vecForward * 10 + vecUp;
 	VectorNormalize( vecVelocity );
-	vecVelocity *= 3000;
+	//vecVelocity *= 3000;
+	vecVelocity *= GetProjectileSpeed();
 
 	return vecVelocity;
 }
@@ -922,7 +946,10 @@ CTFProjectile_Jar *CTFCleaver::CreateJarProjectile( const Vector &position, cons
 //-----------------------------------------------------------------------------
 float CTFCleaver::GetProjectileSpeed( void )
 {
-	return TF_CLEAVER_LAUNCH_SPEED;
+	float flLaunchSpeed = TF_CLEAVER_LAUNCH_SPEED;
+	CALL_ATTRIB_HOOK_FLOAT_ON_OTHER( GetOwner(), flLaunchSpeed, mult_projectile_speed );
+	return flLaunchSpeed;
+	//return TF_CLEAVER_LAUNCH_SPEED;
 }
 
 //-----------------------------------------------------------------------------

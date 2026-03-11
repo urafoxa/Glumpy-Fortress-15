@@ -6,6 +6,7 @@
 
 #include "cbase.h"
 #include "c_tf_player.h"
+#include "tf_shareddefs.h"
 #include "c_user_message_register.h"
 #include "view.h"
 #include "iclientvehicle.h"
@@ -209,7 +210,7 @@ ConVar cl_autoreload( "cl_autoreload", "1", FCVAR_USERINFO | FCVAR_ARCHIVE, "Whe
 
 ConVar tf_respawn_on_loadoutchanges( "tf_respawn_on_loadoutchanges", "1", FCVAR_ARCHIVE, "When set to 1, you will automatically respawn whenever you change loadouts inside a respawn zone." );
 
-ConVar sb_dontshow_maxplayer_warning( "sb_dontshow_maxplayer_warning", "0", FCVAR_ARCHIVE );
+ConVar sb_dontshow_maxplayer_warning( "sb_dontshow_maxplayer_warning", "1", FCVAR_ARCHIVE );
 ConVar sb_close_browser_on_connect( "sb_close_browser_on_connect", "1", FCVAR_ARCHIVE );
 
 ConVar tf_spectate_pyrovision( "tf_spectate_pyrovision", "0", FCVAR_ARCHIVE, "When on, spectator will see the world with Pyrovision active", VisionMode_ChangeCallback );
@@ -220,6 +221,106 @@ ConVar tf_taunt_first_person( "tf_taunt_first_person", "0", FCVAR_NONE, "1 = tau
 ConVar tf_romevision_opt_in( "tf_romevision_opt_in", "0", FCVAR_ARCHIVE, "Enable Romevision in Mann vs. Machine mode when available." );
 ConVar tf_romevision_skip_prompt( "tf_romevision_skip_prompt", "0", FCVAR_ARCHIVE, "If nonzero, skip the prompt about sharing Romevision." );
 
+// Callback functions for cosmetic ConVars to update visibility immediately
+void cf_disable_cosmetics_changed( IConVar *var, const char *pOldValue, float flOldValue );
+void cf_disable_unusual_effects_changed( IConVar *var, const char *pOldValue, float flOldValue );
+void cf_disable_weapon_skins_changed( IConVar *var, const char *pOldValue, float flOldValue );
+void cf_disable_holiday_themes_changed( IConVar *var, const char *pOldValue, float flOldValue );
+
+ConVar cf_disable_cosmetics( "cf_disable_cosmetics", "0", FCVAR_ARCHIVE, "When set to 1, all cosmetic items (hats, misc items) will be hidden.", cf_disable_cosmetics_changed );
+ConVar cf_disable_unusual_effects( "cf_disable_unusual_effects", "0", FCVAR_ARCHIVE, "When set to 1, all unusual particle effects will be hidden.", cf_disable_unusual_effects_changed );
+ConVar cf_disable_weapon_skins( "cf_disable_weapon_skins", "0", FCVAR_ARCHIVE, "When set to 1, all weapon skins and warpaints will be disabled, showing default weapon textures.", cf_disable_weapon_skins_changed );
+ConVar cf_disable_holiday_themes( "cf_disable_holiday_themes", "0", FCVAR_ARCHIVE, "When set to 1, holiday-themed main menu backgrounds will be disabled.", cf_disable_holiday_themes_changed );
+
+//-----------------------------------------------------------------------------
+// Purpose: Callback functions to immediately update wearable visibility
+//-----------------------------------------------------------------------------
+void cf_disable_cosmetics_changed( IConVar *var, const char *pOldValue, float flOldValue )
+{
+	// Force all wearables to re-evaluate their visibility
+	C_TFPlayer *pLocalPlayer = C_TFPlayer::GetLocalTFPlayer();
+	if ( pLocalPlayer )
+	{
+		// Update all players' wearables
+		for ( int i = 1; i <= MAX_PLAYERS; i++ )
+		{
+			C_TFPlayer *pPlayer = ToTFPlayer( UTIL_PlayerByIndex( i ) );
+			if ( pPlayer )
+			{
+				// Force bodygroups to recalculate to reset to defaults when cosmetics are disabled
+				pPlayer->SetBodygroupsDirty();
+				
+				for ( int j = 0; j < pPlayer->GetNumWearables(); j++ )
+				{
+					C_EconWearable *pWearable = pPlayer->GetWearable( j );
+					if ( pWearable )
+					{
+						pWearable->UpdateVisibility();
+					}
+				}
+			}
+		}
+	}
+}
+
+void cf_disable_unusual_effects_changed( IConVar *var, const char *pOldValue, float flOldValue )
+{
+	// Force all wearables to re-evaluate their particle systems
+	C_TFPlayer *pLocalPlayer = C_TFPlayer::GetLocalTFPlayer();
+	if ( pLocalPlayer )
+	{
+		// Update all players' wearables
+		for ( int i = 1; i <= MAX_PLAYERS; i++ )
+		{
+			C_TFPlayer *pPlayer = ToTFPlayer( UTIL_PlayerByIndex( i ) );
+			if ( pPlayer )
+			{
+				for ( int j = 0; j < pPlayer->GetNumWearables(); j++ )
+				{
+					C_EconWearable *pWearable = pPlayer->GetWearable( j );
+					if ( pWearable )
+					{
+						pWearable->UpdateVisibility();
+					}
+				}
+			}
+		}
+	}
+}
+
+void cf_disable_weapon_skins_changed( IConVar *var, const char *pOldValue, float flOldValue )
+{
+	// Force all weapons to clear their cached skin composites and refresh materials
+	for ( int i = 1; i <= MAX_PLAYERS; i++ )
+	{
+		C_TFPlayer *pPlayer = ToTFPlayer( UTIL_PlayerByIndex( i ) );
+		if ( pPlayer )
+		{
+			// Iterate through all weapons this player owns
+			int nCount = pPlayer->WeaponCount();
+			for ( int j = 0; j < nCount; ++j )
+			{
+				C_BaseCombatWeapon *pWeapon = pPlayer->GetWeapon( j );
+				if ( pWeapon )
+				{
+					CEconItemView *pItem = pWeapon->GetAttributeContainer()->GetItem();
+					if ( pItem && pItem->IsValid() )
+					{
+						// Clear the cached weapon skin textures and compositors
+						pItem->SetWeaponSkinBase( NULL );
+						pItem->SetWeaponSkinBaseCompositor( NULL );
+					}
+				}
+			}
+		}
+	}
+}
+
+void cf_disable_holiday_themes_changed( IConVar *var, const char *pOldValue, float flOldValue )
+{
+	// Reload the HUD scheme to update the main menu background
+	engine->ClientCmd_Unrestricted( "hud_reloadscheme" );
+}
 
 #define BDAY_HAT_MODEL		"models/effects/bday_hat.mdl"
 #define BOMB_HAT_MODEL		"models/props_lakeside_event/bomb_temp_hat.mdl"
@@ -717,7 +818,7 @@ void C_TFRagdoll::CreateTFRagdoll()
 	}
 
 	// Check for any special player skin override behaviour.
-	if ( pPlayer && pPlayer->BRenderAsZombie() )
+	if ( pPlayer && ( pPlayer->BRenderAsZombie() || pPlayer->HasZombieCosmetics() ) )
 	{
 		C_TFPlayer::AdjustSkinIndexForZombie( m_iClass, m_nSkin );
 	}
@@ -1242,8 +1343,7 @@ void C_TFRagdoll::OnDataChanged( DataUpdateType_t type )
 					EmitSound( "TFPlayer.Decapitated" );
 
 					bool bBlood = true;
-					if ( TFGameRules() && ( TFGameRules()->UseSillyGibs() || 
-											( TFGameRules()->IsMannVsMachineMode() && pPlayer && pPlayer->GetTeamNumber() == TF_TEAM_PVE_INVADERS ) ) )
+					if ( TFGameRules() && ( TFGameRules()->UseSillyGibs() || ( TFGameRules()->IsPVEModeActive() && pPlayer && pPlayer->GetTeamNumber() == ( TFGameRules()->IsMannVsMachineMode() ? TF_TEAM_PVE_INVADERS : TF_TEAM_PVE_DEFENDERS ) ) ) || pPlayer->IsRobot())
 					{
 						bBlood = false;
 					}
@@ -1301,7 +1401,8 @@ bool C_TFRagdoll::IsDecapitation()
 		|| (m_iDamageCustom == TF_DMG_CUSTOM_TAUNTATK_BARBARIAN_SWING)
 		|| (m_iDamageCustom == TF_DMG_CUSTOM_DECAPITATION_BOSS) 
 		|| (m_iDamageCustom == TF_DMG_CUSTOM_HEADSHOT_DECAPITATION)
-		|| (m_iDamageCustom == TF_DMG_CUSTOM_MERASMUS_DECAPITATION) );
+		|| (m_iDamageCustom == TF_DMG_CUSTOM_MERASMUS_DECAPITATION)
+		|| (m_iDamageCustom == TF_DMG_CUSTOM_DECAPITATION_BOSS_HAMMER) );
 }
 
 //-----------------------------------------------------------------------------
@@ -3398,6 +3499,13 @@ public:
 		if ( !TestAndSetBaseTexture() )
 			return;
 
+		// Check if weapon skins are disabled
+		if ( cf_disable_weapon_skins.GetBool() )
+		{
+			// Use the original base texture when skins are disabled
+			return;
+		}
+
 		Assert( m_pBaseTextureVar );
 
 		// This will set the texture when it goes out of scope. We can override with other textures along the way.
@@ -3727,6 +3835,7 @@ IMPLEMENT_CLIENTCLASS_DT( C_TFPlayer, DT_TFPlayer, CTFPlayer )
 	RecvPropFloat( RECVINFO( m_flMvMLastDamageTime ) ),
 	RecvPropFloat( RECVINFO_NAME( m_flMvMLastDamageTime, "m_flLastDamageTime" ) ), // Renamed
 	RecvPropInt( RECVINFO( m_iSpawnCounter ) ),
+	RecvPropBool( RECVINFO( m_bFlipViewModels ) ),
 	RecvPropBool( RECVINFO( m_bArenaSpectator ) ),
 
 	RecvPropDataTable( RECVINFO_DT( m_AttributeManager ), 0, &REFERENCE_RECV_TABLE(DT_AttributeManager) ),
@@ -3823,7 +3932,11 @@ C_TFPlayer::C_TFPlayer() :
 	m_flBurnEffectStartTime = 0;
 	m_pDisguisingEffect = NULL;
 	m_pSaveMeEffect = NULL;
+	m_pCritHealIndicator = NULL;
 	m_pTauntWithMeEffect = NULL;
+	m_flLastDamageTime = 0.0f;
+	m_iLastHealth = 0;
+	m_bShowCritHealIndicator = false;
 	m_hOldObserverTarget = NULL;
 	m_iOldObserverMode = OBS_MODE_NONE;
 	m_pStunnedEffect = NULL;
@@ -3852,6 +3965,8 @@ C_TFPlayer::C_TFPlayer() :
 	m_bIsDisplayingDuelingIcon = false;
 	m_bIsDisplayingIconForIT = false;
 	m_bShouldShowBirthdayEffect = false;
+
+	m_iTracerCount = 0;
 
 	m_bWasTaunting = false;
 	m_angTauntPredViewAngles.Init();
@@ -4519,6 +4634,15 @@ void C_TFPlayer::OnDataChanged( DataUpdateType_t updateType )
 
 		m_Shared.OnDataChanged();
 
+		// Track damage for crit heal indicator
+		int iCurrentHealth = GetHealth();
+		if ( updateType != DATA_UPDATE_CREATED && m_iLastHealth > 0 && iCurrentHealth < m_iLastHealth )
+		{
+			// Player took damage (health decreased)
+			m_flLastDamageTime = gpGlobals->curtime;
+		}
+		m_iLastHealth = iCurrentHealth;
+
 		if ( m_bDisguised != m_Shared.InCond( TF_COND_DISGUISED ) )
 		{
 			m_flDisguiseEndEffectStartTime = MAX( m_flDisguiseEndEffectStartTime, gpGlobals->curtime );
@@ -4534,7 +4658,7 @@ void C_TFPlayer::OnDataChanged( DataUpdateType_t updateType )
 			{
 				if ( m_Shared.InCond( TF_COND_DISGUISED ) )
 				{
-					UpdateMVMEyeGlowEffect( false );
+					UpdateMVMEyeGlowEffect( true );
 				}
 				else
 				{
@@ -4843,12 +4967,14 @@ void C_TFPlayer::UpdateTauntItem()
 	else
 	{
 		int iClass = GetPlayerClass()->GetClassIndex();
-
 		CEconItemView *pMiscItemView = Inventory() ? Inventory()->GetCacheServerItemInLoadout( iClass, m_nActiveTauntSlot ) : NULL;
+		
 		if ( pMiscItemView )
 		{
+			//DevMsg( "Using item id for taunt: %lld\n", pMiscItemView->GetItemID() );
 			m_TauntEconItemView = *pMiscItemView;
 		}
+
 	}
 
 	if ( m_TauntEconItemView.IsValid() )
@@ -5774,7 +5900,7 @@ bool C_TFPlayer::CanLightCigarette( void )
 	}
 
 	// don't light for MvM Spy robots
-	if ( TFGameRules() && TFGameRules()->IsMannVsMachineMode() && GetTeamNumber() == TF_TEAM_PVE_INVADERS )
+	if ( TFGameRules() && TFGameRules()->IsPVEModeActive() && GetTeamNumber() == ( TFGameRules()->IsMannVsMachineMode() ? TF_TEAM_PVE_INVADERS : TF_TEAM_PVE_DEFENDERS ) )
 		return false;
 
 	// Don't light if we are invis.
@@ -5931,8 +6057,9 @@ void C_TFPlayer::ClientThink()
 	if (!IsAlive() ||
 		(m_Shared.InCond(TF_COND_DISGUISED) && IsEnemyPlayer() && (GetPercentInvisible() > 0)))
 	{
-		StopSaveMeEffect(true);
-		ParticleProp()->StopParticlesNamed("bot_eye_glow", true);
+		StopSaveMeEffect( true );
+		StopCritHealIndicator();
+		ParticleProp()->StopParticlesNamed( "bot_eye_glow", true );
 	}
 
 	if (ShouldTauntHintIconBeVisible())
@@ -6201,7 +6328,14 @@ void C_TFPlayer::MVM_StartIdleSound(void)
 		}
 		case TF_CLASS_DEMOMAN:
 		{
-			pszSoundName = "MVM.GiantDemomanLoop";
+			if ( m_Shared.InCond( TF_COND_SENTRY_BUSTER ) )
+			{
+				pszSoundName = "MVM.SentryBusterLoop";
+			}
+			else
+			{
+				pszSoundName = "MVM.GiantDemomanLoop";
+			}
 			break;
 		}
 		case TF_CLASS_SCOUT:
@@ -7862,6 +7996,34 @@ bool C_TFPlayer::BRenderAsZombie( bool bWeaponsCheck /*= false */  )
 }
 
 //-----------------------------------------------------------------------------
+// Purpose: Check if zombie costume is equipped without Halloween vision requirement
+//-----------------------------------------------------------------------------
+bool C_TFPlayer::HasZombieCosmetics( bool bWeaponsCheck /*= false */  )
+{
+	// Should we render as somebody else?
+	bool bRenderDisguised = false;
+	if ( m_Shared.InCond( TF_COND_DISGUISED ) )
+	{
+		// When disguised, our teammates will see us with a mask.
+		// For now, don't show us as a zombie in that state, because the zombie parts
+		// (like every other cosmetic) disappear.
+		if ( !IsEnemyPlayer() )
+			return false;
+
+		// Ditto when we are disguised as an enemy spy.  We always use the mask
+		// in that case and hide cosmetics
+		if ( m_Shared.GetDisguiseClass() == TF_CLASS_SPY )
+			return false;
+
+		bRenderDisguised = true;
+	}
+
+	int iPlayerSkinOverride = bRenderDisguised ? m_Shared.GetDisguisedSkinOverride() : GetSkinOverride();
+
+	return iPlayerSkinOverride == 1;
+}
+
+//-----------------------------------------------------------------------------
 // Purpose: 
 //-----------------------------------------------------------------------------
 int C_TFPlayer::GetSkin()
@@ -7916,7 +8078,7 @@ int C_TFPlayer::GetSkin()
 	}
 
 	// Check for any special player skin override behaviour.
-	if ( BRenderAsZombie() )
+	if ( BRenderAsZombie() || HasZombieCosmetics() )
 	{
 		int iClass = GetPlayerClass()->GetClassIndex();
 		if ( m_Shared.InCond( TF_COND_DISGUISED ) )
@@ -8303,6 +8465,67 @@ void C_TFPlayer::StopSaveMeEffect( bool bForceRemoveInstantly /*= false*/ )
 		}
 		
 		m_pSaveMeEffect = NULL;
+	}
+}
+
+//-----------------------------------------------------------------------------
+// Purpose: 
+//-----------------------------------------------------------------------------
+void C_TFPlayer::CreateCritHealIndicator()
+{
+	// Don't create them for the local player in first-person view.
+	if ( IsLocalPlayer() && InFirstPersonView() )
+		return;
+
+	C_TFPlayer *pLocalPlayer = C_TFPlayer::GetLocalTFPlayer();
+	if ( !pLocalPlayer || !pLocalPlayer->IsPlayerClass( TF_CLASS_MEDIC ) )
+		return;
+
+	// Only show for teammates
+	if ( pLocalPlayer->GetTeamNumber() != GetTeamNumber() )
+		return;
+
+	// Set flag to show the indicator - we'll handle the actual rendering elsewhere
+	m_bShowCritHealIndicator = true;
+	
+	// For now, also create a temporary particle effect until we implement proper rendering
+	StopCritHealIndicator();
+	
+	// Use team-specific crit heal particle effects
+	const char *pszParticleName = NULL;
+	if ( GetTeamNumber() == TF_TEAM_RED )
+	{
+		pszParticleName = "speech_mediccall_crit_red";
+	}
+	else if ( GetTeamNumber() == TF_TEAM_BLUE )
+	{
+		pszParticleName = "speech_mediccall_crit_blu";
+	}
+	
+	if ( pszParticleName )
+	{
+		m_pCritHealIndicator = ParticleProp()->Create( pszParticleName, PATTACH_POINT_FOLLOW, "head" );
+		
+		if ( m_pCritHealIndicator )
+		{
+			// Set a distinct yellow color to indicate "ready for crit heal"
+			Vector vCritHealColor( 1.0f, 1.0f, 0.0f ); // Bright yellow for crit heal ready
+			m_pCritHealIndicator->SetControlPoint( 1, vCritHealColor );
+		}
+	}
+}
+
+//-----------------------------------------------------------------------------
+// Purpose: 
+//-----------------------------------------------------------------------------
+void C_TFPlayer::StopCritHealIndicator()
+{
+	m_bShowCritHealIndicator = false;
+	
+	if ( m_pCritHealIndicator )
+	{
+		ParticleProp()->StopEmission( m_pCritHealIndicator );
+		m_pCritHealIndicator = NULL;
 	}
 }
 
@@ -9094,7 +9317,46 @@ void C_TFPlayer::ValidateModelIndex( void )
 	else if ( m_Shared.InCond( TF_COND_DISGUISED ) && IsEnemyPlayer() )
 	{
 		TFPlayerClassData_t *pData = GetPlayerClassData( m_Shared.GetDisguiseClass() );
-		m_nModelIndex = modelinfo->GetModelIndex( pData->GetModelName() );
+		const char *pszModelName = pData->GetModelName();
+		
+		bool bUseRobotModel = false;
+		
+		// Check if this is MvM Versus mode and the spy is disguised as the robot team
+		if ( TFGameRules() && TFGameRules()->IsPVEModeActive() &&
+			 m_Shared.GetDisguiseTeam() == ( TFGameRules()->IsMannVsMachineMode() ? TF_TEAM_PVE_INVADERS : TF_TEAM_PVE_DEFENDERS ) )
+		{
+			bUseRobotModel = true;
+		}
+		// Check if the disguise target is using the Robot Cosmetic attribute
+		else
+		{
+			C_TFPlayer *pDisguiseTarget = ToTFPlayer( m_Shared.GetDisguiseTarget() );
+			if ( pDisguiseTarget )
+			{
+				int usingRobotCosmetic = 0;
+				CALL_ATTRIB_HOOK_INT_ON_OTHER( pDisguiseTarget, usingRobotCosmetic, robotrobotrobotrobot );
+				if ( usingRobotCosmetic )
+				{
+					bUseRobotModel = true;
+				}
+			}
+		}
+		
+		if ( bUseRobotModel )
+		{
+			// Use robot model for the disguised class
+			int nDisguiseClass = m_Shared.GetDisguiseClass();
+			if ( nDisguiseClass >= TF_FIRST_NORMAL_CLASS && nDisguiseClass < TF_LAST_NORMAL_CLASS )
+			{
+				// Use the robot model for this class - g_szBotModels is indexed by class number directly
+				if ( nDisguiseClass >= 0 && nDisguiseClass < ARRAYSIZE( g_szBotModels ) )
+				{
+					pszModelName = g_szBotModels[ nDisguiseClass ];
+				}
+			}
+		}
+		
+		m_nModelIndex = modelinfo->GetModelIndex( pszModelName );
 	}
 	else if ( m_Shared.InCond( TF_COND_HALLOWEEN_GHOST_MODE ) )
 	{
@@ -9360,7 +9622,7 @@ CNewParticleEffect *C_TFPlayer::SpawnHalloweenSpellFootsteps( ParticleAttachment
 		kHalloweenSpell_RGBConstant_HHH			= 2,
 		kHalloweenSpell_RGBConstant_TeamColor	= 1,
 		kHalloweenSpell_RGB_Red					= 12073019,
-		kHalloweenSpell_RGB_Blue				= 5801378,
+		kHalloweenSpell_RGB_Blue				= 2192591,
 	};
 
 	if ( iHalloweenFootstepType == kHalloweenSpell_RGBConstant_HHH )
@@ -10297,7 +10559,8 @@ static bool IsDecapitationCustomDamageType( int iCustomDamageType )
 	return iCustomDamageType == TF_DMG_CUSTOM_DECAPITATION
 		|| iCustomDamageType == TF_DMG_CUSTOM_TAUNTATK_BARBARIAN_SWING
 		|| iCustomDamageType == TF_DMG_CUSTOM_DECAPITATION_BOSS
-		|| iCustomDamageType == TF_DMG_CUSTOM_MERASMUS_DECAPITATION;
+		|| iCustomDamageType == TF_DMG_CUSTOM_MERASMUS_DECAPITATION
+		|| iCustomDamageType == TF_DMG_CUSTOM_DECAPITATION_BOSS_HAMMER;
 }
 
 void C_TFPlayer::CreateBoneAttachmentsFromWearables( C_TFRagdoll *pRagdoll, bool bDisguised )
@@ -10745,12 +11008,53 @@ void C_TFPlayer::UpdateKillStreakEffects( int iCount, bool bKillScored /* = fals
 
 void C_TFPlayer::UpdateMVMEyeGlowEffect( bool bVisible )
 {
+	// Check if this player should have robot eye glow
+	bool bShouldHaveEyeGlow = false;
+	
 	int usingRobotCosmetic = 0;
 	CALL_ATTRIB_HOOK_INT( usingRobotCosmetic, robotrobotrobotrobot );
-	if ( !TFGameRules() || !TFGameRules()->IsMannVsMachineMode() || GetTeamNumber() != TF_TEAM_PVE_INVADERS )
+
+	if ( TFGameRules() && TFGameRules()->IsPVEModeActive() ) 
 	{
-		if( usingRobotCosmetic == 0 )
-			return;
+		//MVM and RAID don't have the same team.
+		int iPVETeam = TFGameRules()->IsMannVsMachineMode() ? TF_TEAM_PVE_INVADERS : TF_TEAM_PVE_DEFENDERS;
+
+		// Actual robots (bots on invader team)
+		if ( GetTeamNumber() == iPVETeam || usingRobotCosmetic )
+		{
+			bShouldHaveEyeGlow = true;
+		}
+		// Spies disguised as robots
+		else if ( IsPlayerClass( TF_CLASS_SPY ) && m_Shared.InCond( TF_COND_DISGUISED ) && 
+				  m_Shared.GetDisguiseTeam() == iPVETeam )
+		{
+			bShouldHaveEyeGlow = true;
+		}
+	}
+	// Players using robot cosmetic
+	else if ( usingRobotCosmetic )
+	{
+		bShouldHaveEyeGlow = true;
+	}
+	// Spies disguised as players using robot cosmetic (outside MvM)
+	else if ( IsPlayerClass( TF_CLASS_SPY ) && m_Shared.InCond( TF_COND_DISGUISED ) )
+	{
+		C_TFPlayer *pDisguiseTarget = ToTFPlayer( m_Shared.GetDisguiseTarget() );
+		if ( pDisguiseTarget )
+		{
+			int targetUsingRobotCosmetic = 0;
+			CALL_ATTRIB_HOOK_INT_ON_OTHER( pDisguiseTarget, targetUsingRobotCosmetic, robotrobotrobotrobot );
+			if ( targetUsingRobotCosmetic )
+			{
+				bShouldHaveEyeGlow = true;
+				usingRobotCosmetic = targetUsingRobotCosmetic; // Use target's cosmetic value for color determination
+			}
+		}
+	}
+	
+	if ( !bShouldHaveEyeGlow )
+	{
+		return;
 	}
 	
 	// Remove the eye glows
@@ -10758,17 +11062,25 @@ void C_TFPlayer::UpdateMVMEyeGlowEffect( bool bVisible )
 	m_pMVMEyeGlowEffect[ 0 ] = NULL;
 	m_pMVMEyeGlowEffect[ 1 ] = NULL;
 
-	if ( bVisible && !(IsLocalPlayer() && LocalPlayerInFirstPersonView()) )
+	if ( bVisible && !(IsLocalPlayer() && LocalPlayerInFirstPersonView()) && !m_Shared.IsStealthed() )
 	{
 		// Set color based on skill
 		Vector vColor = Vector( 255, 255, 255 );
+		// RAID - Turn Red instead
+		bool bRaidMode = TFGameRules()->IsRaidMode();
 		if( usingRobotCosmetic != 0)
 		{
-			vColor = GetTeamNumber() ==  TF_TEAM_RED ? Vector( 255, 0, 0 ) : Vector( 0, 240, 255 );
+			// For disguised spies, use disguise team color instead of spy's team
+			int teamForColor = GetTeamNumber();
+			if ( IsPlayerClass( TF_CLASS_SPY ) && m_Shared.InCond( TF_COND_DISGUISED ) )
+			{
+				teamForColor = m_Shared.GetDisguiseTeam();
+			}
+			vColor = teamForColor == TF_TEAM_RED ? Vector( 255, 0, 0 ) : Vector( 0, 240, 255 );
 		}
 		else
 		{
-			vColor = m_nBotSkill >= 2 ? Vector( 255, 180, 36 ) : Vector( 0, 240, 255 );
+			vColor = m_nBotSkill >= 2 ? Vector( 255, 180, 36 ) : ( bRaidMode ? Vector( 255, 0, 0 ) : Vector( 0, 240, 255 ) );
 		}
 
 		// Create the effects
@@ -11869,26 +12181,24 @@ void C_TFPlayer::ClientAdjustVOPitch( int& pitch )
 	{
 		pitch *= 1.3f;
 	}
+
 	// Halloween voice futzery?
-	else
+	float flVoicePitchScale = 1.f;
+	CALL_ATTRIB_HOOK_FLOAT( flVoicePitchScale, voice_pitch_scale );
+
+	int iHalloweenVoiceSpell = 0;
+	if ( TF_IsHolidayActive( kHoliday_HalloweenOrFullMoon ) )
 	{
-		float flVoicePitchScale = 1.f;
-		CALL_ATTRIB_HOOK_FLOAT( flVoicePitchScale, voice_pitch_scale );
+		CALL_ATTRIB_HOOK_INT( iHalloweenVoiceSpell, halloween_voice_modulation );
+	}
 
-		int iHalloweenVoiceSpell = 0;
-		if ( TF_IsHolidayActive( kHoliday_HalloweenOrFullMoon ) )
-		{
-			CALL_ATTRIB_HOOK_INT( iHalloweenVoiceSpell, halloween_voice_modulation );
-		}
-
-		if ( iHalloweenVoiceSpell > 0 )
-		{
-			pitch *= 0.8f;
-		}
-		else if ( flVoicePitchScale != 1.f )
-		{
-			pitch *= flVoicePitchScale;
-		}
+	if ( iHalloweenVoiceSpell > 0 )
+	{
+		pitch *= 0.8f;
+	}
+	else if ( flVoicePitchScale != 1.f )
+	{
+		pitch *= flVoicePitchScale;
 	}
 }
 

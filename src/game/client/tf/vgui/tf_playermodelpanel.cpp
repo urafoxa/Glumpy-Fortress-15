@@ -18,6 +18,7 @@
 #include "choreoevent.h"
 #include "choreoactor.h"
 #include "choreochannel.h"
+#include "filesystem.h"
 #include "scenefilecache/ISceneFileCache.h"
 #include "c_sceneentity.h"
 #include "c_baseflex.h"
@@ -28,11 +29,15 @@
 #include "bone_setup.h"
 #include "halloween/tf_weapon_spellbook.h"
 #include "matsys_controls/matsyscontrols.h"
+#include "baseplayer_shared.h"
 
 // memdbgon must be the last include file in a .cpp file!!!
 #include <tier0/memdbgon.h>
 
 DECLARE_BUILD_FACTORY( CTFPlayerModelPanel );
+#define SCENE_LERP_TIME 0.1f
+
+#define SCENE_LERP_TIME 0.1f
 
 char g_szSceneTmpName[256];
 
@@ -152,6 +157,45 @@ CTFPlayerModelPanel::~CTFPlayerModelPanel( void )
 	{
 		SafeDeleteParticleData( &m_aParticleSystems[i] );
 	}
+}
+
+//-----------------------------------------------------------------------------
+// Purpose: Check if any equipped items have the robot attribute
+//-----------------------------------------------------------------------------
+bool CTFPlayerModelPanel::ShouldUseRobotVoice( void ) const
+{
+	static CSchemaAttributeDefHandle pAttrDef_RobotSkin( "robotrobotrobotrobot" );
+	if ( !pAttrDef_RobotSkin )
+		return false;
+
+	FOR_EACH_VEC( m_ItemsToCarry, i )
+	{
+		CEconItemView *pItem = m_ItemsToCarry[i];
+		if ( !pItem )
+			continue;
+			
+		float fRobotModel = 0.0f;
+		if ( FindAttribute_UnsafeBitwiseCast<attrib_value_t>( pItem, pAttrDef_RobotSkin, &fRobotModel ) && fRobotModel == 1.0f )
+		{
+			return true;
+		}
+	}
+	
+	return false;
+}
+
+//-----------------------------------------------------------------------------
+// Purpose: Get the voice sound token like a real player would
+//-----------------------------------------------------------------------------
+const char* CTFPlayerModelPanel::GetSceneSoundToken( void ) const
+{
+	if ( ShouldUseRobotVoice() )
+	{
+		// Use "MVM_" prefix for robot voices, like in tf_player.cpp
+		return "MVM_";
+	}
+	
+	return "";
 }
 
 //-----------------------------------------------------------------------------
@@ -404,39 +448,47 @@ CChoreoScene *LoadSceneForModel( const char *filename, IChoreoEventCallback *pCa
 	V_SetExtension( loadfile, ".vcd", sizeof( loadfile ) );
 	V_FixSlashes( loadfile );
 
-	char *pBuffer = NULL;
+	void *pBuffer = NULL;
 	size_t bufsize = scenefilecache->GetSceneBufferSize( loadfile );
-	if ( bufsize <= 0 )
-		return NULL;
-
-	pBuffer = new char[ bufsize ];
-	if ( !scenefilecache->GetSceneData( filename, (byte *)pBuffer, bufsize ) )
+	CChoreoScene *pScene = NULL;
+	if ( bufsize > 0 )
 	{
-		delete[] pBuffer;
-		return NULL;
+		// Definitely in scenes.image
+		pBuffer = new char[ bufsize ];
+		if ( !scenefilecache->GetSceneData( filename, (byte *)pBuffer, bufsize ) )
+		{
+			delete[] pBuffer;
+			return NULL;
+		}
+
+		if ( IsBufferBinaryVCD( (char*)pBuffer, bufsize ) )
+		{
+			pScene = new CChoreoScene( pCallback );
+			CUtlBuffer buf( pBuffer, bufsize, CUtlBuffer::READ_ONLY );
+			if ( !pScene->RestoreFromBinaryBuffer( buf, loadfile, &g_ChoreoStringPool ) )
+			{
+				Warning( "Unable to restore binary scene '%s'\n", loadfile );
+				delete pScene;
+				pScene = NULL;
+			}
+		}
 	}
-
-	CChoreoScene *pScene;
-	if ( IsBufferBinaryVCD( pBuffer, bufsize ) )
+	else if (filesystem->ReadFileEx( loadfile, "MOD", &pBuffer, true ))
 	{
-		pScene = new CChoreoScene( pCallback );
-		CUtlBuffer buf( pBuffer, bufsize, CUtlBuffer::READ_ONLY );
-		if ( !pScene->RestoreFromBinaryBuffer( buf, loadfile, &g_ChoreoStringPool ) )
-		{
-			Warning( "Unable to restore binary scene '%s'\n", loadfile );
-			delete pScene;
-			pScene = NULL;
-		}
-		else
-		{
-			pScene->SetPrintFunc( Scene_Printf );
-			pScene->SetEventCallbackInterface( pCallback );
-		}
+		// Not in scenes.image, but it's a raw file
+		g_TokenProcessor.SetBuffer((char*)pBuffer);
+		pScene = ChoreoLoadScene( loadfile, pCallback, &g_TokenProcessor, Scene_Printf );
 	}
 	else
 	{
-		g_TokenProcessor.SetBuffer( pBuffer );
-		pScene = ChoreoLoadScene( loadfile, pCallback, &g_TokenProcessor, Scene_Printf );
+		// Abandon ship
+		return NULL;
+	}
+
+	if(pScene)
+	{
+		pScene->SetPrintFunc( Scene_Printf );
+		pScene->SetEventCallbackInterface( pCallback );
 	}
 
 	delete[] pBuffer;
@@ -466,7 +518,7 @@ CChoreoScene *LoadSceneForModel( const char *filename, IChoreoEventCallback *pCa
 
 		if ( bSetEndTime )
 		{
-			*flSceneEndTime += 0.1f; // give time for lerp to idle pose
+			*flSceneEndTime += SCENE_LERP_TIME; // give time for lerp to idle pose
 		}
 	}
 
@@ -1219,6 +1271,33 @@ void CTFPlayerModelPanel::SetTeam( int iTeam )
 	UpdatePreviewVisuals();
 }
 
+void CTFPlayerModelPanel::SetPreviewSkin( int iSkin )
+{
+	// Directly set the skin (0 = RED, 1 = BLU)
+	SetSkin( iSkin );
+	m_nBody = iSkin;
+
+	// Also set the weapon's skin if we have one
+	if ( m_MergeMDL && m_pHeldItem )
+	{
+		// Use the appropriate team for skin selection
+		int iTeamForSkin = (iSkin == 0) ? TF_TEAM_RED : TF_TEAM_BLUE;
+		SetMDLSkinForTeam( GetMergeMDL( m_MergeMDL ), GetPreviewItem( m_pHeldItem ), iTeamForSkin );
+	}
+
+	// Set the skin for all other equipped items (wearables, etc).
+	for ( int i=0; i<m_vecDynamicAssetsLoaded.Count(); i++ )
+	{
+		const model_t *pModel = modelinfo->GetModel( m_vecDynamicAssetsLoaded[i] );
+		if ( pModel )
+		{
+			MDLHandle_t hMDL = modelinfo->GetCacheHandle( pModel );
+			int iTeamForSkin = (iSkin == 0) ? TF_TEAM_RED : TF_TEAM_BLUE;
+			SetMDLSkinForTeam( GetMergeMDL( hMDL ), GetPreviewItem( m_vecItemsLoaded[i] ), iTeamForSkin );
+		}
+	}
+}
+
 void CTFPlayerModelPanel::UpdatePreviewVisuals()
 {
 	// Assume skin will be chosen based only on the preview team
@@ -1933,7 +2012,17 @@ void CTFPlayerModelPanel::StartEvent( float currenttime, CChoreoScene *scene, CC
 			es.m_SoundLevel = iSoundlevel;
 			es.m_flSoundTime = soundtime;
 			es.m_bEmitCloseCaption = false;
-			es.m_pSoundName = event->GetParameters();
+			
+			// Check for robot voice like the server does
+			const char *pchToken = GetSceneSoundToken();
+			char szModifiedSound[512];
+			
+			// Use the same approach as sceneentity.cpp - check if we're an engineer with special handling
+			bool bIsEngineer = ( m_iCurrentClassIndex == TF_CLASS_ENGINEER && !V_strnicmp( event->GetParameters(), "engineer_", 9 ) );
+			
+			// Copy the sound name with modifier token (MVM_ prefix for robot voices)
+			CopySoundNameWithModifierToken( szModifiedSound, event->GetParameters(), sizeof( szModifiedSound ), pchToken, bIsEngineer );
+			es.m_pSoundName = szModifiedSound;
 
 			C_RecipientFilter filter;
 			C_BaseEntity::EmitSound( filter, SOUND_FROM_UI_PANEL, es );
@@ -2318,10 +2407,11 @@ void CTFPlayerModelPanel::SetupFlexWeights( void )
 		// Advance time
 		if ( m_flLastTickTime < FLT_EPSILON )
 		{
-			m_flLastTickTime = m_RootMDL.m_MDL.m_flTime - 0.1;
+			m_flLastTickTime = m_RootMDL.m_MDL.m_flTime - SCENE_LERP_TIME;
 		}
 
 		m_flSceneTime += (m_RootMDL.m_MDL.m_flTime - m_flLastTickTime);
+		m_flSceneTime = Max( m_flSceneTime, -SCENE_LERP_TIME );
 		m_flLastTickTime = m_RootMDL.m_MDL.m_flTime;
 
 		if ( m_flSceneEndTime > FLT_EPSILON && m_flSceneTime > m_flSceneEndTime )

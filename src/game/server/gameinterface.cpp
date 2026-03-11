@@ -98,7 +98,7 @@
 #include "tf/tf_gc_server.h"
 #include "tf_gamerules.h"
 #include "player_vs_environment/tf_population_manager.h"
-#include "workshop/maps_workshop.h"
+#include "tf/cf_workshop_manager.h"
 
 extern ConVar tf_mm_trusted;
 extern ConVar tf_mm_servermode;
@@ -207,6 +207,7 @@ ConVar sv_massreport( "sv_massreport", "0" );
 ConVar sv_force_transmit_ents( "sv_force_transmit_ents", "0", FCVAR_CHEAT | FCVAR_DEVELOPMENTONLY, "Will transmit all entities to client, regardless of PVS conditions (will still skip based on transmit flags, however)." );
 
 ConVar sv_autosave( "sv_autosave", "1", 0, "Set to 1 to autosave game on level transition. Does not affect autosave triggers." );
+ConVar sv_cheats_server_owner( "sv_cheats_server_owner", "0", FCVAR_REPLICATED | FCVAR_NOTIFY, "The server owner is using cheats." );
 ConVar *sv_maxreplay = NULL;
 static ConVar  *g_pcv_commentary = NULL;
 static ConVar *g_pcv_ThreadMode = NULL;
@@ -225,7 +226,9 @@ INetworkStringTable *g_pStringTableServerMapCycle = NULL;
 INetworkStringTable *g_pStringTableServerPopFiles = NULL;
 INetworkStringTable *g_pStringTableServerMapCycleMvM = NULL;
 #endif
-
+#ifdef SDK_TEMP_PATCH
+INetworkStringTable* g_pStringTableDynamicModels = NULL;
+#endif
 CStringTableSaveRestoreOps g_VguiScreenStringOps;
 
 // Holds global variables shared between engine and game.
@@ -302,6 +305,84 @@ CBasePlayer *UTIL_GetCommandClient( void )
 }
 
 //-----------------------------------------------------------------------------
+// Purpose: Check if the player is part of the mod Dev Team
+// Output : CBasePlayer
+//-----------------------------------------------------------------------------
+
+int UTIL_PlayerIsModDev( CBasePlayer *client )
+{
+	uint64 steamid = client->GetSteamIDAsUInt64();
+	switch(steamid)
+	{
+		//Main Devs
+		case 76561198130175522: // Alien31
+		case 76561198886303174: // main_thing
+		case 76561199004586557: // Vvis
+		case 76561198302570978: // GabenZone
+		case 76561198269305264: // Loner
+			return 1;
+		break;
+		//Publishers
+		case 76561198087658491: // MixerRules
+			return 2;
+		break;
+		//Contributors
+		case 76561198813329543: // Grub - it's grubbin time.
+		case 76561198024846297: // SaintSoftware
+		case 76561198423023261: // Alieneer/MOTS0
+			return 3;
+		break;
+		//None
+		default:
+			return 0;
+		break;
+	}
+}
+
+//-----------------------------------------------------------------------------
+// Purpose: Check if the player is the Server owner or Author of the mod
+// Output : CBasePlayer
+//-----------------------------------------------------------------------------
+bool UTIL_HandleCheatCmdForPlayer( CBasePlayer *client )
+{
+	//No player - Backout
+	if ( !client )
+	{
+		return false;
+	}
+	//Mod makers have priority to cheat when needed!
+	//I made the Mod so, why not? besides, it's not going to be abused.
+	if ( !UTIL_PlayerIsModDev(client) || UTIL_PlayerIsModDev(client) >= 2 )
+	{ 
+		//Back out with cheats
+		if ( sv_cheats->GetBool() )
+		{
+			return true;
+		}
+
+		if ( client != UTIL_GetLocalPlayerOrListenServerHost() )
+		{
+			//Back out without cheats 
+			if ( !sv_cheats->GetBool() )
+			{
+				return false;
+			}
+		}
+		else 
+		{
+			//Server owner
+			//The reason for this cvar is, so if it's active, users will know the owner is cheating
+			if ( !sv_cheats_server_owner.GetBool() )
+			{ 
+				return false;
+			}
+		}
+	}
+
+	return true;
+}
+
+//-----------------------------------------------------------------------------
 // Purpose: Retrieves the MOD directory for the active game (ie. "hl2")
 //-----------------------------------------------------------------------------
 
@@ -340,6 +421,7 @@ void			DrawMessageEntities();
 
 // For now just using one big AI network
 extern ConVar think_limit;
+extern ConVar sv_cheats_server_owner;
 
 
 #if 0
@@ -1167,7 +1249,7 @@ void CServerGameDLL::GameServerSteamAPIActivated( void )
 #ifdef TF_DLL
 	GCClientSystem()->GameServerActivate();
 	InventoryManager()->GameServerSteamAPIActivated();
-	TFMapsWorkshop()->GameServerSteamAPIActivated();
+	CFWorkshop()->GameServerSteamAPIActivated();
 #endif
 }
 
@@ -1449,6 +1531,9 @@ void CServerGameDLL::CreateNetworkStringTables( void )
 #ifdef TF_DLL
 	g_pStringTableServerPopFiles = networkstringtable->CreateStringTable( "ServerPopFiles", 128 );
 	g_pStringTableServerMapCycleMvM = networkstringtable->CreateStringTable( "ServerMapCycleMvM", 128 );
+#endif
+#ifdef SDK_TEMP_PATCH
+	g_pStringTableDynamicModels = networkstringtable->FindTable( "DynamicModels" );
 #endif
 
 	bool bPopFilesValid = true;
@@ -1960,7 +2045,7 @@ void CServerGameDLL::PrepareLevelResources( /* in/out */ char *pszMapName, size_
                                             /* in/out */ char *pszMapFile, size_t nMapFileSize )
 {
 #ifdef TF_DLL
-	TFMapsWorkshop()->PrepareLevelResources( pszMapName, nMapNameSize, pszMapFile, nMapFileSize );
+	CFWorkshop()->PrepareLevelResources( pszMapName, nMapNameSize, pszMapFile, nMapFileSize );
 #endif // TF_DLL
 }
 
@@ -1971,7 +2056,7 @@ CServerGameDLL::AsyncPrepareLevelResources( /* in/out */ char *pszMapName, size_
                                             float *flProgress /* = NULL */ )
 {
 #ifdef TF_DLL
-	return TFMapsWorkshop()->AsyncPrepareLevelResources( pszMapName, nMapNameSize, pszMapFile, nMapFileSize, flProgress );
+	return (IServerGameDLL::ePrepareLevelResourcesResult)CFWorkshop()->AsyncPrepareLevelResources( pszMapName, nMapNameSize, pszMapFile, nMapFileSize, flProgress );
 #endif // TF_DLL
 
 	if ( flProgress )
@@ -1985,7 +2070,7 @@ CServerGameDLL::AsyncPrepareLevelResources( /* in/out */ char *pszMapName, size_
 IServerGameDLL::eCanProvideLevelResult CServerGameDLL::CanProvideLevel( /* in/out */ char *pMapName, int nMapNameMax )
 {
 #ifdef TF_DLL
-	return TFMapsWorkshop()->OnCanProvideLevel( pMapName, nMapNameMax );
+	return (IServerGameDLL::eCanProvideLevelResult)CFWorkshop()->OnCanProvideLevel( pMapName, nMapNameMax );
 #endif // TF_DLL
 	return IServerGameDLL::eCanProvideLevel_CannotProvide;
 }
@@ -2005,7 +2090,7 @@ bool CServerGameDLL::IsManualMapChangeOkay( const char **pszReason )
 bool CServerGameDLL::GetWorkshopMap( uint32 uIndex, WorkshopMapDesc_t *pDesc )
 {
 #ifdef TF_DLL
-	return TFMapsWorkshop()->GetWorkshopMapDesc( uIndex, pDesc );
+	return CFWorkshop()->GetWorkshopMapDesc( uIndex, pDesc );
 #endif // TF_DLL
 	return false;
 }
@@ -2736,6 +2821,14 @@ void CServerGameClients::ClientActive( edict_t *pEdict, bool bLoadGame )
 				{
 					Log("WARNING: ClientActive, but we don't know his SteamID?\n");
 				}
+			}
+			
+			// Broadcast workshop addon list for listen servers (auto-download)
+			// This allows clients connecting to a listen server to automatically
+			// subscribe to and download the host's workshop addons
+			if ( !engine->IsDedicatedServer() && CFWorkshop() )
+			{
+				CFWorkshop()->BroadcastAddonList( pEdict );
 			}
 		}
 	#endif

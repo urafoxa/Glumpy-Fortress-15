@@ -83,6 +83,8 @@ extern ConVar friendlyfire;
 // TODO These should be cheat upon shipping probably
 ConVar tf_airblast_cray( "tf_airblast_cray", "1", FCVAR_CHEAT,
                          "Use alternate cray airblast logic globally." );
+ConVar cf_revert_airblast( "cf_revert_airblast", "0", FCVAR_NOTIFY | FCVAR_REPLICATED,
+                           "Revert airblast mechanics to pre-Jungle Inferno. 0 = current mechanics, 1 = pre-Jungle Inferno." );
 ConVar tf_airblast_cray_debug( "tf_airblast_cray_debug", "0", FCVAR_CHEAT,
                                "Enable debugging overlays & output for cray airblast.  "
                                "Value is length of time to show debug overlays in seconds." );
@@ -1615,7 +1617,11 @@ void CTFFlameThrower::ComputeCrayAirBlastForce( CTFPlayer *pTarget, CTFPlayer *p
 //-----------------------------------------------------------------------------
 bool CTFFlameThrower::DeflectPlayer( CTFPlayer *pTarget, CTFPlayer *pOwner, Vector &vecForward )
 {
-	if ( !friendlyfire.GetBool() )
+
+	int iAirblastTeammates = 0;
+	CALL_ATTRIB_HOOK_INT( iAirblastTeammates, airblast_pushes_teammates );
+
+	if ( !friendlyfire.GetBool() && !iAirblastTeammates )
 	{
 		if (pTarget->GetTeamNumber() == pOwner->GetTeamNumber() && pTarget != pOwner)
 		{
@@ -1719,7 +1725,9 @@ bool CTFFlameThrower::DeflectPlayer( CTFPlayer *pTarget, CTFPlayer *pOwner, Vect
 		//
 
 		int nOldAirblast = 0;
-		if ( !nOldAirblast && tf_airblast_cray.GetBool() )
+		extern ConVar cf_revert_airblast;
+		bool bUseCrayAirblast = cf_revert_airblast.GetBool() ? false : tf_airblast_cray.GetBool();
+		if ( !nOldAirblast && bUseCrayAirblast )
 		{
 			// TODO This is not honoring some of the attributes of old airblast
 			Vector vecPushDirection;
@@ -1834,7 +1842,11 @@ bool CTFFlameThrower::DeflectPlayer( CTFPlayer *pTarget, CTFPlayer *pOwner, Vect
 
 
 		// Make sure we get credit for the airblast if the target falls to its death
-		pTarget->m_AchievementData.AddDamagerToHistory( pOwner );
+		// Don't add self to damage history to prevent self-assists
+		if ( pTarget != pOwner )
+		{
+			pTarget->m_AchievementData.AddDamagerToHistory( pOwner );
+		}
 
 		SendObjectDeflectedEvent( pOwner, pTarget, TF_WEAPON_NONE, pTarget ); // TF_WEAPON_NONE means the player got pushed
 

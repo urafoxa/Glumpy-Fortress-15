@@ -1,0 +1,1 @@
+These scripts show off vscript functions that are added by Custom Fortress 2.

@@ -1283,9 +1283,9 @@ Rule MvMWaveStartMedic
 
 Response MvMWaveWinMedic
 {
-	scene "scenes/Player/Medic/low/4163.vcd" 
-	scene "scenes/Player/Medic/low/4164.vcd" 
-	scene "scenes/Player/Medic/low/4165.vcd" 
+	scene "scenes/Player/Medic/low/4163.vcd" predelay "1.5" 
+	scene "scenes/Player/Medic/low/4164.vcd" predelay "1.5"
+	scene "scenes/Player/Medic/low/4165.vcd" predelay "1.5"
 }
 Rule MvMWaveWinMedic
 {
@@ -1295,10 +1295,10 @@ Rule MvMWaveWinMedic
 
 Response MvMWaveLoseMedic
 {
-	scene "scenes/Player/Medic/low/4166.vcd" 
-	scene "scenes/Player/Medic/low/4167.vcd" 
-	scene "scenes/Player/Medic/low/4168.vcd" 
-	scene "scenes/Player/Medic/low/4323.vcd" 
+	scene "scenes/Player/Medic/low/4166.vcd" predelay "1.5"
+	scene "scenes/Player/Medic/low/4167.vcd" predelay "1.5"
+	scene "scenes/Player/Medic/low/4168.vcd" predelay "1.5"
+	scene "scenes/Player/Medic/low/4323.vcd" predelay "1.5"
 }
 Rule MvMWaveLoseMedic
 {

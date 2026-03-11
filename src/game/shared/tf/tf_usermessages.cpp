@@ -12,6 +12,85 @@
 // NVNT include to register in haptic user messages
 #include "haptics/haptic_msgs.h"
 
+#ifdef CLIENT_DLL
+#include "tf/cf_workshop_manager.h"
+
+// Client-side handler for WorkshopMapID message
+void MsgFunc_WorkshopMapID( bf_read &msg )
+{
+	// Read the 64-bit file ID (sent as two 32-bit values)
+	uint32 lowBits = msg.ReadLong();
+	uint32 highBits = msg.ReadLong();
+	PublishedFileId_t fileID = ((uint64)highBits << 32) | lowBits;
+	
+	// Pass to workshop manager
+	if (CFWorkshop())
+	{
+		CFWorkshop()->OnWorkshopMapIDReceived(fileID);
+	}
+}
+
+// Client-side handler for AddonList message
+void MsgFunc_AddonList( bf_read &msg )
+{
+	// Read the number of addons in the list
+	uint8 numAddons = msg.ReadByte();
+	
+	if (numAddons == 0)
+	{
+		Msg("[CF Addon Sync] Host has no workshop items subscribed.\n");
+		return;
+	}
+	
+	Msg("[CF Addon Sync] Host has %d workshop items. Checking subscriptions...\n", numAddons);
+	
+	// Read each addon file ID
+	CUtlVector<PublishedFileId_t> hostAddons;
+	for (uint8 i = 0; i < numAddons; i++)
+	{
+		uint32 lowBits = msg.ReadLong();
+		uint32 highBits = msg.ReadLong();
+		PublishedFileId_t fileID = ((uint64)highBits << 32) | lowBits;
+		hostAddons.AddToTail(fileID);
+	}
+	
+	// Check which addons we don't have and subscribe to them
+	if (CFWorkshop())
+	{
+		int numSubscribed = 0;
+		int numAlreadyHave = 0;
+		
+		for (int i = 0; i < hostAddons.Count(); i++)
+		{
+			PublishedFileId_t fileID = hostAddons[i];
+			
+			// Check if we already have this addon
+			CCFWorkshopItem* pItem = CFWorkshop()->GetItem(fileID);
+			if (pItem && pItem->IsSubscribed())
+			{
+				numAlreadyHave++;
+				continue;
+			}
+			
+			// Subscribe to the addon
+			Msg("[CF Addon Sync] Subscribing to workshop item %llu...\n", fileID);
+			CFWorkshop()->SubscribeItem(fileID);
+			numSubscribed++;
+		}
+		
+		if (numSubscribed > 0)
+		{
+			Msg("[CF Addon Sync] Subscribed to %d new workshop items. They will download automatically.\n", numSubscribed);
+			Msg("[CF Addon Sync] You may need to restart the game after downloads complete.\n");
+		}
+		else if (numAlreadyHave > 0)
+		{
+			Msg("[CF Addon Sync] You already have all of the host's workshop items!\n");
+		}
+	}
+}
+#endif
+
 void RegisterUserMessages()
 {
 	usermessages->Register( "Geiger", 1 );		// geiger info data
@@ -69,7 +148,24 @@ void RegisterUserMessages()
 //=============================================================================
 // HPE_END
 //=============================================================================
+// 
+//=============================================================================
+// HPE_BEGIN:
+// CUSTOM FORTRESS MESSAGES
+//=============================================================================
+	usermessages->Register( "VS_SendNotification", -1 );	// Displays a notification
+	usermessages->Register( "WorkshopMapID", 8 );	// Workshop map file ID (64-bit)
+	usermessages->Register( "AddonList", -1 );		// List of host's workshop addons for auto-download
+//=============================================================================
+// HPE_END
+//=============================================================================
 
+#ifdef CLIENT_DLL
+	// Hook the WorkshopMapID message on client
+	usermessages->HookMessage( "WorkshopMapID", MsgFunc_WorkshopMapID );
+	// Hook the AddonList message on client
+	usermessages->HookMessage( "AddonList", MsgFunc_AddonList );
+#endif
 
 	usermessages->Register( "DamageDodged", -1 );
 

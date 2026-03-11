@@ -146,22 +146,21 @@ void CTFCompoundBow::LaunchGrenade( void )
 	CTFProjectile_Arrow *pMainArrow = assert_cast<CTFProjectile_Arrow*>( FireProjectile( pPlayer ) );
 	if ( pMainArrow )
 	{
+		//Set the Extra arrows on fire if the main one loaded is.
 		pMainArrow->SetArrowAlight( m_bArrowAlight );
-		if ( TFGameRules() && TFGameRules()->GameModeUsesUpgrades() )
-		{
-			Vector vecMainVelocity = pMainArrow->GetAbsVelocity();
-			float flMainSpeed = vecMainVelocity.Length();
-			int iArrowMastery = 0;
-			CALL_ATTRIB_HOOK_INT(iArrowMastery, arrow_mastery);
-			for (int i = 0; i < iArrowMastery; ++i)
-			{
-				QAngle qOffset1 = pMainArrow->GetAbsAngles() + QAngle(0, GetRandomSpreadOffset(i + 1), 0);
-				CreateExtraArrow(pMainArrow, qOffset1, flMainSpeed);
-				QAngle qOffset2 = pMainArrow->GetAbsAngles() + QAngle(0, -GetRandomSpreadOffset(i + 1), 0);
-				CreateExtraArrow(pMainArrow, qOffset2, flMainSpeed);
-			}
-		}
+		Vector vecMainVelocity = pMainArrow->GetAbsVelocity();
+		float flArrowSpeed = vecMainVelocity.Length();
 
+		//MvM Upgrade - Arrow mastery, shoot 3 arrows at the price of 1.
+		int iArrowMastery = 0;
+		CALL_ATTRIB_HOOK_INT(iArrowMastery, arrow_mastery);
+		for (int i = 0; i < iArrowMastery; ++i)
+		{
+			QAngle qOffset1 = pMainArrow->GetAbsAngles() + QAngle(0, GetRandomSpreadOffset(i + 1), 0);
+			CreateExtraArrow(pMainArrow, qOffset1, flArrowSpeed);
+			QAngle qOffset2 = pMainArrow->GetAbsAngles() + QAngle(0, -GetRandomSpreadOffset(i + 1), 0);
+			CreateExtraArrow(pMainArrow, qOffset2, flArrowSpeed);
+		}
 	}
 
 #else

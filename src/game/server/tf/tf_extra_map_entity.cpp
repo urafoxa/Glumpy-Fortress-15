@@ -14,8 +14,8 @@ struct EntityWhiteList_t
 	const char *pszEntName;
 };
 
-ConVar tf_teaserprops("tf_teaserprops", "0", FCVAR_REPLICATED, "Enable teaser props on mapspawn.");
-ConVar tf_teaserprops_type("tf_teaserprops_type", "0", FCVAR_REPLICATED, "Which teaser you want to spawn with?");
+ConVar cf_teaserprops("cf_teaserprops", "1", FCVAR_REPLICATED, "Enable teaser props on mapspawn.");
+ConVar cf_teaserprops_type("cf_teaserprops_type", "mvm", FCVAR_REPLICATED, "Which teaser you want to spawn with?");
 
 // limit the entities that can be created using this method
 EntityWhiteList_t g_szEntityWhiteList[] =
@@ -24,6 +24,18 @@ EntityWhiteList_t g_szEntityWhiteList[] =
 	{ "carrier", "entity_carrier" },
 	{ "sign", "entity_sign" },
 	{ "saucer", "entity_saucer" },
+	//Mod Entries
+	{ "bf_sign", "entity_sign" },
+};
+
+//Prop Lists
+static const char* s_pszTeaserMDL_Invasion[] =
+{
+	"models/props_teaser/update_invasion_poster002.mdl",
+	"models/props_teaser/update_invasion_poster001.mdl",
+	"models/egypt/palm_tree/palm_tree.mdl",
+	"models/props_spytech/control_room_console01.mdl",
+	"models/props_spytech/work_table001.mdl",
 };
 
 
@@ -120,8 +132,13 @@ void CExtraMapEntity::SpawnExtraModel( void )
 	if ( !pszMapName || !pszMapName[0] )
 		return;
 
+	// Custom Fortress 2 - i loved these teasers, and i am sure everyone did back in the day...
 	KeyValues *pFileKV = new KeyValues( "models" );
+	/*
 	if ( !pFileKV->LoadFromFile( g_pFullFileSystem, "scripts/extra_models.txt", "MOD" ) )
+		return;
+	*/
+	if ( !pFileKV->LoadFromFile( g_pFullFileSystem, "scripts/bf_extra_models.txt", "GAME" ) )
 		return;
 
 	// See if we have an entry for this map.
@@ -170,6 +187,53 @@ void CExtraMapEntity::SpawnExtraModel( void )
 
 				if ( ( flChance > 0.0f ) && ( RandomFloat( 0, 1 ) < flChance ) )
 				{
+					// Filter entities based on cf_teaserprops_type setting
+					const char* pszTeaserType = cf_teaserprops_type.GetString();
+					
+					// If Grocket type is selected, only allow rocket entities
+					if ( !V_strcmp( "grocket", pszTeaserType ) && V_strcmp( "entity_rocket", pszEntName ) )
+					{
+						continue; // Skip non-rocket entities
+					}
+					// If Invasion type is selected, only allow saucer entities and invasion poster signs
+					else if ( !V_strcmp( "invasion", pszTeaserType ) )
+					{
+						// Allow saucers
+						if ( !V_strcmp( "entity_saucer", pszEntName ) )
+						{
+							// Saucer is allowed
+						}
+						// Allow only specific sign models (invasion posters)
+						else if ( !V_strcmp( "entity_sign", pszEntName ) && 
+								( !V_strcmp( "models/props_teaser/update_invasion_poster001.mdl", szModelName ) ||
+								  !V_strcmp( "models/props_teaser/update_invasion_poster002.mdl", szModelName ) ) )
+						{
+							// Invasion poster signs are allowed
+						}
+						else
+						{
+							continue; // Skip all other entities for Invasion
+						}
+					}
+					// If MVM type is selected, only allow carrier entities and EOTL poster signs
+					else if ( !V_strcmp( "mvm", pszTeaserType ) )
+					{
+						// Allow carriers
+						if ( !V_strcmp( "entity_carrier", pszEntName ) )
+						{
+							// Carrier is allowed
+						}
+						// Allow only specific sign models (EOTL poster)
+						else if ( !V_strcmp( "entity_sign", pszEntName ) && !V_strcmp( "models/props_teaser/update_eotl_poster001.mdl", szModelName ) )
+						{
+							// EOTL poster sign is allowed
+						}
+						else
+						{
+							continue; // Skip all other entities for MVM
+						}
+					}
+
 					CExtraMapEntity *pExtraMapEntity = static_cast< CExtraMapEntity* >( CBaseEntity::CreateNoSpawn( pszEntName, loc, rot ) );
 					if ( pExtraMapEntity )
 					{
@@ -190,7 +254,7 @@ void CExtraMapEntity::SpawnExtraModel( void )
 //-----------------------------------------------------------------------------
 void CExtraMapEntity_Rocket::Spawn( void )
 {
-	if (tf_teaserprops_type.GetInt() == 0)
+	if ( !V_strcmp( "grocket", cf_teaserprops_type.GetString() ) )
 	{
 
 		BaseClass::Spawn();
@@ -211,7 +275,7 @@ void CExtraMapEntity_Rocket::Precache_Internal( void )
 //-----------------------------------------------------------------------------
 void CExtraMapEntity_Carrier::Spawn( void )
 {
-	if (tf_teaserprops_type.GetInt() == 1)
+	if ( !V_strcmp( "mvm", cf_teaserprops_type.GetString() ) )
 	{
 
 		BaseClass::Spawn();
@@ -226,14 +290,12 @@ void CExtraMapEntity_Carrier::Spawn( void )
 //-----------------------------------------------------------------------------
 void CExtraMapEntity_Sign::Spawn( void )
 {
-	if (tf_teaserprops_type.GetInt() == 2)
-	{
+		
+	BaseClass::Spawn();
 
-		BaseClass::Spawn();
+	SetSolid(SOLID_NONE);
+	AddEffects(EF_NOSHADOW);
 
-		SetSolid(SOLID_NONE);
-		AddEffects(EF_NOSHADOW);
-	}
 }
 
 //-----------------------------------------------------------------------------
@@ -241,7 +303,7 @@ void CExtraMapEntity_Sign::Spawn( void )
 //-----------------------------------------------------------------------------
 void CExtraMapEntity_Saucer::Spawn( void )
 {
-	if (tf_teaserprops_type.GetInt() == 2)
+	if ( !V_strcmp( "invasion", cf_teaserprops_type.GetString() ) )
 	{
 
 		BaseClass::Spawn();

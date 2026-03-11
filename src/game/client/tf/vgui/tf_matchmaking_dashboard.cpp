@@ -388,7 +388,7 @@ void CTFMatchmakingDashboard::OnCommand( const char *command )
 	}
 	else if ( FStrEq( command, "quit" ) )
 	{
-		if ( engine->IsInGame() )
+		if ( engine->IsInGame() && !engine->IsLevelMainMenuBackground() ) //horiuchii Fix
 		{
 			PromptOrFireCommand( "disconnect" );
 		}
@@ -925,7 +925,7 @@ void CTFMatchmakingDashboard::OnCreateServer()
 {
 	ClearAllStacks();
 	// Just call the command directly
-	engine->ClientCmd_Unrestricted( "gamemenucommand OpenCreateMultiplayerGameDialog" );
+	engine->ClientCmd_Unrestricted( "modcreateserver" );
 }
 
 void CTFMatchmakingDashboard::OnPlayEvent()

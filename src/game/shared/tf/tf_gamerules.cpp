@@ -19,6 +19,7 @@
 #include "tf_logic_player_destruction.h"
 #include "tf_matchmaking_shared.h"
 #include "tf_progression_description.h"
+#include "tf_steam_branch.h"
 
 #ifdef CLIENT_DLL
 	#include <game/client/iviewport.h>
@@ -418,7 +419,22 @@ static MapInfo_t s_CommunityMaps[] = {
 	{ "ctf_penguin_peak", "Penguin Peak", "#Gametype_CTF" },
 	{ "pl_patagonia", "Patagonia", "#Gametype_Escort" },
 	{ "plr_cutter", "Cutter", "#Gametype_EscortRace" },
-	{ "vsh_maul", " Maul", "#GameType_VSH" },
+	{ "vsh_maul", "Maul", "#GameType_VSH" },
+	{ "pl_citadel", "Citadel", "#Gametype_Escort" },
+	{ "pl_aquarius", "Aquarius", "#Gametype_Escort" },
+	{ "cp_fulgur", "Fulgur", "#TF_AttackDefend" },
+	{ "cp_cargo", "Cargo", "#TF_AttackDefend" },
+	{ "cp_conifer", "Conifer", "#TF_AttackDefend" },
+	{ "koth_boardwalk", "Boardwalk", "#Gametype_Koth" },
+	{ "koth_blowout", "Blowout", "#Gametype_Koth" },
+	{ "koth_mannhole", "Mannhole", "#Gametype_Koth" },
+	{ "koth_demolition", "Demolition", "#Gametype_Koth" },
+	{ "ctf_pressure", "Pressure", "#Gametype_CTF" },
+	{ "cp_cowerhouse", "Cowerhouse", "#Gametype_CP" },
+	{ "koth_dusker", "Dusker", "#Gametype_Koth" },
+	{ "arena_afterlife", "Afterlife", "#Gametype_Arena" },
+	{ "ctf_doublecross_event", "Devilcross", "#Gametype_CTF" },
+	{ "sd_marshlands", "Marshlands", "#GameType_HTF" },
 };
 
 /*
@@ -598,6 +614,25 @@ static FeaturedWorkshopMap_t s_FeaturedWorkshopMaps[] = {
 	{ "pl_patagonia",			3236427113 },
 	{ "plr_cutter",				3363801747 },
 	{ "vsh_maul",				3069796653 },
+
+	// Summer 2025
+	{ "pl_citadel",				3474587494 },
+	{ "pl_aquarius",			3478583193 },
+	{ "cp_fulgur",				2068252300 },
+	{ "cp_cargo",				3488669143 },
+	{ "cp_conifer",				1419048064 },
+	{ "koth_boardwalk",			3475789229 },
+	{ "koth_blowout",			3473248257 },
+	{ "koth_mannhole",			3478225408 },
+	{ "koth_demolition",		3473618662 },
+	{ "ctf_pressure",			3480634190 },
+
+	// Halloween 2025
+	{ "cp_cowerhouse",			3028277335 },
+	{ "koth_dusker",			3562630084 },
+	{ "arena_afterlife",		3557320996 },
+	{ "ctf_doublecross_event",	3024700002 },
+	{ "sd_marshlands",			3565681202 },
 };
 
 */
@@ -636,6 +671,9 @@ extern ConVar tf_vaccinator_uber_resist;
 extern ConVar tf_teleporter_fov_time;
 extern ConVar tf_teleporter_fov_start;
 
+//Instant Respawn
+extern ConVar cf_instantrespawn;
+
 #ifdef GAME_DLL
 extern ConVar mp_holiday_nogifts;
 extern ConVar tf_debug_damage;
@@ -650,7 +688,7 @@ extern ConVar mp_idlemaxtime;
 
 extern ConVar tf_mm_strict;
 extern ConVar mp_autoteambalance;
-extern ConVar tf_teaserprops;
+extern ConVar cf_teaserprops;
 
 
 // STAGING_SPY
@@ -698,6 +736,7 @@ ConVar tf_player_spell_drop_on_death_rate( "tf_player_spell_drop_on_death_rate",
 ConVar tf_player_drop_bonus_ducks( "tf_player_drop_bonus_ducks", "-1", FCVAR_REPLICATED, "-1 Default (Holiday-based)\n0 - Force off\n1 - Force on" );
 
 ConVar tf_allow_player_name_change( "tf_allow_player_name_change", "1", FCVAR_NOTIFY, "Allow player name changes." );
+ConVar tf_kill_enable_custom_ragdolls( "tf_kill_enable_custom_ragdolls", "1", FCVAR_REPLICATED, "Allow players to use custom ragdolls with tf_kill" );
 
 ConVar tf_weapon_criticals_distance_falloff( "tf_weapon_criticals_distance_falloff", "0", FCVAR_CHEAT, "Critical weapon damage will take distance into account." );
 ConVar tf_weapon_minicrits_distance_falloff( "tf_weapon_minicrits_distance_falloff", "0", FCVAR_CHEAT, "Mini-crit weapon damage will take distance into account." );
@@ -708,7 +747,7 @@ ConVar tf_test_special_ducks( "tf_test_special_ducks", "1", FCVAR_DEVELOPMENTONL
 
 ConVar tf_mm_abandoned_players_per_team_max( "tf_mm_abandoned_players_per_team_max", "1", FCVAR_DEVELOPMENTONLY );
 #endif // GAME_DLL
-ConVar tf_mm_next_map_vote_time( "tf_mm_next_map_vote_time", "30", FCVAR_REPLICATED );
+ConVar tf_mm_next_map_vote_time( "tf_mm_next_map_vote_time", "15", FCVAR_REPLICATED );
 
 
 static float g_fEternaweenAutodisableTime = 0.0f;
@@ -841,6 +880,9 @@ ConVar tf_arena_change_limit( "tf_arena_change_limit", "1", FCVAR_REPLICATED | F
 ConVar tf_arena_override_cap_enable_time( "tf_arena_override_cap_enable_time", "-1", FCVAR_REPLICATED | FCVAR_NOTIFY, "Overrides the time (in seconds) it takes for the capture point to become enable, -1 uses the level designer specified time." );
 ConVar tf_arena_override_team_size( "tf_arena_override_team_size", "0", FCVAR_REPLICATED, "Overrides the maximum team size in arena mode. Set to zero to keep the default behavior of 1/3 maxplayers.");
 ConVar tf_arena_first_blood( "tf_arena_first_blood", "1", FCVAR_REPLICATED | FCVAR_NOTIFY, "Rewards the first player to get a kill each round." );
+ConVar tf_arena_first_blood_time( "tf_arena_first_blood_time", "5.0", FCVAR_REPLICATED );	
+ConVar tf_arena_first_blood_fast_time( "tf_arena_first_blood_fast_time", "20.0", FCVAR_REPLICATED );	
+ConVar tf_arena_first_blood_slow_time( "tf_arena_first_blood_slow_time", "50.0", FCVAR_REPLICATED );	
 extern ConVar tf_arena_preround_time;
 extern ConVar tf_arena_max_streak;
 #if defined( _DEBUG ) || defined( STAGING_ONLY )
@@ -858,18 +900,15 @@ ConVar tf_training_client_message( "tf_training_client_message", "0", FCVAR_REPL
 // HPE_END
 //=============================================================================
 
-#define TF_ARENA_MODE_FIRST_BLOOD_CRIT_TIME 5.0f
-#define TF_ARENA_MODE_FAST_FIRST_BLOOD_TIME 20.0f
-#define TF_ARENA_MODE_SLOW_FIRST_BLOOD_TIME 50.0f
 
 #ifdef TF_RAID_MODE
 // Raid mode
-ConVar tf_gamemode_raid( "tf_gamemode_raid", "0", FCVAR_REPLICATED | FCVAR_NOTIFY );		// client needs access to this for IsRaidMode()
+ConVar tf_gamemode_raid( "tf_gamemode_raid", "0", FCVAR_REPLICATED | FCVAR_NOTIFY | FCVAR_DEVELOPMENTONLY );		// client needs access to this for IsRaidMode()
 ConVar tf_raid_enforce_unique_classes( "tf_raid_enforce_unique_classes", "0", FCVAR_REPLICATED | FCVAR_NOTIFY );
 ConVar tf_raid_respawn_time( "tf_raid_respawn_time", "5", FCVAR_REPLICATED | FCVAR_NOTIFY /*| FCVAR_CHEAT*/, "How long it takes for a Raider to respawn with his team after death." );
 ConVar tf_raid_allow_all_classes( "tf_raid_allow_all_classes", "1", FCVAR_REPLICATED | FCVAR_NOTIFY );
 
-ConVar tf_gamemode_boss_battle( "tf_gamemode_boss_battle", "0", FCVAR_REPLICATED | FCVAR_NOTIFY );
+ConVar tf_gamemode_boss_battle( "tf_gamemode_boss_battle", "0", FCVAR_REPLICATED | FCVAR_NOTIFY | FCVAR_DEVELOPMENTONLY );
 
 #ifdef GAME_DLL
 ConVar tf_raid_allow_overtime( "tf_raid_allow_overtime", "0"/*, FCVAR_CHEAT*/ );
@@ -877,8 +916,6 @@ ConVar tf_raid_allow_overtime( "tf_raid_allow_overtime", "0"/*, FCVAR_CHEAT*/ );
 #endif // TF_RAID_MODE
 
 ConVar tf_mvm_defenders_team_size( "tf_mvm_defenders_team_size", "6", FCVAR_REPLICATED | FCVAR_NOTIFY, "Maximum number of defenders in MvM" );
-ConVar tf_mvm_forceversus( "tf_mvm_forceversus", "1", FCVAR_REPLICATED | FCVAR_NOTIFY, "Enable versus in MvM");
-ConVar tf_mvm_versus_robot_stations( "tf_mvm_versus_robot_stations", "0", FCVAR_REPLICATED | FCVAR_NOTIFY, "Allow Robots to use upgrade stations");
 ConVar tf_mvm_max_connected_players( "tf_mvm_max_connected_players", "10", FCVAR_GAMEDLL, "Maximum number of connected real players in MvM" );
 ConVar tf_mvm_max_invaders( "tf_mvm_max_invaders", "24", FCVAR_GAMEDLL, "Maximum number of invaders in MvM" );
 
@@ -889,6 +926,16 @@ ConVar tf_mvm_respec_credit_goal( "tf_mvm_respec_credit_goal", "2000", FCVAR_CHE
 ConVar tf_mvm_buybacks_method( "tf_mvm_buybacks_method", "0", FCVAR_REPLICATED | FCVAR_HIDDEN, "When set to 0, use the traditional, currency-based system.  When set to 1, use finite, charge-based system.", true, 0.0, true, 1.0 );
 ConVar tf_mvm_buybacks_per_wave( "tf_mvm_buybacks_per_wave", "3", FCVAR_REPLICATED | FCVAR_HIDDEN, "The fixed number of buybacks players can use per-wave." );
 
+//MVM Versus - Convars
+ConVar cf_gamemode_mvmvs( "cf_gamemode_mvmvs", "1", FCVAR_REPLICATED | FCVAR_NOTIFY, "Enable versus in MvM");
+ConVar cf_mvmvs_robot_stations( "cf_mvmvs_robot_stations", "0", FCVAR_REPLICATED | FCVAR_NOTIFY, "Allow Robots to use upgrade stations");
+ConVar cf_mvmvs_use_loadout( "cf_mvmvs_use_loadout", "1", FCVAR_REPLICATED | FCVAR_NOTIFY, "Robot players will spawn with their loadout items, if not, will be picked from the robot selection list file");
+ConVar cf_mvmvs_playstyle( "cf_mvmvs_playstyle", "0", FCVAR_REPLICATED | FCVAR_NOTIFY, "MvM Versus playstyle: 0 = Classic (spawn with loadout, random giants/gatebots), 1 = Popfile List (load robots from current wave)" );
+ConVar cf_mvmvs_max_bosses( "cf_mvmvs_max_bosses", "1", FCVAR_REPLICATED | FCVAR_NOTIFY, "Maximum number of human-controlled Boss Robots allowed on the Invader team" );
+ConVar cf_mvmvs_max_giants( "cf_mvmvs_max_giants", "3", FCVAR_REPLICATED | FCVAR_NOTIFY, "Maximum number of human-controlled Giant Robots allowed on the Invader team" );
+ConVar cf_mvmvs_restrict_slots( "cf_mvmvs_restrict_slots", "1", FCVAR_REPLICATED | FCVAR_NOTIFY, "If enabled, in playstyle 1, restrict weapon slots to only those equipped for the robot template" );
+ConVar cf_mvmvs_enable_human_busters( "cf_mvmvs_enable_human_busters", "0", FCVAR_REPLICATED | FCVAR_NOTIFY, "Enable human-controlled Sentry Busters in MvM Versus mode. When enabled, bot Sentry Busters are disabled" );
+ConVar cf_mvm_inspect_friends_only( "cf_mvm_inspect_friends_only", "1", FCVAR_REPLICATED | FCVAR_NOTIFY, "Inspect friend upgrades only or everyone");
 
 #ifdef GAME_DLL
 enum { kMVM_CurrencyPackMinSize = 1, };
@@ -985,7 +1032,7 @@ static bool BIsCvarIndicatingHolidayIsActive( int iCvarValue, /*EHoliday*/ int e
 #ifdef GAME_DLL
 bool IsCustomGameMode( const char *pszMapName )
 {
-	return ( StringHasPrefix( pszMapName, "vsh_" ) || StringHasPrefix( pszMapName, "zi_" ) );
+	return ( MapHasPrefix( pszMapName, "vsh_" ) || MapHasPrefix( pszMapName, "zi_" ) );
 }
 
 bool IsCustomGameMode()
@@ -1139,14 +1186,14 @@ void cc_powerup_mode( IConVar *pConVar, const char *pOldString, float flOldValue
 	}
 }
 
-ConVar tf_powerup_mode( "tf_powerup_mode", "0", FCVAR_NOTIFY, "Enable/disable powerup mode. Not compatible with Mann Vs Machine mode", cc_powerup_mode );
-ConVar tf_powerup_mode_imbalance_delta( "tf_powerup_mode_imbalance_delta", "24", FCVAR_CHEAT, "Powerup kill score lead one team must have before imbalance measures are initiated" );
-ConVar tf_powerup_mode_imbalance_consecutive_min_players( "tf_powerup_mode_imbalance_consecutive_min_players", "10", FCVAR_CHEAT, "Minimum number of players on the server before consecutive imbalance measures trigger team balancing" );
-ConVar tf_powerup_mode_imbalance_consecutive_time( "tf_powerup_mode_imbalance_consecutive_time", "1200", FCVAR_CHEAT, "Teams are balanced if consecutive imbalance measures for the same team are triggered in less time (seconds)" );
-ConVar tf_powerup_mode_dominant_multiplier( "tf_powerup_mode_dominant_multiplier", "3", FCVAR_CHEAT, "The multiple by which a player must exceed the median kills by in order to be considered dominant" );
-ConVar tf_powerup_mode_killcount_timer_length( "tf_powerup_mode_killcount_timer_length", "300", FCVAR_CHEAT, "How long to wait between kill count tests that determine if a player is dominating" ); //should be a multiple of 60 because we use this to calculate an integer
+ConVar tf_powerup_mode( "tf_powerup_mode", "0", FCVAR_REPLICATED, "Enable/disable powerup mode. Not compatible with Mann Vs Machine mode", cc_powerup_mode );
+ConVar tf_powerup_mode_imbalance_delta( "tf_powerup_mode_imbalance_delta", "24", FCVAR_REPLICATED, "Powerup kill score lead one team must have before imbalance measures are initiated" );
+ConVar tf_powerup_mode_imbalance_consecutive_min_players( "tf_powerup_mode_imbalance_consecutive_min_players", "10", FCVAR_REPLICATED, "Minimum number of players on the server before consecutive imbalance measures trigger team balancing" );
+ConVar tf_powerup_mode_imbalance_consecutive_time( "tf_powerup_mode_imbalance_consecutive_time", "1200", FCVAR_REPLICATED, "Teams are balanced if consecutive imbalance measures for the same team are triggered in less time (seconds)" );
+ConVar tf_powerup_mode_dominant_multiplier( "tf_powerup_mode_dominant_multiplier", "3", FCVAR_REPLICATED, "The multiple by which a player must exceed the median kills by in order to be considered dominant" );
+ConVar tf_powerup_mode_killcount_timer_length( "tf_powerup_mode_killcount_timer_length", "300", FCVAR_REPLICATED, "How long to wait between kill count tests that determine if a player is dominating" ); //should be a multiple of 60 because we use this to calculate an integer
 
-ConVar tf_skillrating_update_interval( "tf_skillrating_update_interval", "180", FCVAR_ARCHIVE, "How often to update the GC and OGS." );
+ConVar tf_skillrating_update_interval( "tf_skillrating_update_interval", "180", FCVAR_REPLICATED, "How often to update the GC and OGS." );
 
 extern ConVar mp_teams_unbalance_limit;
 
@@ -3528,7 +3575,7 @@ void CTFGameRules::Precache( void )
 		CMerasmus::PrecacheMerasmus();
 	}
 
-	if ( StringHasPrefix( STRING( gpGlobals->mapname ), "mvm_" ) )
+	if ( MapHasPrefix( STRING( gpGlobals->mapname ), "mvm_" ) )
 	{
 		CTFPlayer::PrecacheMvM();
 	}
@@ -4316,7 +4363,7 @@ void CTFGameRules::Activate()
 		tf_gamemode_mvm.SetValue( 1 );
 		m_nGameType.Set( TF_GAMETYPE_MVM );
 	}
-	else if ( StringHasPrefix( STRING( gpGlobals->mapname ), "sd_" ) )
+	else if ( MapHasPrefix( STRING( gpGlobals->mapname ), "sd_" ) )
 	{
 		m_bPlayingSpecialDeliveryMode.Set( true );
 		tf_gamemode_sd.SetValue( 1 );
@@ -4445,7 +4492,7 @@ void CTFGameRules::Activate()
 		}
 	}
 
- 	if ( !IsInTournamentMode() && tf_teaserprops.GetBool() )
+ 	if ( !IsInTournamentMode() && cf_teaserprops.GetBool() )
  	{
  		CExtraMapEntity::SpawnExtraModel();
 		CEntityBird::SpawnRandomBirds();
@@ -4598,6 +4645,9 @@ bool CTFGameRules::RoundCleanupShouldIgnore( CBaseEntity *pEnt )
 	if ( FindInList( s_PreserveEnts, pEnt->GetClassname() ) )
 		return true;
 
+	if ( pEnt->IsEFlagSet( EFL_KEEP_ON_RECREATE_ENTITIES ) )
+		return true;
+
 	//There has got to be a better way of doing this.
 	if ( Q_strstr( pEnt->GetClassname(), "tf_weapon_" ) )
 		return true;
@@ -4640,7 +4690,13 @@ const char* CTFGameRules::WinSongName( int nTeam )
 			? "Announcer.Helltower_Hell_Red_Win" 
 			: "Announcer.Helltower_Hell_Blue_Win";
 	}
-
+	//MVM Versus - Robots Win Theme
+	else if ( IsMannVsMachineMode() )
+	{
+		return (nTeam == TF_TEAM_RED) 
+			? "Game.YourTeamWon" 
+			: "music.mvm_end_wave";
+	}
 	return "Game.YourTeamWon"; 
 }
 
@@ -7426,8 +7482,10 @@ float CTFGameRules::ApplyOnDamageAliveModifyRules( const CTakeDamageInfo &info, 
 			}
 		}
 
-		if ( pAttacker == pVictimBaseEntity && (info.GetDamageType() & DMG_BLAST) &&
-			 info.GetDamagedOtherPlayers() == 0 && (info.GetDamageCustom() != TF_DMG_CUSTOM_TAUNTATK_GRENADE) )
+		if ( ( pAttacker == pVictimBaseEntity ) &&
+			 ( ( info.GetDamageType() & DMG_BLAST ) || ( info.GetDamageCustom() == TF_DMG_CUSTOM_FLARE_EXPLOSION ) ) &&
+			 ( info.GetDamagedOtherPlayers() == 0 ) && 
+			 ( info.GetDamageCustom() != TF_DMG_CUSTOM_TAUNTATK_GRENADE ) )
 		{
 			// If we attacked ourselves, hurt no other players, and it is a blast,
 			// check the attribute that reduces rocket jump damage.
@@ -9834,10 +9892,11 @@ bool CTFGameRules::FPlayerCanTakeDamage( CBasePlayer *pPlayer, CBaseEntity *pAtt
 
 	// in PvE modes, if entities are on the same team, they can't hurt each other
 	// this is needed since not all entities will be players
+	// Unless forced - Custom Fortress
 	if ( IsPVEModeActive() && 
 			pPlayer->GetTeamNumber() == pAttacker->GetTeamNumber() && 
 			pPlayer != pAttacker && 
-			!info.IsForceFriendlyFire() )
+			!info.IsForceFriendlyFire() && !friendlyfire.GetBool() )
 	{
 		return false;
 	}
@@ -10076,10 +10135,6 @@ float CTFGameRules::FlItemRespawnTime( CItem *pItem )
 	return ITEM_RESPAWN_TIME;
 }
 
-
-//-----------------------------------------------------------------------------
-// Purpose: 
-//-----------------------------------------------------------------------------
 const char *CTFGameRules::GetChatFormat( bool bTeamOnly, CBasePlayer *pPlayer )
 {
 	if ( !pPlayer )  // dedicated server output
@@ -10144,6 +10199,7 @@ const char *CTFGameRules::GetChatFormat( bool bTeamOnly, CBasePlayer *pPlayer )
 
 	return pszFormat;
 }
+
 
 VoiceCommandMenuItem_t *CTFGameRules::VoiceCommand( CBaseMultiplayerPlayer *pPlayer, int iMenu, int iItem )
 {
@@ -11447,6 +11503,36 @@ void CTFGameRules::PlayerKilled( CBasePlayer *pVictim, const CTakeDamageInfo &in
 				}
 			}
 		}
+
+		// Drop soul for ghostly dash kills
+		if ( pTFScorer && pTFScorer != pTFVictim && pTFScorer->IsPlayerClass( TF_CLASS_PYRO ) )
+		{
+			// Check if the killer has a weapon with the ghostly dash attribute equipped
+			for ( int i = 0; i < MAX_WEAPONS; i++ )
+			{
+				CTFWeaponBase* pWeapon = static_cast<CTFWeaponBase*>( pTFScorer->GetWeapon( i ) );
+				if ( pWeapon )
+				{
+					int iGhostlyDash = 0;
+					CALL_ATTRIB_HOOK_INT_ON_OTHER( pWeapon, iGhostlyDash, mod_ghostly_dash );
+					if ( iGhostlyDash )
+					{
+						// Spawn souls that fly to the Pyro - 9 souls for Medics, 1 for others
+						bool bIsMedic = pTFVictim && pTFVictim->IsPlayerClass( TF_CLASS_MEDIC );
+						int nSoulCount = bIsMedic ? 9 : 1;
+						
+						// Spawn multiple individual soul packs for visual effect
+						for ( int j = 0; j < nSoulCount; j++ )
+						{
+							// Slightly offset each soul spawn position for visual spread
+							Vector vecOffset = RandomVector( -20.0f, 20.0f );
+							DropHalloweenSoulPack( 1, pVictim->EyePosition() + vecOffset, pTFScorer, pTFVictim->GetTeamNumber() );
+						}
+						break;
+					}
+				}
+			}
+		}
 	}
 
 	//find the area the player is in and see if his death causes a block
@@ -12082,6 +12168,7 @@ void CTFGameRules::CreateStandardEntities()
 	NewGlobalIssue< CTeamAutoBalanceIssue >();
 	NewGlobalIssue< CClassLimitsIssue >();
 	NewGlobalIssue< CPauseGameIssue >();
+	NewGlobalIssue< CToggleVersusIssue >();
 }
 
 //-----------------------------------------------------------------------------
@@ -12196,6 +12283,10 @@ const char *CTFGameRules::GetKillingWeaponName( const CTakeDamageInfo &info, CTF
 	{
 		killer_weapon_name = "tf_weapon_taunt_heavy";
 	}
+	else if ( info.GetDamageCustom() == TF_DMG_CUSTOM_TAUNTATK_TRUSTFALL )
+	{
+		killer_weapon_name = "tauntkill_trustfall";
+	}
 	else if ( info.GetDamageCustom() == TF_DMG_CUSTOM_TAUNTATK_GRAND_SLAM )
 	{
 		killer_weapon_name = "tf_weapon_taunt_scout";
@@ -12296,11 +12387,11 @@ const char *CTFGameRules::GetKillingWeaponName( const CTakeDamageInfo &info, CTF
 	{
 		killer_weapon_name = "headtaker";
 	}
-	else if (info.GetDamageCustom() == TF_DMG_CUSTOM_DECAPITATION_BOSS_HAMMER)
+	else if ( info.GetDamageCustom() == TF_DMG_CUSTOM_DECAPITATION_BOSS_HAMMER )
 	{
 		killer_weapon_name = "necro_smasher";
 	}
-	else if (info.GetDamageCustom() == TF_DMG_CUSTOM_MVM_BOSS_TANK)
+	else if ( info.GetDamageCustom() == TF_DMG_CUSTOM_MVM_BOSS_TANK )
 	{
 		killer_weapon_name = "boss_tank";
 	}
@@ -12427,6 +12518,14 @@ const char *CTFGameRules::GetKillingWeaponName( const CTakeDamageInfo &info, CTF
 			killer_weapon_name = "megaton";
 		}
 	}
+	else if ( info.GetDamageCustom() == TF_DMG_CUSTOM_TAUNTATK_TRICKSHOT )
+	{
+		killer_weapon_name = "tf_weapon_taunt_trickshot";
+	}
+	else if (info.GetDamageCustom() == TF_DMG_CUSTOM_TAUNTATK_PUNCHOUT)
+	{
+		killer_weapon_name = "gloves";
+	}
 	else if ( pScorer && pInflictor && ( pInflictor == pScorer ) )
 	{
 		// If this is not a suicide
@@ -12480,6 +12579,10 @@ const char *CTFGameRules::GetKillingWeaponName( const CTakeDamageInfo &info, CTF
 					else if ( *iWeaponID == TF_WEAPON_SHOTGUN_BUILDING_RESCUE )
 					{
 						killer_weapon_name = "rescue_ranger_reflect";
+					}
+					else if ( *iWeaponID == TF_WEAPON_DISPENSER_GUN )
+					{
+						killer_weapon_name = "deflect_scrapball";
 					}
 				}
 				else if ( *iWeaponID == TF_WEAPON_ROCKETLAUNCHER_DIRECTHIT )
@@ -12923,8 +13026,8 @@ void CTFGameRules::DeathNotice( CBasePlayer *pVictim, const CTakeDamageInfo &inf
 				if ( GetGlobalTeam( pVictim->GetTeamNumber() ) && GetGlobalTeam( pVictim->GetTeamNumber() )->GetNumPlayers() > 1 )
 #endif // !DEBUG
 				{
-					float flFastTime = IsCompetitiveMode() ? 120.f : TF_ARENA_MODE_FAST_FIRST_BLOOD_TIME;
-					float flSlowTime = IsCompetitiveMode() ? 300.f : TF_ARENA_MODE_SLOW_FIRST_BLOOD_TIME;
+					float flFastTime = IsCompetitiveMode() ? 120.f : tf_arena_first_blood_fast_time.GetFloat();
+					float flSlowTime = IsCompetitiveMode() ? 300.f : tf_arena_first_blood_slow_time.GetFloat();
 
 					if ( ( gpGlobals->curtime - m_flRoundStartTime ) <= flFastTime )
 					{
@@ -12961,7 +13064,7 @@ void CTFGameRules::DeathNotice( CBasePlayer *pVictim, const CTakeDamageInfo &inf
 					}
 					else
 					{
-						pScorer->m_Shared.AddCond( TF_COND_CRITBOOSTED_FIRST_BLOOD, TF_ARENA_MODE_FIRST_BLOOD_CRIT_TIME );
+						pScorer->m_Shared.AddCond( TF_COND_CRITBOOSTED_FIRST_BLOOD, tf_arena_first_blood_time.GetFloat() );
 					}
 				}
 			}
@@ -17106,7 +17209,7 @@ void CTFGameRules::SetUpVisionFilterKeyValues(void)
 {
 	m_pkvVisionFilterShadersMapWhitelist = new KeyValues("VisionFilterShadersMapWhitelist");
 	if (!m_bSupportsPyroland)
-		m_pkvVisionFilterShadersMapWhitelist->LoadFromFile(g_pFullFileSystem, "cfg/mtp.cfg", "MOD");
+		m_pkvVisionFilterShadersMapWhitelist->LoadFromFile(g_pFullFileSystem, "cfg/mtp.cfg", "GAME");
 
 	m_pkvVisionFilterTranslations = new KeyValues( "VisionFilterTranslations" );
 
@@ -17670,7 +17773,6 @@ bool CTFGameRules::CanPlayerChooseClass( CBasePlayer *pPlayer, int iClass )
 	{
 		return true;
 	}
-	else
 #endif // TF_RAID_MODE
 
 	if ( iClassLimit == NO_CLASS_LIMIT )
@@ -18736,11 +18838,13 @@ convar_tags_t convars_to_check_for_tags[] =
 	{ "mp_fadetoblack", "fadetoblack", NULL },
 	{ "tf_weapon_criticals", "nocrits", NULL },
 	{ "mp_disable_respawn_times", "norespawntime", NULL },
+	{ "cf_instantrespawn", "instantrespawn", NULL },
 	{ "tf_gamemode_arena", "arena", NULL },
 	{ "tf_gamemode_cp", "cp", NULL },
 	{ "tf_gamemode_ctf", "ctf", NULL },
 	{ "tf_gamemode_sd", "sd", NULL },
 	{ "tf_gamemode_mvm", "mvm", NULL },
+	{ "cf_gamemode_mvmvs", "versus", NULL },
 	{ "tf_gamemode_payload", "payload", NULL },
 	{ "tf_gamemode_rd",	"rd", NULL },
 	{ "tf_gamemode_pd",	"pd", NULL },
@@ -18778,6 +18882,20 @@ void CTFGameRules::GetTaggedConVarList( KeyValues *pCvarTagList )
 
 		pCvarTagList->AddSubKey( pKV );
 	}
+
+#ifdef GAME_DLL
+	// Add Steam branch tag to server tags
+	// This allows filtering servers by their Steam branch (e.g., "beta" vs "public")
+	const char *pszBranch = GetSteamBranchName();
+	if ( pszBranch && pszBranch[0] )
+	{
+		KeyValues *pKVBranch = new KeyValues( "branch_tag" );
+		pKVBranch->SetString( "tag", CFmtStr( "branch_%s", pszBranch ).Access() );
+		pCvarTagList->AddSubKey( pKVBranch );
+		
+		DevMsg( "Server tagged with branch: branch_%s\n", pszBranch );
+	}
+#endif
 }
 
 //-----------------------------------------------------------------------------
@@ -21355,7 +21473,7 @@ int CTFGameRules::GetTeamAssignmentOverride( CTFPlayer *pTFPlayer, int iDesiredT
 	int nMatchPlayers = pMatch ? pMatch->GetNumActiveMatchPlayers() : 0;
 	CMatchInfo::PlayerMatchData_t *pMatchPlayer = ( pMatch && steamID.IsValid() ) ? pMatch->GetMatchDataForPlayer( steamID ) : NULL;
 
-	if ( IsMannVsMachineMode() && !tf_mvm_forceversus.GetBool() )
+	if ( IsMannVsMachineMode() && !cf_gamemode_mvmvs.GetBool() )
 	{
 		if ( !pTFPlayer->IsBot() && iTeam != TEAM_SPECTATOR )
 		{
@@ -21406,6 +21524,32 @@ int CTFGameRules::GetTeamAssignmentOverride( CTFPlayer *pTFPlayer, int iDesiredT
 				     pTFPlayer->GetPlayerName() );
 				iTeam = TEAM_SPECTATOR;
 			}
+		}
+	}
+	// Handle currency for MvM Versus mode when switching to Defenders
+	else if ( IsMannVsMachineMode() && cf_gamemode_mvmvs.GetBool() && !pTFPlayer->IsBot() && iTeam == TF_TEAM_PVE_DEFENDERS )
+	{
+		// Set currency for players switching to Defenders team in MvM Versus
+		if ( g_pPopulationManager )
+		{
+			int nRoundCurrency = MannVsMachineStats_GetAcquiredCredits();
+			nRoundCurrency += g_pPopulationManager->GetStartingCurrency();
+
+			// deduct any cash that has already been spent
+			int spentCurrency = g_pPopulationManager->GetPlayerCurrencySpent( pTFPlayer );
+			pTFPlayer->SetCurrency( nRoundCurrency - spentCurrency );
+
+			Log( "MVM Versus: Set currency for %s switching to Defenders team: %d\n", pTFPlayer->GetPlayerName(), nRoundCurrency - spentCurrency );
+		}
+	}
+	// Handle MvM Versus mode when switching to Invaders (robots) team
+	else if ( IsMannVsMachineMode() && cf_gamemode_mvmvs.GetBool() && !pTFPlayer->IsBot() && iTeam == TF_TEAM_PVE_INVADERS )
+	{
+		// Clear upgrades when humans join the robots team to prevent exploiting
+		if ( g_pPopulationManager )
+		{
+			g_pPopulationManager->RemovePlayerAndItemUpgradesFromHistory( pTFPlayer );
+			Log( "MVM Versus: Cleared upgrades for %s switching to Invaders team\n", pTFPlayer->GetPlayerName() );
 		}
 	}
 	else if ( pMatch )

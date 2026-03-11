@@ -104,10 +104,10 @@ PRECACHE_WEAPON_REGISTER( tf_projectile_stun_ball );
 #define TF_WEAPON_STUNBALL_MODEL			"models/weapons/w_models/w_baseball.mdl"
 
 #if defined( GAME_DLL )
-ConVar tf_scout_stunball_base_duration( "tf_scout_stunball_base_duration", "6.0", FCVAR_DEVELOPMENTONLY );
-ConVar tf_scout_stunball_base_speed( "tf_scout_stunball_base_speed", "3000", FCVAR_DEVELOPMENTONLY );
-ConVar tf_scout_stunball_old_stun( "tf_scout_stunball_old_stun", "0", FCVAR_CHEAT | FCVAR_REPLICATED, "Force loserstate to true." );
-ConVar sv_proj_stunball_damage( "sv_proj_stunball_damage", "15", FCVAR_DEVELOPMENTONLY );
+ConVar tf_scout_stunball_base_duration( "tf_scout_stunball_base_duration", "6.0", FCVAR_REPLICATED );
+ConVar tf_scout_stunball_base_speed( "tf_scout_stunball_base_speed", "3000", FCVAR_REPLICATED );
+ConVar cf_scout_stunball_old_stun( "cf_scout_stunball_old_stun", "0", FCVAR_REPLICATED, "Old sandman stun." );
+ConVar sv_proj_stunball_damage( "sv_proj_stunball_damage", "15", FCVAR_REPLICATED );
 #endif
 // -- TFStunBall
 
@@ -463,6 +463,9 @@ void CTFBat_Wood::LaunchBall( void )
 	if ( !pPlayer )
 		return;
 
+	int iInfiniteAmmo = 0;
+	CALL_ATTRIB_HOOK_INT( iInfiniteAmmo, has_infinite_ammo );
+
 #if GAME_DLL
 	// Make a ball.
 	CBaseEntity* pBall = CreateBall();
@@ -474,10 +477,11 @@ void CTFBat_Wood::LaunchBall( void )
 		WeaponSound( BURST );
 	}
 	WeaponSound( SPECIAL2 );
-	pPlayer->RemoveAmmo( 1, TF_AMMO_GRENADES1 );
+	if ( !iInfiniteAmmo )
+		pPlayer->RemoveAmmo( 1, TF_AMMO_GRENADES1 );
 #endif
-
-	StartEffectBarRegen();
+	if ( !iInfiniteAmmo )
+		StartEffectBarRegen();
 }
 
 // SERVER ONLY --
@@ -733,7 +737,7 @@ void CTFStunBall::ApplyBallImpactEffectOnVictim( CBaseEntity *pOther )
 	if ( flLifeTimeRatio > 0.1f )
 	{
 		bool bMax = flLifeTimeRatio >= 1.f;
-		bool bOldStun = tf_scout_stunball_old_stun.GetBool();
+		bool bOldStun = cf_scout_stunball_old_stun.GetBool();
 		int iStunFlags;
 		if ( bOldStun )
 		{ 
@@ -1124,7 +1128,7 @@ void CTFBall_Ornament::Precache( void )
 	PrecacheScriptSound( "BallBuster.DrawCatch" );
 	PrecacheScriptSound( "BallBuster.Ornament_DrawCatch" );
 	PrecacheScriptSound( "BallBuster.Ball_HitWorld" );
-
+	bIsLongRangeHit = false;
 	BaseClass::Precache();
 }
 
@@ -1181,7 +1185,6 @@ void CTFBall_Ornament::ApplyBallImpactEffectOnVictim( CBaseEntity *pOther )
 
 	bool bIsCriticalHit = IsCritical();
 	float flBleedTime = 5.0f;
-	bool bIsLongRangeHit = false;
 
 	// long distance hit is always a crit
 	float flLifeTime = gpGlobals->curtime - m_flCreationTime;
@@ -1312,7 +1315,11 @@ void CTFBall_Ornament::Explode( trace_t *pTrace, int bitsDamageType )
 	EmitSound_t params;
 	params.m_flSoundTime = 0;
 	params.m_pflSoundDuration = 0;
-	params.m_pSoundName = "BallBuster.OrnamentImpact";
+	if (bIsLongRangeHit)
+	{
+		params.m_pSoundName = "BallBuster.OrnamentImpactRange";
+	} else params.m_pSoundName = "BallBuster.OrnamentImpact";
+
 	CPASFilter filter( vecOrigin );
 	filter.RemoveRecipient( pOwner );
 	EmitSound( filter, entindex(), params );

@@ -21,6 +21,7 @@
 #include "tf_objective_resource.h"
 #include "rtime.h"
 #include "tf_logic_player_destruction.h"
+#include "func_capture_zone.h"
 
 //Tossable bread
 #include "tf_weapon_throwable.h"
@@ -58,6 +59,7 @@ IMPLEMENT_SERVERCLASS_ST( CObjectTeleporter, DT_ObjectTeleporter )
 	SendPropInt( SENDINFO(m_iTimesUsed), 10, SPROP_UNSIGNED ),
 	SendPropFloat( SENDINFO(m_flYawToExit), 8, 0, 0.0, 360.0f ),
 	SendPropBool( SENDINFO(m_bMatchBuilding) ),
+	SendPropBool( SENDINFO(m_bIsMVMTeleporter) ),
 END_SEND_TABLE()
 
 BEGIN_DATADESC( CObjectTeleporter )
@@ -86,8 +88,9 @@ PRECACHE_REGISTER( obj_teleporter );
 
 ConVar tf_teleporter_fov_start( "tf_teleporter_fov_start", "120", FCVAR_CHEAT | FCVAR_DEVELOPMENTONLY, "Starting FOV for teleporter zoom.", true, 1, false, 0 );
 ConVar tf_teleporter_fov_time( "tf_teleporter_fov_time", "0.5", FCVAR_CHEAT | FCVAR_DEVELOPMENTONLY, "How quickly to restore FOV after teleport.", true, 0.0, false, 0 );
-ConVar tf_teleporter_always_bread( "tf_teleporter_always_bread", "0", FCVAR_CHEAT, "Force to spawn Bread everytime someone teleports" );
-ConVar tf_teleporter_spawns_tossable_bread( "tf_teleporter_spawns_tossable_bread", "1", FCVAR_CHEAT, "Enable Bread Tossing item drops when teleported" );
+ConVar cf_teleporter_always_bread( "cf_teleporter_always_bread", "0", FCVAR_REPLICATED, "Force to spawn Bread everytime someone teleports" );
+ConVar cf_teleporter_spawns_tossable_bread( "cf_teleporter_spawns_tossable_bread", "1", FCVAR_REPLICATED, "Enable Bread Tossing item drops when teleported" );
+extern ConVar tf_bot_engineer_mvm_building_health_multiplier;
 
 LINK_ENTITY_TO_CLASS( obj_teleporter, CObjectTeleporter );
 
@@ -227,6 +230,7 @@ CObjectTeleporter::CObjectTeleporter()
 	SetType( OBJ_TELEPORTER );
 
 	m_bMatchBuilding.Set( false );
+	m_bIsMVMTeleporter.Set( false );
 
 	m_iTeleportType = TTYPE_NONE;
 
@@ -411,6 +415,15 @@ bool CObjectTeleporter::IsPlacementPosValid( void )
 
 	// m_vecBuildOrigin is the proposed build origin
 
+	if( TFGameRules() && TFGameRules()->IsMannVsMachineMode() && GetTeamNumber() == TF_TEAM_PVE_INVADERS && cf_gamemode_mvmvs.GetBool())
+	{
+		if ( PointInFlagDetectionZone( m_vecBuildOrigin, this ) )
+			return false;
+
+		if ( PointInFlagDetectionZone( m_vecBuildCenterOfMass, this ) )
+			return false;
+	}
+
 	// start above the teleporter position
 	Vector vecTestPos = m_vecBuildOrigin;
 	vecTestPos.z += TELEPORTER_MAXS.z;
@@ -441,6 +454,27 @@ void CObjectTeleporter::OnGoActive( void )
 
 	SetPlaybackRate( 0.0f );
 	m_flLastStateChangeTime = 0.0f;	// used as a flag to initialize the playback rate to 0 in the first DeterminePlaybackRate
+
+	// Handle bot spawn teleporters in versus
+	if ( GetBuilder() && GetBuilder()->GetTeamNumber() == TF_TEAM_PVE_INVADERS && !GetBuilder()->IsBot() && !IsEntrance() && TFGameRules() && TFGameRules()->IsMannVsMachineMode() && cf_gamemode_mvmvs.GetBool() )
+	{
+		CUtlStringList spawnPoints;
+		for ( int i=0; i<ITFTeamSpawnAutoList::AutoList().Count(); ++i )
+		{
+			CTFTeamSpawn *pTFSpawn = static_cast< CTFTeamSpawn* >( ITFTeamSpawnAutoList::AutoList()[i] );
+			if (pTFSpawn->GetTeamNumber() == TF_TEAM_PVE_INVADERS)
+			{
+				char szName[MAX_PATH];
+				V_strcpy_safe( szName, pTFSpawn->GetEntityNameAsCStr() );
+				spawnPoints.CopyAndAddToTail( szName );
+			}
+		}
+		SetTeleportWhere( spawnPoints );
+		
+		GetBuilder()->EmitSound( "Engineer.MVM_AutoBuildingTeleporter02" );
+		EmitSound("MVM.Robot_Teleporter_Activate");
+		m_bIsMVMTeleporter.Set( true );
+	}
 
 	// match our partner's maxhealth
 	if ( IsMatchingTeleporterReady() )
@@ -1033,7 +1067,7 @@ void CObjectTeleporter::RecieveTeleportingPlayer( CTFPlayer* pTeleportingPlayer 
 
 			// 1/20 of te time teleport bread -- except for Soldier who does it 1/3 of the time.
 			int nMax = pTeleportingPlayer->GetPlayerClass()->GetClassIndex() == TF_CLASS_SOLDIER  ? 2 : 19;
-			if ( RandomInt( 0, nMax ) == 0 || tf_teleporter_always_bread.GetBool() )
+			if ( RandomInt( 0, nMax ) == 0 || cf_teleporter_always_bread.GetBool() )
 			{
 				SpawnBread( pTeleportingPlayer );
 			}
@@ -1173,6 +1207,12 @@ void CObjectTeleporter::TeleporterThink( void )
 			SetState( TELEPORTER_STATE_RECHARGING );
 
 			m_flCurrentRechargeDuration = (float)g_iTeleporterRechargeTimes[GetUpgradeLevel()];
+			if ( !m_bWasMapPlaced )
+			{
+				CALL_ATTRIB_HOOK_FLOAT_ON_OTHER( GetBuilder(), m_flCurrentRechargeDuration, mult_teleporter_recharge_rate );
+			}
+
+			m_flRechargeTime = gpGlobals->curtime + m_flCurrentRechargeDuration;
 			m_flMyNextThink = gpGlobals->curtime + m_flCurrentRechargeDuration;
 		}
 		break;
@@ -1402,6 +1442,13 @@ void CObjectTeleporter::FinishUpgrading( void )
 		}
 	}
 
+	if (m_bIsMVMTeleporter)
+	{
+		int iHealth = GetMaxHealthForCurrentLevel() * tf_bot_engineer_mvm_building_health_multiplier.GetFloat();
+		SetMaxHealth( iHealth );
+		SetHealth( iHealth );
+	}
+
 	BaseClass::FinishUpgrading();
 }
 
@@ -1420,9 +1467,14 @@ void CObjectTeleporter::MakeCarriedObject( CTFPlayer *pCarrier )
 {
 	ShowDirectionArrow( false );
 
+	// Clear teleporter spawn points when picked up in MvM Versus to prevent robots from spawning at old location
+	if ( GetBuilder() && GetBuilder()->GetTeamNumber() == TF_TEAM_PVE_INVADERS && !GetBuilder()->IsBot() && !IsEntrance() && TFGameRules() && TFGameRules()->IsMannVsMachineMode() && cf_gamemode_mvmvs.GetBool() )
+	{
+		m_teleportWhereName.RemoveAll();
+	}
+
 	BaseClass::MakeCarriedObject( pCarrier );
 }
-
 
 //-----------------------------------------------------------------------------
 // Purpose:
@@ -1473,7 +1525,7 @@ void CObjectTeleporter::SpawnBread( const CTFPlayer* pTeleportingPlayer )
 		studiohdr_t *pStudioHdr = mdlcache->GetStudioHdr( h );
 		if ( pStudioHdr && mdlcache->GetVCollide( h ) )
 		{	
-			if ( !tf_teleporter_spawns_tossable_bread.GetBool() )
+			if ( !cf_teleporter_spawns_tossable_bread.GetBool() )
 			{ 
 				// Try to create entity
 				pProp = dynamic_cast< CPhysicsProp * >( CreateEntityByName( "prop_physics_override" ) );
@@ -1522,26 +1574,36 @@ void CObjectTeleporter::SpawnBread( const CTFPlayer* pTeleportingPlayer )
 				Vector vecSpawn = GetAbsOrigin();
 				vecSpawn.z += TELEPORTER_MAXS.z + 50;
 				QAngle qSpawnAngles = GetAbsAngles();
+
+				int nClassBread = RandomInt( TF_FIRST_NORMAL_CLASS, TF_LAST_NORMAL_CLASS - 1 );
+				const char *name = g_aRawPlayerClassNamesShort[nClassBread];
+
 				//Spawn Bread Dummy
 				CItemSelectionCriteria criteria;
 				criteria.SetItemLevel( AE_USE_SCRIPT_VALUE );
 				criteria.SetQuality( AE_USE_SCRIPT_VALUE );
-				criteria.BAddCondition( "name", k_EOperator_String_EQ, "Throwable Bread", true );
+				criteria.BAddCondition( "name", k_EOperator_String_EQ, CFmtStr( "Bread %s",name), true );
 				CBaseEntity *pDummyWeapon = ItemGeneration()->GenerateRandomItem( &criteria, WorldSpaceCenter(), vec3_angle );
+				Assert( pDummyWeapon );
+
 				CBaseCombatWeapon *pWeapon = static_cast< CBaseCombatWeapon * >( pDummyWeapon );
-
-				pWeapon->AddAttribute( "item style override" , RandomInt( 0, TF_LAST_NORMAL_CLASS - TF_FIRST_NORMAL_CLASS - 1 ), -1);
-
-				CEconItemView *pItem = pWeapon->GetAttributeContainer()->GetItem();
-				CTFDroppedWeapon *pDroppedWeapon = CTFDroppedWeapon::Create( NULL, vecSpawn, qSpawnAngles, pWeapon->GetWorldModel(), pItem);
-				if ( pDroppedWeapon )
+				if (pWeapon)
 				{
-					pDroppedWeapon->InitDroppedWeapon( NULL, static_cast< CTFThrowable* >( pDummyWeapon ) ,  false, false );
-					AngularImpulse angImpulse( RandomFloat( -100, 100 ), RandomFloat( -100, 100 ), RandomFloat( -100, 100 ) );
-					Vector vForward;
-					AngleVectors( qSpawnAngles, &vForward );
-					Vector vecVel = ( vForward * 100 ) + Vector( 0, 0, 200 ) + RandomVector( -50, 50 );
-					pDroppedWeapon->VPhysicsGetObject()->SetVelocityInstantaneous( &vecVel, &angImpulse );
+					CEconItemView *pItem = pWeapon->GetAttributeContainer()->GetItem();
+					CTFDroppedWeapon *pDroppedWeapon = CTFDroppedWeapon::Create( NULL, vecSpawn, qSpawnAngles, pWeapon->GetWorldModel(), pItem);
+					if ( pDroppedWeapon )
+					{
+						pDroppedWeapon->InitDroppedWeapon( NULL, static_cast< CTFThrowable* >( pDummyWeapon ) ,  false, false );
+						AngularImpulse angImpulse( RandomFloat( -100, 100 ), RandomFloat( -100, 100 ), RandomFloat( -100, 100 ) );
+						Vector vForward;
+						AngleVectors( qSpawnAngles, &vForward );
+						Vector vecVel = ( vForward * 100 ) + Vector( 0, 0, 200 ) + RandomVector( -50, 50 );
+						pDroppedWeapon->VPhysicsGetObject()->SetVelocityInstantaneous( &vecVel, &angImpulse );
+					}
+				}
+				else
+				{
+					Msg( "FIXME: Caught a crash caused by %s's bread", name);
 				}
 			}
 		}

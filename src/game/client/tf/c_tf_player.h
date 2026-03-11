@@ -124,6 +124,7 @@ public:
 	virtual void Simulate( void );
 	virtual void FireEvent( const Vector& origin, const QAngle& angles, int event, const char *options ) OVERRIDE;
 	virtual void UpdateStepSound( surfacedata_t *psurface, const Vector &vecOrigin, const Vector &vecVelocity ) OVERRIDE;
+	virtual void PlayStepSound( Vector &vecOrigin, surfacedata_t *psurface, float fvol, bool force );
 
 	CNewParticleEffect *SpawnHalloweenSpellFootsteps( ParticleAttachment_t eParticleAttachment, int iHalloweenFootstepType );
 
@@ -229,6 +230,11 @@ public:
 
 	void CreateSaveMeEffect( MedicCallerType nType = CALLER_TYPE_NORMAL );
 	void StopSaveMeEffect( bool bForceRemoveInstantly = false );
+
+	void CreateCritHealIndicator();
+	void StopCritHealIndicator();
+	float GetLastDamageTime() const { return m_flLastDamageTime; }
+	bool ShouldShowCritHealIndicator() const { return m_bShowCritHealIndicator; }
 
 	void CreateTauntWithMeEffect();
 	void StopTauntWithMeEffect();
@@ -597,6 +603,7 @@ private:
 
 	// Medic callout particle effect
 	CNewParticleEffect	*m_pSaveMeEffect;
+	CNewParticleEffect	*m_pCritHealIndicator;
 	CNewParticleEffect	*m_pTauntWithMeEffect;
 
 	bool m_bUpdateObjectHudState;
@@ -663,8 +670,15 @@ public:
 	RuneTypes_t		m_eDisplayingRuneIcon;
 
 	float			m_flMvMLastDamageTime;
+	float			m_flLastDamageTime;		// Client-side damage tracking for crit heal indicator
+	int				m_iLastHealth;			// Track health changes to detect damage
+	bool			m_bShowCritHealIndicator;	// Flag to show crit heal indicator
 	int				m_iSpawnCounter;
 	bool			m_bArenaSpectator;
+
+	int				m_iTracerCount;			// Per-player tracer count for consistent tracer frequency
+
+	bool			m_bFlipViewModels;
 
 	bool			m_bIsMiniBoss;
 	bool			m_bIsABot;
@@ -674,9 +688,10 @@ public:
 	bool			m_bOldSaveMeParity;
 	bool			m_bIsCoaching;
 
-private:
 	void			UpdateTauntItem();
 	void			ParseSharedTauntDataFromEconItemView( const CEconItemView *pEconItemView );
+
+private:
 
 	QAngle			m_angEyeAngles;
 
@@ -943,6 +958,8 @@ public:
 	Vector GetOverheadEffectPosition();
 
 	int GetSkinOverride() const { return m_iPlayerSkinOverride; }
+	bool IsZombieCostumeEquipped( void ) const { return m_iPlayerSkinOverride == 1; }
+	bool HasZombieCosmetics( bool bWeaponsCheck = false );  // Check zombie costume without Halloween vision requirement
 	bool IsRobot() const { return m_bIsRobot; }
 
 	virtual void ClientAdjustStartSoundParams( EmitSound_t &params ) override;

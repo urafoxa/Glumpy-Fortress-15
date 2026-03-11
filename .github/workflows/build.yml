@@ -1,0 +1,103 @@
+name: Build Custom Fortress 2
+
+on:
+  push:
+    branches: [ main, master, develop ]
+  pull_request:
+    branches: [ main, master, develop ]
+  workflow_dispatch:
+
+jobs:
+  build-windows:
+    name: Build Windows x64
+    runs-on: windows-latest
+    
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
+    
+    - name: Setup MSBuild
+      uses: microsoft/setup-msbuild@v2
+    
+    - name: Generate Visual Studio solution
+      shell: cmd
+      working-directory: src
+      run: |
+        devtools\bin\vpc.exe /tf /define:SOURCESDK /define:DISCORD_RPC /define:TF_RAID_MODE /define:SDK_TEMP_PATCH +game /mksln customfortress2.sln
+    
+    - name: Build solution (Release)
+      working-directory: src
+      run: |
+        msbuild customfortress2.sln /p:Configuration=Release /p:Platform=win64 /m /v:minimal
+    
+    - name: Upload Windows binaries
+      uses: actions/upload-artifact@v4
+      with:
+        name: customfortress2-windows-x64
+        path: |
+          game/customfortress/bin/
+          game/bin/x64/
+        retention-days: 30
+
+  build-linux:
+    name: Build Linux x64
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
+    
+    - name: Setup Podman
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y podman
+    
+    - name: Generate VPC projects and build (Release)
+      working-directory: src
+      run: |
+        chmod +x buildcf2projects sdk_container
+        ./buildcf2projects release
+    
+    - name: Upload Linux binaries
+      uses: actions/upload-artifact@v4
+      with:
+        name: customfortress2-linux-x64
+        path: |
+          game/customfortress/bin/
+          game/bin/linux64/
+        retention-days: 30
+
+  package-release:
+    name: Package Release
+    needs: [build-windows, build-linux]
+    runs-on: ubuntu-latest
+    if: github.event_name == 'push' && (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master')
+    
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
+    
+    - name: Download Windows artifacts
+      uses: actions/download-artifact@v4
+      with:
+        name: customfortress2-windows-x64
+        path: release/windows/
+    
+    - name: Download Linux artifacts
+      uses: actions/download-artifact@v4
+      with:
+        name: customfortress2-linux-x64
+        path: release/linux/
+    
+    - name: Create release archive
+      run: |
+        cd release
+        tar -czf customfortress2-windows-x64.tar.gz windows/
+        tar -czf customfortress2-linux-x64.tar.gz linux/
+    
+    - name: Upload combined release
+      uses: actions/upload-artifact@v4
+      with:
+        name: customfortress2-release-${{ github.sha }}
+        path: release/*.tar.gz
+        retention-days: 90

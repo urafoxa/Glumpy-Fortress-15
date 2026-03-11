@@ -10,6 +10,7 @@
 #include "KeyValues.h"
 #include "multiplay_gamerules.h"
 #if defined ( TF_CLIENT_DLL )
+#include "tf_gamerules.h"
 #include "tf_gc_client.h"
 #include "hud_basechat.h"
 #include "hud_chat.h"
@@ -19,6 +20,10 @@ static int g_ActiveVoiceMenu = 0;
 
 #if defined( TF_CLIENT_DLL )
 extern ConVar tf_voice_command_suspension_mode;
+ConVar cf_use_radial_voice_menu( "cf_use_radial_voice_menu", "0", FCVAR_ARCHIVE, "Use radial menu for voice commands instead of the traditional numbered menu" );
+
+// Forward declaration
+void OpenRadialMenu( const char *menuName );
 #endif
 
 void OpenVoiceMenu( int index )
@@ -44,7 +49,31 @@ void OpenVoiceMenu( int index )
 		
 		return;
 	}
-#endif // TF_CLIENT_DLL 
+
+	// Use radial menu if enabled
+	if ( cf_use_radial_voice_menu.GetBool() && index > 0 && index < 4 )
+	{
+		const char *menuName = NULL;
+		switch ( index )
+		{
+		case 1:
+			menuName = "Default"; // Voice menu 1 is "Default" in radialmenu.txt
+			break;
+		case 2:
+			menuName = "voice2";
+			break;
+		case 3:
+			menuName = "voice3";
+			break;
+		}
+		
+		if ( menuName )
+		{
+			OpenRadialMenu( menuName );
+			return;
+		}
+	}
+#endif // TF_CLIENT_DLL
 
 	CHudMenu *pMenu = (CHudMenu *) gHUD.FindElement( "CHudMenu" );
 	if ( !pMenu )
@@ -74,6 +103,15 @@ void OpenVoiceMenu( int index )
 				return;
 			}
 		}
+
+		//horiuchii
+#ifdef TF_CLIENT_DLL
+			if ( !dynamic_cast< CTFGameRules * >( pRules )->IsPasstimeMode() )
+			{
+				pKV->RemoveSubKey( pKV->FindKey( "#Voice_Menu_AskForBall" ) );
+			}
+			//TODO: Think of more dynamic voice commands
+#endif // TF_CLIENT_DLL 
 
 		pMenu->ShowMenu_KeyValueItems( pKV );
 

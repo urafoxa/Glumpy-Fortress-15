@@ -1,4 +1,8 @@
 //CREDITS TO BETAM!! PLAY HIS MOD RIGHT NOW!
+//
+// To the Viewer, please, if i forgot you and i added something from you, report it to me on Discord!
+// I Wanna credit everyone as possible, i don't wanna be a bad person :(
+//
 VERSION 1.0
 DESCRIPTION INFO_OPTIONS
 {
@@ -64,7 +68,7 @@ DESCRIPTION INFO_OPTIONS
 	}	
 	"credit3_2"
 	{
-		"CTrigger_Hurt - MVM Versus Viewmodels"
+		"CTrigger_Hurt - MVM Robots (Viewmodels,Anim & Texture fixes)"
 		"https://steamcommunity.com/profiles/76561198036209556"
 		{ BOOL }
 		{ "1" }
@@ -97,12 +101,12 @@ DESCRIPTION INFO_OPTIONS
 	}
 	"category6"
 	{
-		"WORKSHOP COMMUNITY ITEMS"
+		"WORKSHOP COMMUNITY ITEMS USED"
 		{ CATEGORY }
 	}	
 	"credit6_1"
 	{
-		"Soviet Unit - Heavy Facewear"
+		"Evan - Soviet Unit"
 		{ BOOL }
 		{ "1" }
 	}

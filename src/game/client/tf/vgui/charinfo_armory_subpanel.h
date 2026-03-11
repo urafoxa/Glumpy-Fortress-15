@@ -40,6 +40,7 @@ enum armory_filters_t
 	ARMFILT_CLASS_SPY,
 	ARMFILT_CLASS_ENGINEER,
 	ARMFILT_DONATIONITEMS,
+	ARMFILT_MODITEMS,
 
 	ARMFILT_NUM_IN_DROPDOWN,
 
@@ -112,8 +113,6 @@ private:
 	armory_filters_t				m_CurrentFilter;
 	armory_filters_t				m_OldFilter;
 	int								m_iFilterPage;
-	CExButton						*m_pNextPageButton;
-	CExButton						*m_pPrevPageButton;
 	CUtlVector<item_definition_index_t>	m_FilteredItemList;
 	CUtlVector<item_definition_index_t>	m_CustomFilteredList;
 

@@ -489,11 +489,11 @@ void CTFMapInfoMenu::LoadMapPage()
 
 			if( !g_pVGuiLocalize->Find( mapInfoKey ) )
 			{
-				if ( StringHasPrefix( m_szMapName, "vsh_" ) )
+				if ( MapHasPrefix( m_szMapName, "vsh_" ) )
 				{
 					pszDescription = "#default_vsh_description";
 				}
-				else if ( StringHasPrefix( m_szMapName, "zi_" ) )
+				else if ( MapHasPrefix( m_szMapName, "zi_" ) )
 				{
 					pszDescription = "#default_zi_description";
 				}
@@ -535,6 +535,9 @@ void CTFMapInfoMenu::LoadMapPage()
 							break;
 						case TF_GAMETYPE_RD:
 							pszDescription = "#default_rd_description";
+							break;
+						case TF_GAMETYPE_RAID:
+							pszDescription = "#default_raid_description";
 							break;
 						case TF_GAMETYPE_PASSTIME:
 							pszDescription = "#default_passtime_description";

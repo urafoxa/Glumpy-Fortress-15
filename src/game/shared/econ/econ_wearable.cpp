@@ -18,6 +18,8 @@
 #include "tf_shareddefs.h"
 #include "tf_weapon_jar.h"
 #include "c_tf_player.h"
+#include "tf_item_constants.h"
+#include "tf_item_wearable.h"
 #endif // TF_CLIENT_DLL
 
 #ifdef TF_DLL
@@ -320,6 +322,44 @@ void CEconWearable::UpdateWearableBodyGroups( CBasePlayer* pPlayer )
 			// Items that shouldn't draw (pyro-vision filtered) shouldn't change any body group states
 			// unless they have no model (hatless hats)
 			nVisibleState = 0;
+		}
+		
+		// Check if cosmetics are disabled and this is a cosmetic item
+		extern ConVar cf_disable_cosmetics;
+		if ( cf_disable_cosmetics.GetBool() )
+		{
+			// Check if this is a cosmetic item by checking if it would be hidden by the cosmetics disable
+			CTFWearable *pTFWearable = dynamic_cast<CTFWearable*>( pItem );
+			if ( pTFWearable )
+			{
+				// Skip bodygroup updates for disguise wearables when cosmetics are disabled
+				// This ensures the disguised player shows their default appearance (e.g., Soldier's helmet)
+				if ( pTFWearable->IsDisguiseWearable() )
+				{
+					continue;
+				}
+
+				if ( !pTFWearable->GetWeaponAssociatedWith() )
+				{
+					const CEconItemView *pEconItem = pItem->GetAttributeContainer()->GetItem();
+					if ( pEconItem && pEconItem->IsValid() )
+					{
+						const CTFItemDefinition *pItemDef = pEconItem->GetStaticData();
+						if ( pItemDef )
+						{
+							// Get the loadout slot to determine if this is a cosmetic
+							int iLoadoutSlot = pItemDef->GetLoadoutSlot( ToTFPlayer(pPlayer) ? ToTFPlayer(pPlayer)->GetPlayerClass()->GetClassIndex() : TF_CLASS_SCOUT );
+							
+							// Hide cosmetic slots (hat, misc slots) - don't modify bodygroups
+							if ( IsMiscSlot( iLoadoutSlot ) || iLoadoutSlot == LOADOUT_POSITION_HEAD )
+							{
+								// Skip bodygroup updates for cosmetic items when cosmetics are disabled
+								continue;
+							}
+						}
+					}
+				}
+			}
 		}
 #endif
 

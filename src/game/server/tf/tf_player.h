@@ -26,6 +26,7 @@ class CTFGoalItem;
 class CTFItem;
 class CTFWeaponBuilder;
 //class CBaseObject;
+class CObjectSentrygun;
 class CTFWeaponBase;
 class CIntroViewpoint;
 class CTriggerAreaCapture;
@@ -35,6 +36,7 @@ class CTFReviveMarker;
 class CWaveSpawnPopulator;
 class CTFTauntProp;
 class CTFDroppedWeapon;
+class CTFBotSpawner;
 
 extern const float tf_afterburn_max_duration;
 
@@ -175,6 +177,8 @@ public:
 	virtual void		PlayerRunCommand( CUserCmd *ucmd, IMoveHelper *moveHelper );
 
 	virtual void		CommitSuicide( bool bExplode = false, bool bForce = false );
+	virtual void		CommitSuicideWithCustomRagdoll( int m_iCustomRagdoll = 0 );
+
 
 	// Combats
 	virtual void		TraceAttack( const CTakeDamageInfo &info, const Vector &vecDir, trace_t *ptr, CDmgAccumulator *pAccumulator );
@@ -569,7 +573,7 @@ public:
 
 	void PlayerUse( void );
 
-	void IgnitePlayer();
+
 	void SetCustomModel( const char *pszModel );
 	void SetCustomModelWithClassAnimations( const char *pszModel );
 	void SetCustomModelOffset( const Vector &offset );
@@ -624,7 +628,8 @@ public:
 	bool IsYetiHeavy(void) const;
 	bool IsFairyHeavy( void ) const;
 	bool IsZombieCostumeEquipped( void ) const;
-	bool IsMVMRobot ( void ) const;
+	bool IsMVMRobot ( void ) const; //Robot Costume
+	bool IsPVERobot ( void ) const; //Robot from Gamemode
 	bool HasWearablesEquipped( const CSchemaItemDefHandle *ppItemDefs, int nWearables ) const;
 
 	//BetaM - Fixes custom taunts/action items to be "valid" for loadouts
@@ -648,8 +653,14 @@ public:
 	//MVM Versus - Ported bot exclusive stuff
 	void MVM_StartIdleSound(void);
 	void MVM_SetMinibossType(void);
+	void FillMissingWeaponsWithStock(void); // Applies bot template configuration based on class
+	void ParseRobotKeyvalues( KeyValues *kvClass );
+	void ParseRobotCharacterAttributes( KeyValues *data );
+	void ParseRobotItemAttributes( KeyValues *data );
+	bool ParseRobotAttributes( KeyValues *data );
 	void MVM_TurnIntoRobot(void);
 	void MVM_StopIdleSound(void);
+	void ModifyMaxHealth( int nNewMaxHealth );
 	CSoundPatch* m_pGiantIdleSound;
 
 	void ClearTags(void);
@@ -668,6 +679,7 @@ public:
 	void ApplyGenericPushbackImpulse( const Vector &vecImpulse, CTFPlayer *pAttacker );
 
 	void SetUseBossHealthBar( bool bUseBossHealthBar ) { m_bUseBossHealthBar = bUseBossHealthBar; }
+	bool GetUseBossHealthBar( void ) const { return m_bUseBossHealthBar; }
 
 	void SetUsingVRHeadset( bool bState ){ m_bUsingVRHeadset = bState; }
 
@@ -904,6 +916,7 @@ public:
 	bool ScriptIsBotOfType(int nType) const { return this->IsBotOfType(nType); }
 
 	void ScriptStunPlayer( float flTime, float flReductionAmount, int iStunFlags = TF_STUN_MOVEMENT, HSCRIPT hAttacker = NULL );
+	void ScriptIgnitePlayer( float flBurningTime, HSCRIPT hAttacker = NULL, HSCRIPT hWeapon = NULL ); //Flaminsarge
 	bool ScriptPlayGesture( const char* pGestureName );
 	bool ScriptPlaySpecificSequence( const char* pAnimationName );
 
@@ -996,6 +1009,8 @@ public:
 	CTFWeaponBase		*Weapon_OwnsThisID( int iWeaponID ) const;
 	CTFWeaponBase		*Weapon_GetWeaponByType( int iType );
 
+	virtual void		PlayStepSound( Vector &vecOrigin, surfacedata_t *psurface, float fvol, bool force );
+
 	medigun_charge_types	GetChargeEffectBeingProvided( void );
 
 	// Achievements
@@ -1025,7 +1040,7 @@ public:
 
 	int					m_iOldStunFlags;
 
-	bool				m_bFlipViewModels;
+	CNetworkVar( bool, m_bFlipViewModels );
 	int					m_iBlastJumpState;
 	float				m_flBlastJumpLandTime;
 	bool				m_bTakenBlastDamageSinceLastMovement;
@@ -1149,6 +1164,7 @@ protected:
 	void				GiveDefaultItems();
 	bool				SelectSpawnSpotByType( const char *pEntClassName, CBaseEntity* &pSpot );	// "info_player_teamspawn"
 	bool				SelectSpawnSpotByName( const char *pEntName, CBaseEntity* &pSpot );			// named info_player_teamspawn, i.e. "my_blue_offense_respawns"
+	CBaseEntity*		FindTeleporterSpawnOverride( void );											// Find teleporter exit to use as spawn point
 	void				RemoveNemesisRelationships();
 	void				RemoveAllItems();
 
@@ -1176,6 +1192,7 @@ private:
 	float				m_flNextRuneAmmoRegenAt;
 	float				m_flLastRuneHealthRegenAt;
 	float				m_flAccumulatedAmmoRegens[TF_AMMO_SECONDARY+1];	// Only support regenerating primary & secondary right now
+	float				m_flNextSentryBusterDetonateTime; // Time when Sentry Buster should detonate during taunt
 
 	// Bots.
 	friend void			Bot_Think( CTFPlayer *pBot );
@@ -1210,6 +1227,12 @@ private:
 	bool				GetResponseSceneFromConcept( int iConcept, char *chSceneBuffer, int numSceneBufferBytes );
 
 public:
+	// Human Sentry Buster functions
+	void				BecomeHumanSentryBuster( CObjectSentrygun *pTargetSentry );
+	void				ForceRespawnAsSentryBuster( CObjectSentrygun *pTargetSentry );
+	void				SentryBusterDetonate();
+	void				SentryBusterStompCheck();
+
 	const QAngle& GetNetworkEyeAngles() const { return m_angEyeAngles; }
 
 	// Achievement data storage
@@ -1570,6 +1593,13 @@ public:
 	float GetLastAutobalanceTime() { return m_flLastAutobalanceTime; }
 	bool IsMaxHealthDraining( void ) { return m_nMaxHealthDrainBucket != 0.0; }
 
+	// MvM Versus - Weapon slot restrictions
+	void SetWeaponSlotRestrictions( int restrictionFlags ) { m_iWeaponSlotRestrictions = restrictionFlags; }
+	void ClearWeaponSlotRestrictions( void ) { m_iWeaponSlotRestrictions = 0; }
+	bool IsWeaponSlotRestricted( int slot ) const;
+	void RemoveRestrictedWeapons( void );
+	void ApplyWeaponSlotRestrictionsFromTemplate( CTFBotSpawner *pSpawner );
+
 private:
 	bool PickupWeaponFromOther( CTFDroppedWeapon *pDroppedWeapon );
 	bool TryToPickupDroppedWeapon();
@@ -1605,6 +1635,9 @@ private:
 
 	CNetworkVar( int, m_iPlayerSkinOverride );
 	CNetworkVar( bool, m_bIsRobot );
+
+	// MvM Versus - Weapon slot restriction flags
+	int m_iWeaponSlotRestrictions;
 
 	CUtlMap<int, float> m_PlayersExtinguished;	// userID and most recent time they were extinguished for bonus points
 

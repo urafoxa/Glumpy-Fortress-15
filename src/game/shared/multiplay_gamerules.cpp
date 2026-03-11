@@ -92,6 +92,7 @@ ConVar mp_timelimit( "mp_timelimit", "0", FCVAR_NOTIFY|FCVAR_REPLICATED, "game t
 ConVar fraglimit( "mp_fraglimit","0", FCVAR_NOTIFY|FCVAR_REPLICATED, "The number of kills at which the map ends");
 
 ConVar mp_show_voice_icons( "mp_show_voice_icons", "1", FCVAR_REPLICATED, "Show overhead player voice icons when players are speaking.\n" );
+ConVar is_dedicated( "is_dedicated", "0", FCVAR_DEVELOPMENTONLY|FCVAR_REPLICATED, "Relays if the server is a dedicated server");
 
 #ifdef GAME_DLL
 
@@ -133,9 +134,9 @@ ConVar mp_waitingforplayers_time( "mp_waitingforplayers_time", "0", FCVAR_GAMEDL
 #endif
 
 #ifdef TF_DLL
-ConVar tf_voicespam("tf_voicespam", "0", FCVAR_NOTIFY, "Allow voice commands to be spammed. 1 = spam with subtitiles, 2 = spam without subtitles");
+ConVar cf_voicespam("cf_voicespam", "0", FCVAR_NOTIFY, "Allow voice commands to be spammed. 1 = spam with subtitiles, 2 = spam without subtitles");
 #endif
-
+ConVar mp_waitingforplayers_system( "mp_waitingforplayers_system", "0", FCVAR_GAMEDLL, "Set to 1 to enable the WaitingForPlayers system." ); 
 ConVar mp_waitingforplayers_restart( "mp_waitingforplayers_restart", "0", FCVAR_GAMEDLL, "Set to 1 to start or restart the WaitingForPlayers period." );
 ConVar mp_waitingforplayers_cancel( "mp_waitingforplayers_cancel", "0", FCVAR_GAMEDLL, "Set to 1 to end the WaitingForPlayers period." );
 ConVar mp_clan_readyrestart( "mp_clan_readyrestart", "0", FCVAR_GAMEDLL, "If non-zero, game will restart once someone from each team gives the ready signal" );
@@ -329,6 +330,7 @@ bool CMultiplayRules::Init()
 
 	// Initialize the custom response rule dictionaries.
 	InitCustomResponseRulesDicts();
+	is_dedicated.SetValue( engine->IsDedicatedServer() );
 
 #endif
 
@@ -1782,7 +1784,7 @@ ConVarRef suitcharger( "sk_suitcharger" );
 
 					// Send a subtitle to anyone in the PAS
 					#ifdef TF_DLL
-					if (tf_voicespam.GetInt() != 2)
+					if (cf_voicespam.GetInt() != 2)
 					{
 						UserMessageBegin(filter, "VoiceSubtitle");
 						WRITE_BYTE(pPlayer->entindex());

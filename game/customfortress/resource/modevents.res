@@ -1111,6 +1111,24 @@
 		"silent_kill"	"bool"
 		"assister_fallback"	"string"	// contains a string to use if "assister" is -1
 	}
+
+	"marlin_notice"
+	{
+		"userid"	"short"   	// user ID who died				
+		"victim_entindex"	"long"
+		"inflictor_entindex"	"long"	// ent index of inflictor (a sentry, for example)
+		"attacker"	"short"	 	// user ID who killed
+		"weapon"	"string" 	// weapon name killer used 
+		"weaponid"	"short"		// ID of weapon killed used
+		"damagebits"	"long"		// bits of type of damage
+		"customkill"	"short"		// type of custom kill
+		"assister"	"short"		// user ID of assister
+		"weapon_logclassname"	"string" 	// weapon name that should be printed on the log
+		"stun_flags"	"short"	// victim's stun flags at the moment of death
+		"death_flags"	"short" //death flags.
+		"silent_kill"	"bool"
+		"assister_fallback"	"string"	// contains a string to use if "assister" is -1
+	}
 	
 	// clone of "player_death" with added counts
 	"throwable_hit"
@@ -2006,6 +2024,26 @@
 		"attacker"	"short"
 		"victim"	"short"
 		"assister"	"short"
+	}
+	
+	"generic_killfeed_event"		// a game event, name may be 32 charaters long
+	{
+		"victim"				"short"   	// user ID who died, used to display involvement
+		"killer"				"short"	 	// user ID who killed, used to display involvement
+		"victim_team"			"short"   	// team of victim, used to display base team colors
+		"killer_team"			"short"	 	// team of killer, used to display base team colors
+		"victim_name"			"string" 	// name of the victim
+		"killer_name"			"string" 	// name of the killer
+		"msg"					"string"	// text to display after killer
+		"msg2"					"string"	// text to display after victim
+		"msg3"					"string"	// text to display after killer before msg
+		"msgcolor"				"string" 	// color of the text to display after killer in "R G B A"
+		"msgcolor2"				"string" 	// color of the text to display after victim in "R G B A"
+		"msgcolor3"				"string" 	// color of the text to display after killer before msg in "R G B A"
+		"msgcolor_victim"		"string" 	// color of the victim in "R G B A"
+		"msgcolor_killer"		"string" 	// color of the killer in "R G B A"
+		"killicon"				"string"	// name of the killicon
+		"killicon_background"	"string"	// name of the killicon's background, used for australium / crit
 	}
 }
 

@@ -235,6 +235,8 @@ ConVar mp_bonusroundtime( "mp_bonusroundtime", "15", FCVAR_REPLICATED, "Time aft
 ConVar mp_stalemate_meleeonly( "mp_stalemate_meleeonly", "0", FCVAR_REPLICATED | FCVAR_NOTIFY, "Restrict everyone to melee weapons only while in Sudden Death." );
 ConVar mp_forceautoteam( "mp_forceautoteam", "0", FCVAR_REPLICATED | FCVAR_NOTIFY, "Automatically assign players to teams when joining." );
 
+ConVar cf_instantrespawn("cf_instantrespawn", 0, FCVAR_NOTIFY | FCVAR_REPLICATED);
+
 #if defined( _DEBUG ) || defined( STAGING_ONLY )
 ConVar mp_developer( "mp_developer", "0", FCVAR_ARCHIVE | FCVAR_REPLICATED | FCVAR_NOTIFY, "1: basic conveniences (instant respawn and class change, etc).  2: add combat conveniences (infinite ammo, buddha, etc)" );
 #endif // _DEBUG || STAGING_ONLY
@@ -945,7 +947,7 @@ void CTeamplayRoundBasedRules::CheckWaitingForPlayers( void )
 		mp_waitingforplayers_restart.SetValue( 0 );
 	}
 
-	bool bCancelWait = ( mp_waitingforplayers_cancel.GetBool() || IsInItemTestingMode() ) && !IsInTournamentMode();
+	bool bCancelWait = ( mp_waitingforplayers_cancel.GetBool() || IsInItemTestingMode() || !mp_waitingforplayers_system.GetBool() ) && !IsInTournamentMode();
 
 #if defined( _DEBUG ) || defined( STAGING_ONLY )
 	if ( mp_developer.GetBool() )
@@ -3017,7 +3019,7 @@ bool CTeamplayRoundBasedRules::ShouldCreateEntity( const char *pszClassName )
 //-----------------------------------------------------------------------------
 bool CTeamplayRoundBasedRules::RoundCleanupShouldIgnore( CBaseEntity *pEnt )
 {
-	return FindInList( s_PreserveEnts, pEnt->GetClassname() );
+	return ( FindInList( s_PreserveEnts, pEnt->GetClassname() ) || pEnt->IsEFlagSet( EFL_KEEP_ON_RECREATE_ENTITIES ) );
 }
 
 //-----------------------------------------------------------------------------
@@ -3465,6 +3467,9 @@ float CTeamplayRoundBasedRules::GetRespawnWaveMaxLength( int iTeam, bool bScaleW
 		return 0;
 
 	if ( mp_disable_respawn_times.GetBool() == true )
+		return 0.0f;
+
+	if ( cf_instantrespawn.GetBool() == true )
 		return 0.0f;
 
 	//Let's just turn off respawn times while players are messing around waiting for the tournament to start

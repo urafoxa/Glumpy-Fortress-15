@@ -189,7 +189,7 @@ const char *GetRandomBotName( void )
 		"Aperture Science Prototype XR7",
 		"Humans Are Weak",
 		"AimBot",
-		"C++",
+		"C++ ain't Easy",
 		"GutsAndGlory!",
 		"Nobody",
 		"Saxton Hale",
@@ -234,6 +234,35 @@ const char *GetRandomBotName( void )
 		"Mega Baboon",
 		"Kill Me",
 		"Glorified Toaster with Legs",
+
+		//Custom Fortress
+		"BeamCouch",
+		"Lord Bone",
+		"Sir Grubber",
+		"Green Heavy Weapons Guy",
+		"Ultra Grenade",
+		"Gambling Chicken",
+		"Good Evening",
+		"Bad Bird Woman",
+		"Tiny Water Camel",
+		"Retep",
+		"Hop Kings",
+		"My Bullet",
+		"Hew Hew Haw Haw!",
+		"The Quickplayer",
+		"I AM BETTER!",
+		"The Real Menace",
+		"Devious Trader",
+		"M.T.T.E",
+		"The Mobster",
+		"El Comandante",
+		"The Deer",
+		"And The Hyena",
+		"F2P From 2012",
+		"pablo.gunzales2008",
+		"The Coffecraver",
+		"Purple Ego",
+
 
 		NULL
 	};
@@ -2167,7 +2196,7 @@ CCaptureZone *CTFBot::GetFlagCaptureZone( void ) const
 	for( int i=0; i<ICaptureZoneAutoList::AutoList().Count(); ++i )
 	{
 		CCaptureZone *zone = static_cast< CCaptureZone* >( ICaptureZoneAutoList::AutoList()[i] );
-		if ( zone->GetTeamNumber() == GetTeamNumber() )
+		if ( zone->GetTeamNumber() == GetTeamNumber() && !zone->IsDisabled() )
 		{
 			return zone;
 		}
@@ -4596,15 +4625,15 @@ Action< CTFBot > *CTFBot::OpportunisticallyUseWeaponAbilities( void )
 				}
 			}
 		}
-		else if ( weapon->GetWeaponID() == TF_WEAPON_BAT_WOOD )
+		else if ( ( weapon->GetWeaponID() == TF_WEAPON_BAT_WOOD ) || ( weapon->GetWeaponID() == TF_WEAPON_BAT_GIFTWRAP ) )
 		{
-			// sandman
+			// sandman or wrap assassin
 			if ( GetAmmoCount( TF_AMMO_GRENADES1 ) > 0 )
 			{
 				const CKnownEntity *threat = GetVisionInterface()->GetPrimaryKnownThreat();
 				if ( threat && threat->IsVisibleInFOVNow() )
 				{
-					// hit a stunball
+					// hit a stunball or bauble
 					PressAltFireButton();			
 				}
 			}
@@ -4898,7 +4927,6 @@ void CTFBot::AddItem( const char* pszItemName )
 	CItemSelectionCriteria criteria;
 	criteria.SetQuality( AE_USE_SCRIPT_VALUE );
 	criteria.BAddCondition( "name", k_EOperator_String_EQ, pszItemName, true );
-
 	CBaseEntity *pItem = ItemGeneration()->GenerateRandomItem( &criteria, WorldSpaceCenter(), vec3_angle );
 	if ( pItem )
 	{

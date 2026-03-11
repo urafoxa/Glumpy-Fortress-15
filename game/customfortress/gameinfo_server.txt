@@ -1,0 +1,69 @@
+"GameInfo"
+{
+	game					"Custom Fortress 2"
+	type 					multiplayer_only
+	nomodels				1
+	nohimodel 				1
+	nocrosshair				0
+	hidden_maps
+	{
+		"test_speakers"		1
+		"test_hardware"		1
+	}
+	nodegraph 				0
+	icon					"resource/icon"
+	GameData				"tf.fgd"
+	AdditionalLocalization	"tf"
+	InstancePath			"maps/instances/"
+	advcrosshair 			1
+	supportsvr				0
+
+	FileSystem
+	{
+		SteamAppId				244310
+		ToolsAppId				244310
+		
+		SearchPaths
+		{
+			// Custom content
+			game+mod+custom_mod    |gameinfo_path|custom/*
+
+			// Mount Workshop content (maps, models, materials, etc.)
+			game+mod				"|gameinfo_path|../../../workshop/content/3768450/*"
+
+			// Mod paths - THIS MOD'S CONTENT (must be first for overrides!)
+			game+mod			|gameinfo_path|.
+			mod+mod_write		|gameinfo_path|.
+			game+game_write		|gameinfo_path|.
+			vgui+vgui_write		|gameinfo_path|.
+			default_write_path	|gameinfo_path|.
+			
+			// Game binaries - mod first, then TF2
+			gamebin				|gameinfo_path|bin
+			gamebin				|gameinfo_path|../tf/bin
+
+			// TF2 Dedicated Server content
+			// Must reference the _dir.vpk files for VPK mounting
+			game+mod+vgui		|gameinfo_path|../tf/tf2_misc_dir.vpk
+			game+mod			|gameinfo_path|../tf/tf2_textures_dir.vpk
+			game+mod			|gameinfo_path|../tf/tf2_sound_misc_dir.vpk
+			game+mod			|gameinfo_path|../tf/tf2_sound_vo_english_dir.vpk
+			
+			// HL2 content for dedicated server
+			game+vgui			|gameinfo_path|../hl2/hl2_misc_dir.vpk
+			game				|gameinfo_path|../hl2/hl2_textures_dir.vpk
+			game				|gameinfo_path|../hl2/hl2_sound_misc_dir.vpk
+			
+			// Platform
+			platform+vgui		|gameinfo_path|../platform/platform_misc_dir.vpk
+
+			// Loose files (scripts, cfg, etc.) from TF2
+			game				|gameinfo_path|../tf
+			game				|gameinfo_path|../hl2
+			platform			|gameinfo_path|../platform
+
+			// Downloads
+			game+download		|gameinfo_path|download
+		}
+	}
+}

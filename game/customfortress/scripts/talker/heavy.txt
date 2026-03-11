@@ -1679,11 +1679,11 @@ Rule MvMTauntHeavy
 
 Response MvMWaveWinHeavy
 {
-	scene "scenes/Player/Heavy/low/3949.vcd" 
-	scene "scenes/Player/Heavy/low/3950.vcd" 
-	scene "scenes/Player/Heavy/low/3951.vcd" 
-	scene "scenes/Player/Heavy/low/3952.vcd" 
-	scene "scenes/Player/Heavy/low/3953.vcd" 
+	scene "scenes/Player/Heavy/low/3949.vcd" predelay "1.5"
+	scene "scenes/Player/Heavy/low/3950.vcd" predelay "1.5"
+	scene "scenes/Player/Heavy/low/3951.vcd" predelay "1.5"
+	scene "scenes/Player/Heavy/low/3952.vcd" predelay "1.5"
+	scene "scenes/Player/Heavy/low/3953.vcd" predelay "1.5"
 }
 Rule MvMWaveWinHeavy
 {

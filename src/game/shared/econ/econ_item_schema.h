@@ -683,6 +683,7 @@ enum
 	ATTDESCFORM_VALUE_IS_OR,					// Printed as:  m_flValue, but results are ORd together instead of added
 	ATTDESCFORM_VALUE_IS_DATE,					// Printed as a date
 	ATTDESCFORM_VALUE_IS_ACCOUNT_ID,			// Printed as steam user name
+	ATTDESCFORM_VALUE_IS_STEAMID3,				// Printed as steam user name from SteamID3 format
 	ATTDESCFORM_VALUE_IS_PARTICLE_INDEX,		// Printed as a particle description
 	ATTDESCFORM_VALUE_IS_KILLSTREAKEFFECT_INDEX,// Printed as killstreak effect description
 	ATTDESCFORM_VALUE_IS_KILLSTREAK_IDLEEFFECT_INDEX,  // Printed as idle effect description
@@ -698,6 +699,8 @@ enum attrib_effect_types_t
 	ATTRIB_EFFECT_NEUTRAL,
 	ATTRIB_EFFECT_POSITIVE,
 	ATTRIB_EFFECT_NEGATIVE,
+	ATTRIB_EFFECT_COMMUNITY,
+	ATTRIB_EFFECT_SCRAPPED,
 	
 	NUM_EFFECT_TYPES,
 };
@@ -1291,7 +1294,7 @@ public:
 	int			GetInventoryImagePosition( int iIndex ) const	{ Assert( iIndex >= 0 && iIndex < 2); return m_iInventoryImagePosition[iIndex]; }
 	int			GetInventoryImageSize( int iIndex ) const	{ Assert( iIndex >= 0 && iIndex < 2); return m_iInventoryImageSize[iIndex]; }
 	int			GetDropType( void ) const			{ return m_iDropType; }
-	const char	*GetHolidayRestriction( void ) const	{ return m_pszHolidayRestriction; }
+	const char	*GetHolidayRestriction( void ) const	{ ConVarRef cf_cosmetic_restrictions("cf_cosmetic_restrictions"); if ( cf_cosmetic_restrictions.GetBool() ) { return m_pszHolidayRestriction; } else { return NULL; } }
 	int			GetVisionFilterFlags( void ) const	{ return m_nVisionFilterFlags; }
 	int			GetSubType( void ) const	{ return m_iSubType; }
 	item_capabilities_t GetCapabilities( void ) const { return m_iCapabilities; }
@@ -2592,7 +2595,7 @@ public:
 										   : unSlot >= m_unFirstValidClassItemSlot && unSlot <= m_unLastValidClassItemSlot; 
 	}
 
-	enum { kMaxItemPresetCount = 4 };
+	enum { kMaxItemPresetCount = 6 };
 	uint32				GetNumAllowedItemPresets() const					{ return kMaxItemPresetCount; }
 	bool				IsValidPreset( equipped_preset_t unPreset ) const	{ return unPreset <= GetNumAllowedItemPresets(); }
 

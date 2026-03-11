@@ -93,6 +93,7 @@
 
 #include "hud_vote.h"
 #include "c_tf_notification.h"
+#include "cf_workshop_manager.h"
 
 #if !defined( _X360 ) && !defined( NO_STEAM )
 #include "steam/isteamtimeline.h"
@@ -111,7 +112,7 @@ static Color colorEyeballBossText( 134, 80, 172, 255 );
 static Color colorMerasmusText( 112, 176, 74, 255 );
 
 ConVar default_fov( "default_fov", "75", FCVAR_CHEAT );
-ConVar fov_desired( "fov_desired", "75", FCVAR_ARCHIVE | FCVAR_USERINFO, "Sets the base field-of-view.", true, 20.0, true, MAX_FOV );
+ConVar fov_desired( "fov_desired", "90", FCVAR_ARCHIVE | FCVAR_USERINFO, "Sets the base field-of-view.", true, 20.0, true, MAX_FOV );
 
 
 #define TF_HIGHFIVE_HINT_MAXDIST		512.0f
@@ -549,6 +550,12 @@ void ClientModeTFNormal::LevelInit( const char *newmap )
 	BaseClass::LevelInit( newmap );
 
 	m_bInfoPanelShown = false;
+	
+	// Initialize workshop manager on first level load
+	if ( CFWorkshop() )
+	{
+		CFWorkshop()->OnMapLoad( newmap );
+	}
 }
 
 IClientMode *GetClientModeNormal()

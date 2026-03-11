@@ -519,8 +519,30 @@ void CHud::Shutdown( void )
 void CHud::LevelInit( void )
 {
 	// Add the current map's icons.
+	char scriptfile[ 512 ];
+	char mapname[ 256 ];
+	Q_snprintf( mapname, sizeof( mapname ), "maps/%s", V_GetFileName( engine->GetLevelName() ) );
+	Q_FixSlashes( mapname );
+	Q_strlower( mapname );
+
+	char maptmp[256];
+	const char *pszCleanMapName = GetCleanMapName( mapname, maptmp );
 	CUtlDict< CHudTexture *, int >	textureList;
-	LoadHudTextures( textureList, "scripts/map_textures", NULL );
+
+	Q_StripExtension( pszCleanMapName, scriptfile, sizeof( scriptfile ) );
+	Q_strncat( scriptfile, "_textures.txt", sizeof( scriptfile ), COPY_ALL_CHARACTERS );
+
+	if ( filesystem->FileExists( scriptfile, "GAME" ) )
+	{
+		DevMsg( "Loading Hud Textures file: %s\n", scriptfile );
+		LoadHudTextures( textureList, scriptfile, NULL );
+	}
+
+	DevMsg( "Loading Hud Textures file: %s\n", scriptfile );
+	LoadHudTextures(textureList, "scripts/map_textures.txt", NULL);
+
+	
+
 	int c = textureList.Count();
 	for ( int index = 0; index < c; index++ )
 	{
@@ -1250,5 +1272,27 @@ CON_COMMAND_F( testhudanim, "Test a hud element animation.\n\tArguments: <anim n
 	}
 
 	g_pClientMode->GetViewportAnimationController()->StartAnimationSequence( args[1] );
+}
+
+CON_COMMAND_F( cf_extract_ctx_data, "Extracts data from a specified ctx file.\n\tArguments: <filename>\n", FCVAR_NONE )
+{
+	if ( args.ArgC() != 2 )
+	{
+		Msg("Usage:\n   cf_extract_ctx_data <filename>\n");
+		return;
+	}
+
+	KeyValues *pKeyValuesData = ReadEncryptedKVFile( filesystem, args[1], GetTFEncryptionKey());
+	if ( pKeyValuesData )
+	{
+		char szFullName[512];
+		Q_snprintf( szFullName, sizeof(szFullName), "%s.txt", args[1] );
+		pKeyValuesData->SaveToFile( filesystem, szFullName );
+	}
+	else
+	{
+		Msg("No file found matching %s\n", args[1]);
+	}
+	pKeyValuesData->deleteThis();
 }
 

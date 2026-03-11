@@ -85,7 +85,7 @@ ConVar hud_combattext_red( "hud_combattext_red", "255", FCVAR_USERINFO | FCVAR_A
 ConVar hud_combattext_green( "hud_combattext_green", "0", FCVAR_USERINFO | FCVAR_ARCHIVE | FCVAR_ARCHIVE_XBOX );
 ConVar hud_combattext_blue( "hud_combattext_blue", "0", FCVAR_USERINFO | FCVAR_ARCHIVE | FCVAR_ARCHIVE_XBOX );
 
-ConVar tf_dingalingaling( "tf_dingalingaling", "0", FCVAR_ARCHIVE, "If set to 1, play a sound everytime you injure an enemy. The sound can be customized by replacing the 'tf/sound/ui/hitsound.wav' file." );
+ConVar tf_dingalingaling( "tf_dingalingaling", "1", FCVAR_ARCHIVE, "If set to 1, play a sound everytime you injure an enemy. The sound can be customized by replacing the 'tf/sound/ui/hitsound.wav' file." );
 ConVar tf_dingaling_volume( "tf_dingaling_volume", "0.75", FCVAR_ARCHIVE, "Desired volume of the hit sound.", true, 0.0, true, 1.0 );
 ConVar tf_dingaling_pitchmindmg( "tf_dingaling_pitchmindmg", "100", FCVAR_ARCHIVE, "Desired pitch of the hit sound when a minimal damage hit (<= 10 health) is done.", true, 1, true, 255 );
 ConVar tf_dingaling_pitchmaxdmg( "tf_dingaling_pitchmaxdmg", "100", FCVAR_ARCHIVE, "Desired pitch of the hit sound when a maximum damage hit (>= 150 health) is done.", true, 1, true, 255 );
@@ -98,7 +98,7 @@ ConVar tf_dingaling_lasthit_pitchmaxdmg( "tf_dingaling_lasthit_pitchmaxdmg", "10
 ConVar tf_dingaling_lasthit_pitch_override( "tf_dingaling_lasthit_pitch_override", "-1", FCVAR_NONE, "If set, pitch for last hit sounds." );
 
 ConVar tf_dingalingaling_repeat_delay( "tf_dingalingaling_repeat_delay", "0.0", FCVAR_ARCHIVE, "Desired repeat delay of the hit sound.  Set to 0 to play a sound for every instance of damage dealt.", true, 0.f, false, 0.f );
-ConVar tf_metal_allclass("tf_metal_allclass", "0", FCVAR_CHEAT, "Everyone uses metal");
+ConVar cf_metal_allclass("cf_metal_allclass", "0", FCVAR_CHEAT, "Everyone uses metal");
 
 ConVar hud_damagemeter( "hud_damagemeter", "0", FCVAR_CHEAT, "Display damage-per-second information in the lower right corner of the screen." );
 ConVar hud_damagemeter_period( "hud_damagemeter_period", "0", FCVAR_NONE, "When set to zero, average damage-per-second across all recent damage events, otherwise average damage across defined period (number of seconds)." );
@@ -199,7 +199,7 @@ public:
 	virtual const char *GetResFileName( void ) { return "resource/UI/HudAccountPanel.res"; }
 
 protected:
-	virtual Color GetColor( const account_delta_t::eAccountDeltaType_t& type );
+	virtual Color GetColor( const account_delta_t::eAccountDeltaType_t &type, const int iDeltaValue = 0 );
 
 	CUtlVector <account_delta_t> m_AccountDeltaItems;
 
@@ -275,7 +275,7 @@ public:
 	virtual bool ShouldDraw( void ) OVERRIDE
 	{
 		C_TFPlayer *pPlayer = C_TFPlayer::GetLocalTFPlayer();
-		if ( !tf_metal_allclass.GetBool() )
+		if ( !cf_metal_allclass.GetBool() )
 		{
 			if (!pPlayer || !pPlayer->IsAlive() || !pPlayer->IsPlayerClass(TF_CLASS_ENGINEER))
 			{
@@ -1034,7 +1034,7 @@ account_delta_t *CAccountPanel::OnAccountValueChanged( int iOldValue, int iNewVa
 		pNewDeltaItem->m_bLargeFont = false;
 		pNewDeltaItem->m_eDataType = type;
 		pNewDeltaItem->m_wzText[0] = NULL;
-		pNewDeltaItem->m_color = GetColor( type ); 
+		pNewDeltaItem->m_color = GetColor( type, iDelta );
 		pNewDeltaItem->m_bShadows = false;
 		return &m_AccountDeltaItems[index];
 	}
@@ -1042,7 +1042,7 @@ account_delta_t *CAccountPanel::OnAccountValueChanged( int iOldValue, int iNewVa
 	return NULL;
 }
 
-Color CAccountPanel::GetColor( const account_delta_t::eAccountDeltaType_t& type )
+Color CAccountPanel::GetColor( const account_delta_t::eAccountDeltaType_t &type, const int iDeltaValue )
 {
 	if ( type == account_delta_t::ACCOUNT_DELTA_BONUS_POINTS )
 	{
@@ -1050,7 +1050,7 @@ Color CAccountPanel::GetColor( const account_delta_t::eAccountDeltaType_t& type 
 	}
 	else if ( type == account_delta_t::ACCOUNT_DELTA_HEALING )
 	{
-		return m_DeltaPositiveColor;
+		return ( iDeltaValue < 0 ) ? m_DeltaNegativeColor : m_DeltaPositiveColor;
 	}
 	else if ( type == account_delta_t::ACCOUNT_DELTA_DAMAGE )
 	{

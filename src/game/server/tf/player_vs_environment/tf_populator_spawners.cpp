@@ -750,6 +750,10 @@ static bool ParseDynamicAttributes( CTFBot::EventChangeAttributes_t& event, KeyV
 		{
 			event.m_attributeFlags |= CTFBot::PROJECTILE_SHIELD;
 		}
+		else if ( !Q_stricmp( value, "UseDifficultyBasedAim" ) )
+		{
+			event.m_attributeFlags |= CTFBot::USE_DIFFICULTY_BASED_AIM;
+		}
 		else
 		{
 			Warning( "TFBotSpawner: Invalid attribute '%s'\n", value );
@@ -1376,6 +1380,7 @@ CTankSpawner::CTankSpawner( IPopulator *populator ) : IPopulationSpawner( popula
 	m_startingPathTrackNodeName = NULL;
 	m_onKilledOutput = NULL;
 	m_onBombDroppedOutput = NULL;
+	m_iszClassIcon = NULL_STRING;
 }
 
 
@@ -1402,6 +1407,10 @@ bool CTankSpawner::Parse( KeyValues *values )
 		else if ( !Q_stricmp( name, "Name" ) )
 		{
 			m_name = data->GetString();
+		}
+		else if ( !Q_stricmp( name, "ClassIcon" ) )
+		{
+			m_iszClassIcon = AllocPooledString(data->GetString());
 		}
 		else if ( !Q_stricmp( name, "Skin" ) )
 		{
@@ -1451,6 +1460,7 @@ bool CTankSpawner::Spawn( const Vector &here, EntityHandleVector_t *result )
 
 		tank->DefineOnKilledOutput( m_onKilledOutput );
 		tank->DefineOnBombDroppedOutput( m_onBombDroppedOutput );
+		tank->SetClassIconName( GetClassIcon() );
 
 		if ( result )
 		{
@@ -1465,6 +1475,16 @@ bool CTankSpawner::Spawn( const Vector &here, EntityHandleVector_t *result )
 		DevMsg( "CTankSpawner: %3.2f: Failed to create base_boss\n", gpGlobals->curtime );
 	}
 	return false;
+}
+
+string_t CTankSpawner::GetClassIcon(int nSpawnNum)
+{
+	if (m_iszClassIcon != NULL_STRING)
+	{
+		return m_iszClassIcon;
+	}
+
+	return MAKE_STRING( "tank" );
 }
 
 

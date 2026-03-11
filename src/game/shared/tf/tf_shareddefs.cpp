@@ -103,6 +103,23 @@ const char *g_aRawPlayerClassNames[TF_CLASS_MENU_BUTTONS] =
 	"random"
 };
 
+const char *g_aRawPlayerClassNamesRandom[TF_CLASS_MENU_BUTTONS] =
+{
+	"undefined",
+	"scout",
+	"sniper",
+	"soldier",
+	"demoman",
+	"medic",
+	"heavy",// short
+	"pyro",
+	"spy",
+	"engineer",
+	"civilian",
+	"",
+	"random"
+};
+
 const char g_szBotModels[][ MAX_PATH ] = 
 {
 	"", //TF_CLASS_UNDEFINED
@@ -221,17 +238,15 @@ const char g_szRomePromoItems_Misc[][ MAX_PATH ] =
 
 const char *g_pszBreadModels[] = 
 {
-	"models/weapons/c_models/c_bread/c_bread_plainloaf.mdl",	// UNDEFINED
-
-	"models/weapons/c_models/c_bread/c_bread_plainloaf.mdl",	// Scout
-	"models/weapons/c_models/c_bread/c_bread_crumpet.mdl",		// Sniper?
-	"models/weapons/c_models/c_bread/c_bread_ration.mdl",		// Soldier
-	"models/weapons/c_models/c_bread/c_bread_cinnamon.mdl",		// Demo?
-	"models/weapons/c_models/c_bread/c_bread_pretzel.mdl",		// Medic
-	"models/weapons/c_models/c_bread/c_bread_russianblack.mdl",	// Heavy?
-	"models/weapons/c_models/c_bread/c_bread_burnt.mdl",		// Pyro
 	"models/weapons/c_models/c_bread/c_bread_baguette.mdl",		// Spy
+	"models/weapons/c_models/c_bread/c_bread_burnt.mdl",		// Pyro
+	"models/weapons/c_models/c_bread/c_bread_cinnamon.mdl",		// Demo?
 	"models/weapons/c_models/c_bread/c_bread_cornbread.mdl",	// Engineer
+	"models/weapons/c_models/c_bread/c_bread_crumpet.mdl",		// Sniper?
+	"models/weapons/c_models/c_bread/c_bread_plainloaf.mdl",	// Scout
+	"models/weapons/c_models/c_bread/c_bread_pretzel.mdl",		// Medic
+	"models/weapons/c_models/c_bread/c_bread_ration.mdl",		// Soldier
+	"models/weapons/c_models/c_bread/c_bread_russianblack.mdl",	// Heavy?
 };
 
 int GetClassIndexFromString( const char *pClassName, int nLastClassIndex/*=TF_LAST_NORMAL_CLASS*/ )
@@ -465,6 +480,9 @@ static const char *g_aConditionNames[] =
 	"TF_COND_HALLOWEEN_HELL_HEAL",              // = 128
 	"TF_COND_POWERUPMODE_DOMINANT",             // = 129
 	"TF_COND_IMMUNE_TO_PUSHBACK",				// = 130
+	"TF_COND_SPEEDPAD_BOOST_LV1",				// = 131
+	"TF_COND_SPEEDPAD_BOOST_LV2",				// = 132
+	"TF_COND_SPEEDPAD_BOOST_LV3",				// = 133
 
 	//
 	// ADD NEW ITEMS HERE TO AVOID BREAKING DEMOS
@@ -474,6 +492,8 @@ static const char *g_aConditionNames[] =
 
 	// ******** Keep this block last! ********
 	// Keep experimental conditions below and graduate out of it before shipping
+
+	"TF_COND_SENTRY_BUSTER",					// Player is acting as a Sentry Buster
 };
 COMPILE_TIME_ASSERT( ARRAYSIZE( g_aConditionNames ) == TF_COND_LAST );
 
@@ -514,6 +534,7 @@ static const char *s_aGameTypeNames[] =
 	"#Gametype_RobotDestruction",
 	"#GameType_Passtime",
 	"#GameType_PlayerDestruction",
+	"#GameType_RaidMode"
 };
 COMPILE_TIME_ASSERT( TF_GAMETYPE_COUNT == ARRAYSIZE( s_aGameTypeNames ) );
 
@@ -532,7 +553,8 @@ static const char *s_aEnumGameTypeName[] =
 	"TF_GAMETYPE_MVM",
 	"TF_GAMETYPE_RD",
 	"TF_GAMETYPE_PASSTIME",
-	"TF_GAMETYPE_PD"
+	"TF_GAMETYPE_PD",
+	"TF_GAMETYPE_RAID"
 };
 COMPILE_TIME_ASSERT( TF_GAMETYPE_COUNT == ARRAYSIZE( s_aEnumGameTypeName ) );
 
@@ -750,6 +772,8 @@ const char *g_aWeaponNames[] =
 	"TF_WEAPON_JAR_GAS",
 	"TF_WEAPON_GRENADE_JAR_GAS",
 	"TF_WEPON_FLAME_BALL",
+	"TF_WEAPON_BMMH",
+	"TF_WEAPON_SCRIPTED",
 
 };
 COMPILE_TIME_ASSERT( ARRAYSIZE( g_aWeaponNames ) == TF_WEAPON_COUNT );
@@ -866,6 +890,7 @@ int g_aWeaponDamageTypes[] =
 	DMG_GENERIC, // TF_WEAPON_JAR_GAS
 	DMG_GENERIC, // TF_WEAPON_GRENADE_JAR_GAS
 	DMG_GENERIC | DMG_PREVENT_PHYSICS_FORCE, // TF_WEAPON_FLAME_BALL
+	DMG_BULLET | DMG_USEDISTANCEMOD, // TF_WEAPON_SCRIPTED
 
 };
 
@@ -952,13 +977,20 @@ const char *g_szSpecialDamageNames[] =
 	"TF_DMG_CUSTOM_DRAGONS_FURY_IGNITE",
 	"TF_DMG_CUSTOM_DRAGONS_FURY_BONUS_BURNING",
 	"TF_DMG_CUSTOM_SLAP_KILL",
+	"TF_DMG_CUSTOM_MARLIN_KILL",
 	"TF_DMG_CUSTOM_CROC",
 	"TF_DMG_CUSTOM_TAUNTATK_GASBLAST",
 	"TF_DMG_CUSTOM_AXTINGUISHER_BOOSTED",
 	"TF_DMG_CUSTOM_KRAMPUS_MELEE",
 	"TF_DMG_CUSTOM_KRAMPUS_RANGED",
+	"TF_DMG_CUSTOM_TAUNTATK_TRICKSHOT",
+
+	// START OF BF2 SPECIFC DMG
 	"TF_DMG_CUSTOM_DECAPITATION_BOSS_HAMMER",
-	"TF_DMG_CUSTOM_MVM_BOSS_TANK"
+	"TF_DMG_CUSTOM_MVM_BOSS_TANK",
+	"TF_DMG_CUSTOM_TAUNTATK_PUNCHOUT",
+	"TF_DMG_CUSTOM_TAUNTATK_TRUSTFALL"
+	// END OF BF2 SPECIFC DMG
 };
 COMPILE_TIME_ASSERT( ARRAYSIZE( g_szSpecialDamageNames ) == TF_DMG_CUSTOM_END );
 
@@ -1016,6 +1048,7 @@ const char *g_szProjectileNames[] =
 	"projectile_bread_monster",
 	"projectile_jar_gas",
 	"tf_projectile_balloffire",
+	"tf_projectile_scrapball",
 
 };
 COMPILE_TIME_ASSERT( ARRAYSIZE( g_szProjectileNames ) == TF_NUM_PROJECTILES );
@@ -1054,7 +1087,7 @@ int g_iProjectileWeapons[] =
 	TF_WEAPON_THROWABLE,
 	TF_WEAPON_JAR_GAS,
 	TF_WEAPON_FLAME_BALL,
-
+	TF_WEAPON_DISPENSER_GUN,
 };
 
 COMPILE_TIME_ASSERT( ARRAYSIZE( g_szProjectileNames ) == ARRAYSIZE( g_iProjectileWeapons ) );
@@ -1097,7 +1130,15 @@ static const char* taunt_attack_name[] =
 	"TAUNTATK_ALLCLASS_GUITAR_RIFF",
 	"TAUNTATK_MEDIC_HEROIC_TAUNT",
 	"TAUNTATK_PYRO_GASBLAST",
+	"TAUNTATK_ENGINEER_TRICKSHOT",
+
+	// START OF BF2 SPECIFiC TAUNTATK
 	"TAUNTATK_HEAVY_FALLCRUSH",
+	"TAUNTATK_HEAVY_PUNCHOUT_A",
+	"TAUNTATK_HEAVY_PUNCHOUT_B",
+	"TAUNTATK_HEAVY_PUNCHOUT_C",
+	"TAUNTATK_HEAVY_PUNCHOUT_KILL"
+	// END OF BF2 SPECIFiC TAUNTATK
 
 	//
 	// INSERT NEW ITEMS HERE TO AVOID BREAKING DEMOS
@@ -1413,6 +1454,8 @@ CObjectInfo g_ObjectInfos[OBJ_LAST] =
 	CObjectInfo( "OBJ_TELEPORTER" ),
 	CObjectInfo( "OBJ_SENTRYGUN" ),
 	CObjectInfo( "OBJ_ATTACHMENT_SAPPER" ),
+	CObjectInfo( "OBJ_SPEEDPAD" ),
+	CObjectInfo( "OBJ_JUMPPAD" ),
 };
 COMPILE_TIME_ASSERT( ARRAYSIZE( g_ObjectInfos ) == OBJ_LAST );
 
@@ -1505,7 +1548,7 @@ void LoadObjectInfos( IBaseFileSystem *pFileSystem )
 			// Does it make sense to call the below Steam API so it'll force a validation next startup time?
 			// Need to verify it's real corruption and not someone dorking around with their objects.txt file...
 			//
-			// From Martin Otten: If you have a file on disc and you’re 100% sure it’s
+			// From Martin Otten: If you have a file on disc and youï¿½re 100% sure itï¿½s
 			//  corrupt, call ISteamApps::MarkContentCorrupt( false ), before you shutdown
 			//  the game. This will cause a content validation in Steam.
 

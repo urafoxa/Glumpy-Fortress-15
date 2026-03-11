@@ -1669,11 +1669,11 @@ Rule MvMWaveStartEngineer
 
 Response MvMWaveWinEngineer
 {
-	scene "scenes/Player/Engineer/low/4095.vcd" 
-	scene "scenes/Player/Engineer/low/4096.vcd" 
-	scene "scenes/Player/Engineer/low/4097.vcd" 
-	scene "scenes/Player/Engineer/low/4098.vcd" 
-	scene "scenes/Player/Engineer/low/4321.vcd" 
+	scene "scenes/Player/Engineer/low/4095.vcd" predelay "1.5"
+	scene "scenes/Player/Engineer/low/4096.vcd" predelay "1.5"
+	scene "scenes/Player/Engineer/low/4097.vcd" predelay "1.5"
+	scene "scenes/Player/Engineer/low/4098.vcd" predelay "1.5"
+	scene "scenes/Player/Engineer/low/4321.vcd" predelay "1.5"
 }
 Rule MvMWaveWinEngineer
 {
@@ -1683,8 +1683,8 @@ Rule MvMWaveWinEngineer
 
 Response MvMWaveLoseEngineer
 {
-	scene "scenes/Player/Engineer/low/4099.vcd" 
-	scene "scenes/Player/Engineer/low/4100.vcd" 
+	scene "scenes/Player/Engineer/low/4099.vcd" predelay "1.5"
+	scene "scenes/Player/Engineer/low/4100.vcd" predelay "1.5"
 }
 Rule MvMWaveLoseEngineer
 {

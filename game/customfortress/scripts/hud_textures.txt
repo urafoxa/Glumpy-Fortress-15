@@ -42,5 +42,104 @@
 				"width"		"56"
 				"height"	"44"
 		}
+		"pilotflaregun"
+		{
+				"dfile"	"HUD/d_images_mod"
+				"dnegfile"	"HUD/dneg_images_mod"
+				"x"		"178"
+				"y"		"3"
+				"width"		"128"
+				"height"	"32"
+		}
+		"pilotflamer"
+		{
+				"dfile"	"HUD/d_images_mod"
+				"dnegfile"	"HUD/dneg_images_mod"
+				"x"		"307"
+				"y"		"3"
+				"width"		"128"
+				"height"	"32"
+		}
+		"bab_revolver"
+		{
+				"dfile"	"HUD/d_images_mod"
+				"dnegfile"	"HUD/dneg_images_mod"
+				"x"		"4"
+				"y"		"37"
+				"width"		"42"
+				"height"	"28"
+		}
+		"bab_bmmh"
+		{
+				"dfile"	"HUD/d_images_mod"
+				"dnegfile"	"HUD/dneg_images_mod"
+				"x"		"436"
+				"y"		"3"
+				"width"		"76"
+				"height"	"30"
+		}
+		"deflect_scrapball"
+		{
+				"dfile"	"HUD/d_images_mod"
+				"dnegfile"	"HUD/dneg_images_mod"
+				"x"		"146"
+				"y"		"36"
+				"width"		"64"
+				"height"	"32"
+		}
+		"bab_hammer"
+		{
+				"dfile"	"HUD/d_images_mod"
+				"dnegfile"	"HUD/dneg_images_mod"
+				"x"		"49"
+				"y"		"39"
+				"width"		"46"
+				"height"	"24"
+		}
+		"swordfish"
+		{
+				"dfile"	"HUD/d_images_mod"
+				"dnegfile"	"HUD/dneg_images_mod"
+				"x"		"96"
+				"y"		"36"
+				"width"		"49"
+				"height"	"32"
+		}
+		"tauntkill_trustfall"
+		{
+				"dfile"	"HUD/d_images_mod"
+				"dnegfile"	"HUD/dneg_images_mod"
+				"x"		"58"
+				"y"		"993"
+				"width"		"74"
+				"height"	"30"
+		}
+		"pistol_conventional"
+		{
+				"dfile"		"HUD/d_images_mod"
+				"dnegfile"	"HUD/dneg_images_mod"
+				"x"			"212"
+				"y"			"37"
+				"width"		"74"
+				"height"	"32"
+		}
+		
+		//STEAM FRIEND ICON - DO NOT TOUCH
+		"ico_friend_indicator"
+		{
+			"file"		"vgui/ico_friend_indicator_alone"
+			"x"		"0"
+			"y"		"0"
+			"width"	"32"
+			"height" "32"
+		}				
+		"ico_friend_indicator_avatar"
+		{
+			"file"		"vgui/ico_friend_indicator_scoreboard"
+			"x"		"-1"
+			"y"		"-1"
+			"width"	"57"
+			"height" "36"
+		}
 	}	
 }

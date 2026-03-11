@@ -172,7 +172,7 @@
 		"tall"			"f0"
 		"visible"		"0"
 		"enabled"		"1"
-		"image"			""
+		"image"			"../console/background_upward_widescreen"
 		"scaleImage"	"1"
 		"proportionaltoparent"	"1"
 
@@ -226,6 +226,173 @@
 		}
 	}
 					
+	"BetaNotificationPanel"
+	{
+		"ControlName"	"EditablePanel"
+		"fieldName"		"BetaNotificationPanel"
+		"xpos"			"0"
+		"ypos"			"0"
+		"zpos"			"9999"
+		"wide"			"f0"
+		"tall"			"f0"
+		"visible"		"1"
+		"enabled"		"1"
+		"paintbackground"	"1"
+		"bgcolor_override"	"0 0 0 200"
+		
+		"BetaNotificationBG"
+		{
+			"ControlName"	"ImagePanel"
+			"fieldName"		"BetaNotificationBG"
+			"xpos"			"cs-0.5"
+			"ypos"			"cs-0.5"
+			"zpos"			"0"
+			"wide"			"610"
+			"tall"			"340"
+			"visible"		"1"
+			"enabled"		"1"
+			"image"			"mainmenu/beta_notif_bg"
+			"scaleImage"	"1"
+			"proportionaltoparent"	"1"
+		}
+		
+		"TitleLabel"
+		{
+			"ControlName"	"CExLabel"
+			"fieldName"		"TitleLabel"
+			"xpos"			"cs-0.5"
+			"ypos"			"cs-0.5-100"
+			"zpos"			"1"
+			"wide"			"560"
+			"tall"			"40"
+			"visible"		"1"
+			"enabled"		"1"
+			"font"			"HudFontBiggerBold"
+			"labelText"		"YOU ARE PLAYING A BETA !"
+			"textAlignment"	"center"
+			"fgcolor_override"	"235 75 75 255"
+			"proportionaltoparent"	"1"
+		}
+		
+		"SubtitleLabel"
+		{
+			"ControlName"	"CExLabel"
+			"fieldName"		"SubtitleLabel"
+			"xpos"			"cs-0.5"
+			"ypos"			"cs-0.5-60"
+			"zpos"			"1"
+			"wide"			"560"
+			"tall"			"25"
+			"visible"		"1"
+			"enabled"		"1"
+			"font"			"HudFontMediumBold"
+			"labelText"		"EVERYTHING IS SUBJECT TO CHANGE"
+			"textAlignment"	"center"
+			"fgcolor_override"	"235 226 202 255"
+			"proportionaltoparent"	"1"
+		}
+		
+		"InfoLabel1"
+		{
+			"ControlName"	"CExLabel"
+			"fieldName"		"InfoLabel1"
+			"xpos"			"cs-0.5"
+			"ypos"			"cs-0.5-20"
+			"zpos"			"1"
+			"wide"			"560"
+			"tall"			"25"
+			"visible"		"1"
+			"enabled"		"1"
+			"font"			"HudFontSmallBold"
+			"labelText"		"NOTHING IS FINAL AND WILL BE WORKED ON OVER TIME"
+			"textAlignment"	"center"
+			"fgcolor_override"	"235 226 202 255"
+			"proportionaltoparent"	"1"
+		}
+		
+		"InfoLabel2"
+		{
+			"ControlName"	"CExLabel"
+			"fieldName"		"InfoLabel2"
+			"xpos"			"cs-0.5"
+			"ypos"			"cs-0.5+10"
+			"zpos"			"1"
+			"wide"			"560"
+			"tall"			"25"
+			"visible"		"1"
+			"enabled"		"1"
+			"font"			"HudFontSmallBold"
+			"labelText"		"CHECK THE DISCORD FOR ADDITIONAL INFO"
+			"textAlignment"	"center"
+			"fgcolor_override"	"235 226 202 255"
+			"proportionaltoparent"	"1"
+		}
+		
+		"InfoLabel3"
+		{
+			"ControlName"	"CExLabel"
+			"fieldName"		"InfoLabel3"
+			"xpos"			"cs-0.5"
+			"ypos"			"cs-0.5+20"
+			"zpos"			"1"
+			"wide"			"560"
+			"tall"			"25"
+			"visible"		"1"
+			"enabled"		"1"
+			"font"			"HudFontSmallBold"
+			"labelText"		"AND TO SEE WHAT WE PLAN TO ADD"
+			"textAlignment"	"center"
+			"fgcolor_override"	"235 226 202 255"
+			"proportionaltoparent"	"1"
+		}
+		
+		"ConfirmButton"
+		{
+			"ControlName"	"CExButton"
+			"fieldName"		"ConfirmButton"
+			"xpos"			"cs-0.5"
+			"ypos"			"cs-0.5+60"
+			"zpos"			"1"
+			"wide"			"320"
+			"tall"			"35"
+			"visible"		"1"
+			"enabled"		"1"
+			"labelText"		"I HAVE READ AND UNDERSTAND"
+			"font"			"HudFontSmallBold"
+			"textAlignment"	"center"
+			"command"		"confirmbeta"
+			"sound_depressed"	"UI/buttonclick.wav"
+			"sound_released"	"UI/buttonclickrelease.wav"
+			"proportionaltoparent"	"1"
+			
+			"defaultFgColor_override"	"58 49 38 255"
+			"armedFgColor_override"		"58 49 38 255"
+			"depressedFgColor_override"	"58 49 38 255"
+			
+			"defaultBgColor_override"	"186 166 125 255"
+			"armedBgColor_override"		"235 226 202 255"
+			"depressedBgColor_override"	"150 140 110 255"
+		}
+		
+		"DontShowAgainCheckbox"
+		{
+			"ControlName"	"CheckButton"
+			"fieldName"		"DontShowAgainCheckbox"
+			"xpos"			"cs-0.5"
+			"ypos"			"cs-0.5+105"
+			"zpos"			"1"
+			"wide"			"400"
+			"tall"			"20"
+			"visible"		"1"
+			"enabled"		"1"
+			"labelText"		"DONT SHOW ME THIS THE NEXT TIME I OPEN THE GAME"
+			"font"			"HudFontSmallBold"
+			"textAlignment"	"west"
+			"proportionaltoparent"	"1"
+			"fgcolor_override"	"235 226 202 255"
+		}
+	}
+
 	"TFLogoImage"
 	{
 		"ControlName"	"ImagePanel"
@@ -234,7 +401,7 @@
 		"ypos"			"32"
 		"zpos"			"1"
 		"wide"			"256"
-		"tall"			"64"
+		"tall"			"128"
 		"visible"		"1"
 		"enabled"		"1"
 		"image"			"../logo/new_tf2_logo"
@@ -242,9 +409,28 @@
 		"mouseinputenabled"	"0"
 	}	
 	
+	"SplashTextLabel"
+	{
+		"ControlName"	"CExLabel"
+		"fieldName"		"SplashTextLabel"
+		"xpos"			"c-285"
+		"ypos"			"145"
+		"zpos"			"2"
+		"wide"			"256"
+		"tall"			"20"
+		"visible"		"1"
+		"enabled"		"1"
+		"textAlignment"	"center"
+		"labelText"		"Better than ever!"
+		"font"			"SplashTextFont"
+		"fgcolor"		"255 255 0 255"
+		"mouseinputenabled"	"0"
+	}
+	
+	
 	"TFCharacterImage"
 	{
-		// "ControlName"	"ImagePanel"
+		"ControlName"	"ImagePanel"
 		"fieldName"		"TFCharacterImage"
 		"xpos"			"c-250"
 		"ypos"			"-80"
@@ -1037,16 +1223,16 @@
 		{
 			"ControlName"	"CExButton"
 			"fieldName"		"MOTD_URLButton"
-			"xpos"			"75"
+			"xpos"			"15"
 			"ypos"			"rs1.2"
-			"wide"			"150"
+			"wide"			"125"
 			"tall"			"15"
 			"autoResize"	"0"
 			"pinCorner"		"3"
 			"visible"		"1"
 			"enabled"		"1"
 			"tabPosition"	"0"
-			"labelText"		"#MMenu_MOTD_URL"
+			"labelText"		"#TFB_MOTD_GITHUB"
 			"textinsetx"	"20"
 			"use_proportional_insets" "1"
 			"font"			"HudFontSmallestBold"
@@ -1055,6 +1241,47 @@
 			"brighttext"	"0"
 			"default"		"1"
 			"command"		"motd_viewurl"
+			"proportionaltoparent" "1"
+			"actionsignallevel"	"2"
+
+
+			"navUp"			"MOTD_CloseButton"
+			"navLeft"		"MOTD_PrevButton"
+			"navRight"		"MOTD_NextButton"
+
+			"sound_depressed"	"UI/buttonclick.wav"
+			"sound_released"	"UI/buttonclickrelease.wav"
+			
+			"defaultFgColor_override" "235 226 202 255"
+			"defaultBgColor_override" "46 43 42 255"
+			"armedFgColor_override" "235 226 202 255"
+			"depressedFgColor_override" "235 226 202 255"
+		}	
+		
+		// BETTER FORTRESS DISCORD LINK
+		
+		"MOTD_URLButton2"
+		{
+			"ControlName"	"CExButton"
+			"fieldName"		"MOTD_URLButton2"
+			"xpos"			"155"
+			"ypos"			"rs1.2"
+			"wide"			"125"
+			"tall"			"15"
+			"autoResize"	"0"
+			"pinCorner"		"3"
+			"visible"		"1"
+			"enabled"		"1"
+			"tabPosition"	"0"
+			"labelText"		"#TFB_MOTD_DISCORD"
+			"textinsetx"	"20"
+			"use_proportional_insets" "1"
+			"font"			"HudFontSmallestBold"
+			"textAlignment"	"center"
+			"dulltext"		"0"
+			"brighttext"	"0"
+			"default"		"1"
+			"command"		"motd_viewurl_secondary"
 			"proportionaltoparent" "1"
 			"actionsignallevel"	"2"
 
@@ -2002,7 +2229,7 @@
 		"ControlName"	"EditablePanel"
 		"fieldname"		"ReportPlayerButton"
 		"xpos"			"c-47"
-		"ypos"			"437"
+		"ypos"			"rs1-18"
 		"zpos"			"11"
 		"wide"			"30"
 		"tall"			"25"
@@ -2071,7 +2298,7 @@
 		"ControlName"	"EditablePanel"
 		"fieldname"		"CallVoteButton"
 		"xpos"			"c-24"
-		"ypos"			"437"
+		"ypos"			"rs1-18"
 		"zpos"			"12"
 		"wide"			"25"
 		"tall"			"25"
@@ -2138,7 +2365,7 @@
 		"ControlName"	"EditablePanel"
 		"fieldname"		"MutePlayersButton"
 		"xpos"			"c-1"
-		"ypos"			"437"
+		"ypos"			"rs1-18"
 		"zpos"			"12"
 		"wide"			"25"
 		"tall"			"25"
@@ -2206,11 +2433,11 @@
 		"ControlName"	"EditablePanel"
 		"fieldname"		"RequestCoachButton"
 		"xpos"			"c22"
-		"ypos"			"437"
+		"ypos"			"rs1-18"
 		"zpos"			"12"
 		"wide"			"25"
 		"tall"			"25"
-		"visible"		"1"
+		"visible"		"0"
 
 		"navLeft"		"MutePlayersButton"
 		"navRight"		"Notifications_ShowButtonPanel"
@@ -2364,7 +2591,7 @@
 	{
 		"ControlName"	"CExImageButton"
 		"fieldName"		"SettingsButton"
-		"xpos"			"c-208+273"
+		"xpos"			"c-133+273"
 		"ypos"			"437"
 		"zpos"			"1"
 		"wide"			"30"
@@ -2412,7 +2639,8 @@
 	{
 		"ControlName"	"CExImageButton"
 		"fieldName"		"TF2SettingsButton"
-		"xpos"			"c-183+273"
+
+		"xpos"			"c-108+273"
 		"ypos"			"437"
 		"zpos"			"2"
 		"wide"			"26"
@@ -2460,7 +2688,8 @@
 	{
 		"ControlName"	"CExImageButton"
 		"fieldName"		"AchievementsButton"
-		"xpos"			"c-158+273"
+
+		"xpos"			"c-83+273"
 		"ypos"			"437"
 		"zpos"			"3"
 		"wide"			"30"
@@ -2492,7 +2721,7 @@
 			"ControlName"	"ImagePanel"
 			"fieldName"		"SubImage"
 			"xpos"			"5"
-			"ypos"			"6"
+			"ypos"			"5"
 			"zpos"			"1"
 			"wide"			"15"
 			"tall"			"15"
@@ -2507,14 +2736,13 @@
 	{
 		"ControlName"	"CExImageButton"
 		"fieldName"		"CoachPlayersButton"
-		"xpos"			"c-123+273"
-		"ypos"			"437"
+		"xpos"			"c-58+273"
 		"zpos"			"5"
 		"wide"			"25"
 		"tall"			"25"
 		"autoResize"	"0"
 		"pinCorner"		"3"
-		"visible"		"1"
+		"visible"		"0"
 		"enabled"		"1"
 		"tabPosition"	"0"
 		"labelText"		""
@@ -2554,56 +2782,9 @@
 	{
 		"ControlName"	"CExImageButton"
 		"fieldName"		"WorkshopButton"
-		"xpos"			"c-93+273"
+		"xpos"			"c-34+250"
 		"ypos"			"437"
 		"zpos"			"4"
-		"wide"			"30"
-		"tall"			"25"
-		"autoResize"	"0"
-		"pinCorner"		"3"
-		"visible"		"1"
-		"enabled"		"1"
-		"tabPosition"	"0"
-		"labelText"		""
-		"font"			"HudFontSmallBold"
-		"textAlignment"	"center"
-		"dulltext"		"0"
-		"brighttext"	"0"
-		"default"		"1"
-		"Command"		"engine OpenSteamWorkshopDialog"
-
-		"navUp"			"VRModeButton"
-		"navLeft"		"AchievementsButton"
-		"navRight"		"CoachPlayersButton"
-
-		"sound_depressed"	"UI/buttonclick.wav"
-		"sound_released"	"UI/buttonclickrelease.wav"
-		"border_default"	"MainMenuSubButtonBorder"
-		
-		"image_drawcolor"	"235 226 202 255"
-		"SubImage"
-		{
-			"ControlName"	"ImagePanel"
-			"fieldName"		"SubImage"
-			"xpos"			"9"
-			"ypos"			"6"
-			"zpos"			"1"
-			"wide"			"15"
-			"tall"			"15"
-			"visible"		"1"
-			"enabled"		"1"
-			"image"			"glyph_steamworkshop"
-			"scaleImage"	"1"
-		}				
-	}	
-
-	"ReplayButton"
-	{
-		"ControlName"	"CExImageButton"
-		"fieldName"		"ReplayButton"
-		"xpos"			"c-64+273"
-		"ypos"			"437"
-		"zpos"			"5"
 		"wide"			"25"
 		"tall"			"25"
 		"autoResize"	"0"
@@ -2617,7 +2798,7 @@
 		"dulltext"		"0"
 		"brighttext"	"0"
 		"default"		"1"
-		"Command"		"engine replay_reloadbrowser"
+		"Command"		"workshop"
 
 		"navUp"			"VRModeButton"
 		"navLeft"		"AchievementsButton"
@@ -2639,17 +2820,65 @@
 			"tall"			"15"
 			"visible"		"1"
 			"enabled"		"1"
-			"image"			"glyph_tv"
+			"image"			"glyph_steamworkshop"
 			"scaleImage"	"1"
 		}				
-	}					
+	}	
+
+
 	
+	"ReplayButton"
+	{
+		"ControlName"	"CExImageButton"
+		"fieldName"		"ReplayButton"
+		"xpos"			"c-14+250"
+		"ypos"			"437"
+		"zpos"			"3"
+		"wide"			"30"
+		"tall"			"25"
+		"autoResize"	"0"
+		"pinCorner"		"3"
+		"visible"		"1"
+		"enabled"		"1"
+		"tabPosition"	"0"
+		"labelText"		""
+		"font"			"HudFontSmallBold"
+		"textAlignment"	"center"
+		"dulltext"		"0"
+		"brighttext"	"0"
+		"default"		"1"
+		"Command"		"engine replay_reloadbrowser"
+
+		"navUp"			"VRModeButton"
+		"navLeft"		"CoachPlayersButton"
+		"navRight"		"SettingsButton"
+
+		"sound_depressed"	"UI/buttonclick.wav"
+		"sound_released"	"UI/buttonclickrelease.wav"
+
+		"image_drawcolor"	"235 226 202 255"
+		"SubImage"
+		{
+			"ControlName"	"ImagePanel"
+			"fieldName"		"SubImage"
+			"xpos"			"10"
+			"ypos"			"5"
+			"zpos"			"1"
+			"wide"			"15"
+			"tall"			"15"
+			"visible"		"1"
+			"enabled"		"1"
+			"image"			"glyph_tv"
+			"scaleImage"	"1"
+		}
+	}
+
 	"BackToReplaysButton"
 	{
 		"ControlName"	"CExImageButton"
 		"fieldName"		"BackToReplaysButton"
 		"xpos"			"c-300"
-		"ypos"			"437"
+		"ypos"			"rs1-18"
 		"zpos"			"1"
 		"wide"			"170"
 		"tall"			"25"
@@ -2669,7 +2898,7 @@
 		"Command"		"exitreplayeditor"
 		"sound_depressed"	"UI/buttonclick.wav"
 		"sound_released"	"UI/buttonclickrelease.wav"
-		
+
 		"image_drawcolor"	"235 226 202 255"
 		"SubImage"
 		{
@@ -2684,7 +2913,7 @@
 			"enabled"		"1"
 			"scaleImage"	"1"
 			"image"			"glyph_quit"
-		}				
+		}
 	}			
 
 	"icon_generator"
@@ -2723,32 +2952,31 @@
 	"ModCreditsButton"
 	{
 		"ControlName"	"CExImageButton"
-		"fieldName"		"ModCreditsButton"
-		"xpos"			"c-400"
+		"fieldName"		"GeneralStoreButton"
+		"xpos"			"c-165"
 		"ypos"			"rs1-18"
-		"wide"			"110"
-		"tall"			"25"
+		"wide"			"100"
+		"tall"			"26"
 		"autoResize"	"0"
 		"pinCorner"		"3"
 		"visible"		"1"
 		"enabled"		"1"
 		"tabPosition"	"0"
-		"labelText"		"#TF_ModCredits_Title"
+		"use_proportional_insets" "1"
 		"font"			"HudFontSmallBold"
 		"textAlignment"	"center"
-		"textinsetx"	"5"
-		"use_proportional_insets" "1"
 		"dulltext"		"0"
 		"brighttext"	"0"
 		"default"		"1"
-		"Command"		"openmodcredits"
-
-		"navUp"			"TF2SettingsButtonSDK"
-		"navLeft"		"TF2SettingsButtonSDK"
-		"navRight"		"TF2SettingsButtonSDK"
+		"labeltext" "#TF_ModCredits_Title"
+		"command" "openmodcredits"
+		"proportionaltoparent"	"1"
 
 		"sound_depressed"	"UI/buttonclick.wav"
 		"sound_released"	"UI/buttonclickrelease.wav"
+			
+		"paintbackground"	"1"
+					
 	}
 	
 	//Items button

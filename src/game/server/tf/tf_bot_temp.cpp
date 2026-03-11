@@ -417,12 +417,18 @@ CON_COMMAND_F( bot_kick, "Remove a bot by name, or an entire team (\"red\" or \"
 CON_COMMAND_F( bot, "Add a bot.", FCVAR_NONE )
 {
 	// Listenserver host or rcon access only!
-	if ( !UTIL_IsCommandIssuedByServerAdmin() )
+	if ( !UTIL_IsCommandIssuedByServerAdmin() ) 
+	{
+		Msg( "Only the Server owner can add bots.\n" );
 		return;
+	}
 
 	// Allow bots in item testing mode
 	if ( !sv_cheats->GetBool() && !TFGameRules()->IsInItemTestingMode() )
+	{ 
+		Msg( "You must have sv_cheats set to 1 to spawn a bot.\n" );
 		return;
+	}
 
 	//CDODPlayer *pPlayer = CDODPlayer::Instance( UTIL_GetCommandClientIndex() );
 
@@ -1364,20 +1370,61 @@ CON_COMMAND_F( bot_whack, "Deliver lethal damage from player to specified bot. U
 //------------------------------------------------------------------------------
 // Purpose: Force the specified bot to teleport to the specified position
 //------------------------------------------------------------------------------
-CON_COMMAND_F( bot_teleport, "Teleport the specified bot to the specified position & angles.\n\tFormat: bot_teleport <bot name> <X> <Y> <Z> <Pitch> <Yaw> <Roll>", FCVAR_CHEAT )
+CON_COMMAND_F( bot_teleport, "Teleport the specified bot to the specified position & angles.\n\tFormat: bot_teleport <bot name> [<X> <Y> <Z> <Pitch> <Yaw> <Roll>]\n\tIf no position is specified, teleports to crosshair location.", FCVAR_CHEAT )
 {
-	CUtlVector< CTFPlayer* > botVector;
-	GetBotsFromCommand( args, 8, "Usage: bot_teleport <bot name> <X> <Y> <Z> <Pitch> <Yaw> <Roll>", &botVector );
-	if ( botVector.IsEmpty() )
-		return;
-
-	Vector vecPos( atof(args[2]), atof(args[3]), atof(args[4]) );
-	QAngle vecAng( atof(args[5]), atof(args[6]), atof(args[7]) );
-	FOR_EACH_VEC( botVector, i )
+	// Check if we have at least the bot name
+	if ( args.ArgC() < 2 )
 	{
-		botVector[i]->Teleport( &vecPos, &vecAng, NULL );
+		Msg( "Usage: bot_teleport <bot name> [<X> <Y> <Z> <Pitch> <Yaw> <Roll>]\n" );
+		return;
 	}
+
+	CUtlVector< CTFPlayer* > botVector;
 	
+	// If we have position arguments (8 total args), use the old behavior
+	if ( args.ArgC() >= 8 )
+	{
+		GetBotsFromCommand( args, 8, "Usage: bot_teleport <bot name> <X> <Y> <Z> <Pitch> <Yaw> <Roll>", &botVector );
+		if ( botVector.IsEmpty() )
+			return;
+
+		Vector vecPos( atof(args[2]), atof(args[3]), atof(args[4]) );
+		QAngle vecAng( atof(args[5]), atof(args[6]), atof(args[7]) );
+		FOR_EACH_VEC( botVector, i )
+		{
+			botVector[i]->Teleport( &vecPos, &vecAng, NULL );
+		}
+	}
+	else
+	{
+		// No position arguments provided, teleport to crosshair
+		GetBotsFromCommand( args, 2, "Usage: bot_teleport <bot name>", &botVector );
+		if ( botVector.IsEmpty() )
+			return;
+
+		CBasePlayer *pPlayer = UTIL_GetCommandClient();
+		if ( !pPlayer )
+			return;
+
+		trace_t tr;
+		Vector forward;
+		pPlayer->EyeVectors( &forward );
+		UTIL_TraceLine( pPlayer->EyePosition(), pPlayer->EyePosition() + forward * MAX_TRACE_LENGTH, MASK_SOLID, pPlayer, COLLISION_GROUP_NONE, &tr );
+		
+		if ( tr.fraction != 1.0 )
+		{
+			// Use the player's current angles for the bot
+			QAngle vecAng = pPlayer->EyeAngles();
+			FOR_EACH_VEC( botVector, i )
+			{
+				botVector[i]->Teleport( &tr.endpos, &vecAng, NULL );
+			}
+		}
+		else
+		{
+			Msg( "No valid surface found under crosshair\n" );
+		}
+	}
 }
 
 //------------------------------------------------------------------------------

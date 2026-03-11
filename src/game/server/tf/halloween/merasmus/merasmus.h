@@ -167,6 +167,7 @@ class CMerasmus : public CHalloweenBaseBoss, public CGameEventListener, public I
 public:
 	DECLARE_CLASS( CMerasmus, CHalloweenBaseBoss );
 	DECLARE_SERVERCLASS();
+	DECLARE_DATADESC();
 
 	CMerasmus();
 	virtual ~CMerasmus();
@@ -215,6 +216,11 @@ public:
 	void AddStun( CTFPlayer* pPlayer );
 	void OnBeginStun();
 	void OnEndStun();
+
+	//Outputs
+	COutputEvent m_OnStunStart;
+	COutputEvent m_OnStunEnd;
+
 	bool HasStunTimer() const { return !m_stunTimer.IsElapsed(); }
 	bool IsStunned() const { return m_bStunned; }
 
@@ -231,6 +237,12 @@ public:
 
 	void StartFlying( void ) { m_isFlying = true; }
 	void StopFlying( void ) { m_isFlying = false; }
+	//Outputs
+	COutputEvent m_OnStartFlying;
+	COutputEvent m_OnStopFlying;
+	COutputEvent m_OnCastSpell;
+	COutputEvent m_OnThrowBomb;
+
 	bool IsFlying( void ) const { return m_isFlying; }
 	bool IsHiding( void ) const { return m_isHiding; }
 
@@ -249,7 +261,7 @@ public:
 
 	const CUtlVector< CHandle<CTFPlayer> >& GetStartingAttackers() const;
 
-	static bool Zap( CBaseCombatCharacter *pCaster, const char* pszCastingAttachmentName, float flSpellRange, float flMinDamage, float flMaxDamage, int nMaxTarget, int nTargetTeam = TEAM_ANY );
+	static bool Zap( CMerasmus *pCaster, const char* pszCastingAttachmentName, float flSpellRange, float flMinDamage, float flMaxDamage, int nMaxTarget, int iSpellType, int nTargetTeam = TEAM_ANY );
 
 	// Stats
 	void RecordDisguiseTime( );
