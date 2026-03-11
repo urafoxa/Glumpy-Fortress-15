@@ -839,11 +839,13 @@ enum ETFCond
 		//
 	// ADD NEW ITEMS HERE TO AVOID BREAKING DEMOS
 	//
-	TF_COND_GREASED_UP						= 131,
+	
 	// ******** Keep this block last! ********
 	// Keep experimental conditions below and graduate out of it before shipping
 
-	TF_COND_SENTRY_BUSTER,			// Player is acting as a Sentry Buster
+	TF_COND_SENTRY_BUSTER = 134,			// Player is acting as a Sentry Buster
+
+	TF_COND_GREASED_UP = 135,
 
 	TF_COND_LAST
 };
