@@ -1,1 +1,1 @@
-start "fatass" "C:\SteamLibrary\steamapps\common\Source SDK Base 2013 Multiplayer\hl2_win64.exe" -game "C:\GLUMPYFORTRESS\betterglumpy\game\betterfortress" -dev -w 1920 -h 1080 -windowed -tools -nop4 -force32bit
+start "fatass" "C:\SteamLibrary\steamapps\common\Source SDK Base 2013 Multiplayer\hl2_win64.exe" -game "C:\GLUMPYFORTRESS\betterglumpy\game\customfortress" -dev -w 1920 -h 1080 -windowed -tools -nop4 -force32bit
